@@ -5,6 +5,11 @@ import { useMemo, useState } from "react";
 type NavItem = { label: string; icon: string; badge?: number };
 type NavGroup = { title: string; items: NavItem[] };
 
+const en: Record<string,string> = {
+  "工作台":"Workspace","经营总览":"Overview","待办与提醒":"Tasks & Alerts","客户与销售":"Sales & CRM","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare",
+  "现场与运营":"Field & Operations","团队日历":"Calendar","安装工单":"Work Orders","生产进度":"Production","采购入库":"Receiving","照片资料":"Photos","采购与财务":"Purchasing & Finance","采购订单":"Purchase Orders","供应商管理":"Vendors","供应商账单":"Vendor Bills","应收账款":"Receivables","收付款":"Payments","分析与管理":"Insights & Admin","经营报表":"Reports","利润分析":"Profitability","产品与文档":"Resources","系统设置":"Settings"
+};
+
 const nav: NavGroup[] = [
   { title: "工作台", items: [
     { label: "经营总览", icon: "⌂" }, { label: "待办与提醒", icon: "◌", badge: 8 },
@@ -65,6 +70,46 @@ const pages: Record<string, { title: string; kicker: string }> = {
   待办与提醒: { title: "待办与提醒", kicker: "集中处理逾期回访、待收款、到货异常和安装确认。" },
 };
 
+const moduleRows: Record<string, Array<{id:string;client:string;product:string;owner:string;value:string;status:string;tone:string;date:string}>> = {
+  销售线索: [
+    {id:"LD-2026-0081",client:"林女士 · Pasadena",product:"客厅电动卷帘，预约现场咨询",owner:"陈美雅",value:"预计 $8,000",status:"待联系",tone:"amber",date:"今天 3:00"},
+    {id:"LD-2026-0078",client:"Cedar Design Group",product:"酒店公共区窗帘项目",owner:"朴立欧",value:"预计 $35,000",status:"已预约",tone:"green",date:"7月18日"},
+  ],
+  客户管理: [
+    {id:"CU-0148",client:"Hillcrest Residence",product:"2个项目 · 26个窗位",owner:"陈美雅",value:"累计 $28,460",status:"活跃客户",tone:"green",date:"7月14日"},
+    {id:"CU-0139",client:"Ontario Office Partners",product:"商业客户 · Net 30",owner:"金诺亚",value:"累计 $42,180",status:"活跃客户",tone:"green",date:"7月11日"},
+  ],
+  项目管理: [
+    {id:"PJ-2026-0036",client:"山景别墅项目",product:"12个窗位 · 已完成测量",owner:"陈美雅",value:"$18,420",status:"执行中",tone:"blue",date:"7月28日"},
+    {id:"PJ-2026-0031",client:"银湖设计工作室",product:"8个窗位 · 蛇形帘",owner:"朴立欧",value:"$9,860",status:"待安装",tone:"green",date:"7月22日"},
+  ],
+  上门测量: [
+    {id:"MS-2026-0114",client:"峡谷住宅项目",product:"14个窗位 · 激光测量 + 照片",owner:"陈美雅",value:"已用 140 tokens",status:"已完成",tone:"green",date:"7月15日"},
+    {id:"MS-2026-0116",client:"Park Residence",product:"主卧及客厅 · 6个窗位",owner:"金诺亚",value:"待测量",status:"已排程",tone:"blue",date:"7月17日"},
+  ],
+  报价管理: [
+    {id:"QT-2026-0188",client:"山景别墅项目",product:"电动卷帘 · Somfy电机",owner:"陈美雅",value:"$18,420",status:"客户已批准",tone:"green",date:"7月2日"},
+    {id:"QT-2026-0194",client:"Westside Loft",product:"罗马帘 · 7个窗位",owner:"朴立欧",value:"$6,780",status:"已发送",tone:"blue",date:"7月16日"},
+  ],
+  销售订单: orders,
+  采购订单: [
+    {id:"PO-2026-0726",client:"供应商：Suntex",product:"关联 SO-2026-1048 · 电动卷帘",owner:"金诺亚",value:"$8,940",status:"生产中",tone:"blue",date:"预计7月22日"},
+    {id:"PO-2026-0719",client:"供应商：Fabricut",product:"关联 SO-2026-1042 · 窗帘面料",owner:"陈美雅",value:"$3,260",status:"已发货",tone:"green",date:"预计7月18日"},
+  ],
+  采购入库: [
+    {id:"RC-2026-0042",client:"PO-2026-0719",product:"5箱 · 关联 SO-2026-1042",owner:"仓库",value:"数量 8/8",status:"待质检",tone:"amber",date:"今天"},
+    {id:"RC-2026-0038",client:"PO-2026-0708",product:"3箱 · 2件轨道",owner:"仓库",value:"数量 3/3",status:"已入库",tone:"green",date:"7月14日"},
+  ],
+  安装工单: [
+    {id:"WO-2026-0094",client:"银湖设计工作室",product:"安装蛇形帘 · 8个窗位 · 二人组",owner:"安装二组",value:"预计 4.5小时",status:"已排程",tone:"blue",date:"7月22日 11:30"},
+    {id:"WO-2026-0091",client:"Ontario Offices",product:"垂直百叶 · 28个窗位",owner:"安装一组",value:"预计 6小时",status:"待确认",tone:"amber",date:"7月24日 8:30"},
+  ],
+  应收账款: [
+    {id:"INV-2026-0241",client:"山景别墅项目",product:"SO-2026-1048 · 50%尾款",owner:"财务",value:"$9,210",status:"未到期",tone:"blue",date:"7月28日"},
+    {id:"INV-2026-0228",client:"Ontario Offices",product:"SO-2026-1033 · 定金",owner:"财务",value:"$4,950",status:"已逾期",tone:"red",date:"逾期5天"},
+  ]
+};
+
 function Spark({ values }: { values: number[] }) {
   const points = values.map((v, i) => `${i * 18},${56 - v}`).join(" ");
   return <svg className="spark" viewBox="0 0 126 58" aria-hidden="true"><polyline points={points} /></svg>;
@@ -109,19 +154,20 @@ function Overview({ onOpen }: { onOpen: (id: string) => void }) {
   </>;
 }
 
-function ModulePage({ name, onOpen }: { name: string; onOpen: (id: string) => void }) {
+function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; onOpen: (id: string) => void; onNew:()=>void; search:string; setSearch:(v:string)=>void }) {
   const meta = pages[name] || { title: name, kicker: "管理该业务模块的记录、状态和负责人。" };
   const isCalendar = name === "团队日历";
   const isReport = ["经营报表","利润分析","应收账款"].includes(name);
   return <>
-    <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {name}</span><h1>{meta.title}</h1><p>{meta.kicker}</p></div><div><button className="secondary">导出</button><button className="primary">＋ 新建</button></div></div>
-    <div className="toolbar"><label>⌕ <input placeholder={`搜索${name}...`} /></label><button>全部状态⌄</button><button>筛选</button><button>显示字段</button></div>
-    {isCalendar ? <CalendarView/> : isReport ? <ReportView name={name}/> : <ListView name={name} onOpen={onOpen}/>} 
+    <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {en[name]}</span><h1>{meta.title}<small className="en-title">{en[name]}</small></h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={()=>window.print()}>导出 / Export</button><button className="primary" onClick={onNew}>＋ 新建 / New</button></div></div>
+    <div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name} / Search ${en[name]}...`} /></label><button>全部状态 / All⌄</button><button>筛选 / Filter</button><button>字段 / Columns</button></div>
+    {isCalendar ? <CalendarView/> : isReport ? <ReportView name={name}/> : <ListView name={name} onOpen={onOpen} search={search}/>} 
   </>;
 }
 
-function ListView({ name, onOpen }: { name: string; onOpen: (id: string) => void }) {
-  return <div className="panel module-panel"><div className="summary-row"><div><span>进行中</span><b>{name === '采购订单' ? '12' : '24'}</b></div><div><span>需要处理</span><b>6</b></div><div><span>本月已完成</span><b>18</b></div><div><span>合计金额</span><b>$84,620</b></div></div><div className="table-wrap"><table><thead><tr><th>业务编号</th><th>客户 / 公司</th><th>产品或事项</th><th>负责人</th><th>金额</th><th>状态</th><th>下一节点</th></tr></thead><tbody>{orders.concat(orders.slice(0,2).map((o,i)=>({...o,id:`BR-2026-${1030-i}`,client:i?'西区公寓项目':'公园路住宅'}))).map((o,i)=><tr key={`${o.id}${i}`} onClick={()=>onOpen(o.id)}><td><b>{o.id}</b></td><td><strong>{o.client}</strong></td><td>{o.product}</td><td>{o.owner}</td><td>{o.value}</td><td><Status tone={o.tone}>{o.status}</Status></td><td>{o.date}</td></tr>)}</tbody></table></div></div>;
+function ListView({ name, onOpen, search }: { name: string; onOpen: (id: string) => void; search:string }) {
+  const rows = (moduleRows[name] || orders).filter(o=>`${o.id}${o.client}${o.product}${o.owner}${o.status}`.toLowerCase().includes(search.toLowerCase()));
+  return <div className="panel module-panel"><div className="summary-row"><div><span>进行中 / Active</span><b>{rows.length}</b></div><div><span>需要处理 / Attention</span><b>{rows.filter(x=>['red','amber'].includes(x.tone)).length}</b></div><div><span>本月完成 / Completed</span><b>18</b></div><div><span>合计金额 / Total</span><b>$84,620</b></div></div><div className="table-wrap"><table><thead><tr><th>业务编号 / Ref.</th><th>客户或公司 / Client</th><th>产品或事项 / Description</th><th>负责人 / Owner</th><th>金额 / Value</th><th>状态 / Status</th><th>下一节点 / Next</th></tr></thead><tbody>{rows.map((o,i)=><tr key={`${o.id}${i}`} onClick={()=>onOpen(o.id)}><td><b>{o.id}</b></td><td><strong>{o.client}</strong></td><td>{o.product}</td><td>{o.owner}</td><td>{o.value}</td><td><Status tone={o.tone}>{o.status}</Status></td><td>{o.date}</td></tr>)}</tbody></table>{!rows.length&&<div className="empty-search">没有匹配记录 / No matching records</div>}</div></div>;
 }
 
 function CalendarView(){ const days=Array.from({length:35},(_,i)=>i<3?29+i:i-2); return <div className="panel calendar"><div className="calendar-head"><button>←</button><h2>2026年7月</h2><button>→</button><span/><Status tone="blue">上门测量</Status><Status tone="green">安装施工</Status><Status tone="amber">方案咨询</Status></div><div className="weekdays">{['周日','周一','周二','周三','周四','周五','周六'].map(d=><b key={d}>{d}</b>)}</div><div className="days">{days.map((d,i)=><div key={i} className={i<3?'muted':''}><span>{d}</span>{i===9&&<em className="event blue">9:00 · 测量</em>}{i===11&&<em className="event amber">14:00 · 咨询</em>}{i===17&&<em className="event green">11:30 · 安装</em>}{i===24&&<em className="event green">8:30 · 安装</em>}</div>)}</div></div> }
@@ -130,15 +176,24 @@ function ReportView({name}:{name:string}){ return <><section className="kpi-grid
 
 function DetailDrawer({ id, close }: { id: string; close: () => void }) { return <div className="drawer-wrap" onClick={close}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawer-close" onClick={close}>×</button><span className="eyebrow">销售订单详情</span><h2>{id}</h2><p className="drawer-sub">山景别墅项目 · 电动卷帘 · 12个窗位</p><Status tone="blue">生产中</Status><div className="detail-stats"><div><span>订单金额</span><b>$18,420</b></div><div><span>待收尾款</span><b>$9,210</b></div><div><span>目标安装日</span><b>7月28日</b></div></div><h3>订单进度</h3><div className="timeline">{[['报价已批准','7月2日','done'],['已收50%定金','7月3日','done'],['采购订单已发送','7月5日','done'],['供应商生产中','7月14日更新','active'],['采购入库','预计7月22日',''],['安装施工','计划7月28日','']].map(x=><div className={x[2]} key={x[0]}><i/><span><b>{x[0]}</b><small>{x[1]}</small></span></div>)}</div><h3>订单访问权限</h3><div className="access-card"><span>仅4名已分配人员可查看本订单的排程、生产进度、安装记录、成本和账单。其他员工无法通过搜索或报表访问。</span><button>管理权限</button></div><button className="primary wide">打开完整订单</button></aside></div> }
 
+function NewRecordModal({module,close,save}:{module:string;close:()=>void;save:(name:string)=>void}){
+  const [name,setName]=useState(""); const [contact,setContact]=useState(""); const [notes,setNotes]=useState("");
+  return <div className="drawer-wrap modal-wrap" onClick={close}><form className="new-modal" onClick={e=>e.stopPropagation()} onSubmit={e=>{e.preventDefault();save(name||"未命名记录")}}><button type="button" className="drawer-close" onClick={close}>×</button><span className="eyebrow">新建记录 / NEW RECORD</span><h2>新建{module}<small>{en[module]}</small></h2><div className="form-grid"><label>客户或项目名称 <small>Client / Project</small><input required value={name} onChange={e=>setName(e.target.value)} placeholder="例如：洛杉矶住宅项目"/></label><label>联系人 / 电话 <small>Contact / Phone</small><input value={contact} onChange={e=>setContact(e.target.value)} placeholder="姓名、电话或邮箱"/></label><label>产品类型 <small>Product type</small><select><option>卷帘 / Roller Shade</option><option>斑马帘 / Zebra Shade</option><option>窗帘 / Drapery</option><option>百叶帘 / Blinds</option><option>百叶窗 / Shutters</option><option>罗马帘 / Roman Shade</option><option>电动产品 / Motorization</option></select></label><label>负责人 <small>Owner</small><select><option>陈美雅</option><option>朴立欧</option><option>金诺亚</option><option>安装一组</option></select></label><label className="full">说明与现场需求 <small>Notes / Site requirements</small><textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="窗位数量、安装方式、期望日期、特殊说明…"/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>取消 / Cancel</button><button className="primary">保存记录 / Save</button></div></form></div>
+}
+
 export default function Home() {
   const [active, setActive] = useState("经营总览");
   const [drawer, setDrawer] = useState<string|null>(null);
   const [mobile, setMobile] = useState(false);
   const [role, setRole] = useState("公司管理员");
+  const [search,setSearch]=useState("");
+  const [newOpen,setNewOpen]=useState(false);
+  const [toast,setToast]=useState("");
   const breadcrumb = useMemo(()=> nav.find(g=>g.items.some(i=>i.label===active))?.title || "工作台",[active]);
-  const go = (label:string)=>{setActive(label);setMobile(false);window.scrollTo({top:0,behavior:'smooth'})};
+  const go = (label:string)=>{setActive(label);setSearch("");setMobile(false);window.scrollTo({top:0,behavior:'smooth'})};
+  const saveRecord=(name:string)=>{setNewOpen(false);setToast(`${name} 已保存 / Saved`);setTimeout(()=>setToast(""),2600)};
   return <div className="app-shell">
-    <aside className={`sidebar ${mobile?'open':''}`}><div className="brand"><div className="brand-mark"><i/><i/><i/></div><div><b>BRAUN</b><span>BLINDS</span></div><button className="mobile-close" onClick={()=>setMobile(false)}>×</button></div><div className="workspace"><span>当前公司</span><b>Braun International</b><button>⌄</button></div><nav>{nav.map(g=><div className="nav-group" key={g.title}><h3>{g.title}</h3>{g.items.map(item=><button key={item.label} className={active===item.label?'active':''} onClick={()=>go(item.label)}><i>{item.icon}</i><span>{item.label}</span>{item.badge&&<em>{item.badge}</em>}</button>)}</div>)}</nav><div className="help-card"><b>需要帮助？</b><span>查看操作说明、产品规则或联系系统支持。</span><button>打开帮助中心 →</button></div><div className="user-card"><div>GS</div><span><b>Gunther Sung</b><small>{role} · 加州安大略市</small></span><button>•••</button></div></aside>
+    <aside className={`sidebar ${mobile?'open':''}`}><div className="brand"><div className="brand-mark"><i/><i/><i/></div><div><b>BRAUN</b><span>BLINDS</span></div><button className="mobile-close" onClick={()=>setMobile(false)}>×</button></div><div className="workspace"><span>当前公司 / COMPANY</span><b>Braun International</b><button>⌄</button></div><nav>{nav.map(g=><div className="nav-group" key={g.title}><h3>{g.title}<small>{en[g.title]}</small></h3>{g.items.map(item=><button key={item.label} className={active===item.label?'active':''} onClick={()=>go(item.label)}><i>{item.icon}</i><span>{item.label}<small>{en[item.label]}</small></span>{item.badge&&<em>{item.badge}</em>}</button>)}</div>)}</nav><div className="help-card"><b>需要帮助？ / Need help?</b><span>查看操作说明、产品规则或联系系统支持。</span><button>打开帮助中心 / Help center →</button></div><div className="user-card"><div>GS</div><span><b>Gunther Sung</b><small>{role} · Ontario, CA</small></span><button>•••</button></div></aside>
     <div className="mobile-overlay" onClick={()=>setMobile(false)}/>
-    <main className="main"><header className="topbar"><button className="menu" onClick={()=>setMobile(true)}>☰</button><div className="crumb"><span>{breadcrumb}</span><b>/</b><strong>{active}</strong></div><label className="global-search">⌕<input placeholder="搜索订单、客户、项目、采购单…"/><kbd>⌘ K</kbd></label><div className="top-actions"><select value={role} onChange={e=>setRole(e.target.value)} aria-label="角色权限预览"><option>公司管理员</option><option>销售人员</option><option>测量人员</option><option>安装人员</option><option>财务人员</option><option>客户账户</option></select><button aria-label="通知">♢<em>3</em></button><div className="avatar">GS</div></div></header><div className="content">{active==='经营总览'?<Overview onOpen={setDrawer}/>:<ModulePage name={active} onOpen={setDrawer}/>}<footer><span>© 2026 Braun International, LLC</span><span>隐私政策 · 使用条款 · 技术支持</span></footer></div></main>{drawer&&<DetailDrawer id={drawer} close={()=>setDrawer(null)}/>}</div>;
+    <main className="main"><header className="topbar"><button className="menu" onClick={()=>setMobile(true)}>☰</button><div className="crumb"><span>{breadcrumb}</span><b>/</b><strong>{active}</strong></div><label className="global-search">⌕<input placeholder="搜索订单、客户、项目、采购单… / Search"/><kbd>⌘ K</kbd></label><div className="top-actions"><select value={role} onChange={e=>setRole(e.target.value)} aria-label="角色权限预览"><option>公司管理员 / Owner</option><option>销售人员 / Sales</option><option>测量人员 / Measure</option><option>安装人员 / Installer</option><option>财务人员 / Finance</option><option>客户账户 / Client</option></select><button aria-label="通知">♢<em>3</em></button><div className="avatar">GS</div></div></header><div className="content">{active==='经营总览'?<Overview onOpen={setDrawer}/>:<ModulePage name={active} onOpen={setDrawer} onNew={()=>setNewOpen(true)} search={search} setSearch={setSearch}/>}<footer><span>© 2026 Braun International, LLC</span><span>隐私政策 Privacy · 使用条款 Terms · 技术支持 Support</span></footer></div></main>{drawer&&<DetailDrawer id={drawer} close={()=>setDrawer(null)}/>} {newOpen&&<NewRecordModal module={active} close={()=>setNewOpen(false)} save={saveRecord}/>} {toast&&<div className="toast">✓ {toast}</div>}</div>;
 }
