@@ -8,6 +8,7 @@ declare global { interface Window { XLSX?:XlsxApi } }
 
 type NavItem = { label: string; icon: string; badge?: number };
 type NavGroup = { title: string; items: NavItem[] };
+type ModuleRow = {id:string;client:string;product:string;owner:string;value:string;status:string;tone:string;date:string;manual?:boolean};
 
 const en: Record<string,string> = {
   "工作台":"Workspace","经营总览":"Overview","待办与提醒":"Tasks & Alerts","客户与销售":"Sales & CRM","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare","数据中心":"Data Center",
@@ -35,12 +36,7 @@ const nav: NavGroup[] = [
   ]},
 ];
 
-const orders = [
-  { id: "SO-2026-1048", client: "山景别墅项目", product: "电动卷帘 · 12个窗位 · Somfy电机", value: "$18,420", status: "生产中", tone: "blue", date: "7月28日", owner: "陈美雅" },
-  { id: "SO-2026-1042", client: "银湖设计工作室", product: "蛇形帘 · 双层轨道 · 8个窗位", value: "$9,860", status: "已排安装", tone: "green", date: "7月22日", owner: "朴立欧" },
-  { id: "SO-2026-1039", client: "峡谷住宅项目", product: "斑马帘 · 14个窗位 · 米白色", value: "$7,245", status: "待入库", tone: "amber", date: "7月19日", owner: "陈美雅" },
-  { id: "SO-2026-1033", client: "安大略办公室", product: "垂直百叶 · 28个窗位 · 商用阻燃", value: "$12,105", status: "待收定金", tone: "red", date: "7月18日", owner: "金诺亚" },
-];
+const orders:ModuleRow[] = [];
 
 const kpis = [
   { label: "本月销售额", value: "$84,620", delta: "较上月 +12.4%", icon: "↗", trend: [12,20,16,31,28,45,39,58] },
@@ -75,7 +71,7 @@ const pages: Record<string, { title: string; kicker: string }> = {
   待办与提醒: { title: "待办与提醒", kicker: "集中处理逾期回访、待收款、到货异常和安装确认。" },
 };
 
-const moduleRows: Record<string, Array<{id:string;client:string;product:string;owner:string;value:string;status:string;tone:string;date:string}>> = {
+const moduleRows: Record<string, ModuleRow[]> = {
   销售线索: [
     {id:"LD-2026-0081",client:"林女士 · Pasadena",product:"客厅电动卷帘，预约现场咨询",owner:"陈美雅",value:"预计 $8,000",status:"待联系",tone:"amber",date:"今天 3:00"},
     {id:"LD-2026-0078",client:"Cedar Design Group",product:"酒店公共区窗帘项目",owner:"朴立欧",value:"预计 $35,000",status:"已预约",tone:"green",date:"7月18日"},
@@ -148,7 +144,32 @@ function Status({ children, tone = "blue" }: { children: React.ReactNode; tone?:
   return <span className={`status ${tone}`}><i />{children}</span>;
 }
 
-function Overview({ onOpen, go, onNew }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) {
+function useRealWorkbookData(){
+  const [data,setData]=useState<RealWorkbookData>(()=>{if(typeof window==='undefined')return {commerce:[],wholesale:[],sources:[],updated:""};try{return JSON.parse(localStorage.getItem('braun-real-workbooks')||'')||{commerce:[],wholesale:[],sources:[],updated:""}}catch{return {commerce:[],wholesale:[],sources:[],updated:""}}});
+  const [loading,setLoading]=useState(!data.sources.length);
+  useEffect(()=>{if(data.sources.length)return;const run=async()=>{try{const xlsx=await loadXlsxApi();const files=await Promise.all([['jin汇总.xlsx','/data/jin汇总.xlsx'],['批发销售.xlsx','/data/批发销售.xlsx']].map(async([name,url])=>({name,buffer:await (await fetch(url)).arrayBuffer()})));const parsed=files.map(file=>{const book=xlsx.read(file.buffer);return parseWorkbook(xlsx.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1,defval:null,raw:true}),file.name)});setData({commerce:parsed.flatMap(x=>x.commerce),wholesale:parsed.flatMap(x=>x.wholesale),sources:parsed.map(x=>x.source),updated:new Date().toLocaleString('zh-CN')})}finally{setLoading(false)}};void run()},[]); // eslint-disable-line react-hooks/exhaustive-deps
+  return {data,loading};
+}
+
+function realRowsFor(name:string,data:RealWorkbookData):ModuleRow[]{
+  const orderRows=data.commerce.map((r,i)=>({id:r.po||`CWF-${i+1}`,client:r.dealer,product:`${r.sidemark} · ${r.product}`,owner:"Excel导入",value:`$${r.settlement.toLocaleString(undefined,{minimumFractionDigits:2})}`,status:r.remittance,tone:r.remittance.includes('已汇款')?'green':'amber',date:"Excel记录"}));
+  if(["销售订单","项目管理","采购订单","供应商账单","收付款"].includes(name))return orderRows;
+  if(name==="客户管理")return Array.from(new Set(data.commerce.map(r=>r.dealer).filter(x=>x&&x!=="未填写"))).map((dealer,i)=>{const rows=data.commerce.filter(r=>r.dealer===dealer);return{id:`CUSTOMER-${String(i+1).padStart(3,'0')}`,client:dealer,product:`${rows.length}笔订单 · ${rows.reduce((s,r)=>s+r.qty,0)}件`,owner:"Excel导入",value:`$${rows.reduce((s,r)=>s+r.settlement,0).toLocaleString(undefined,{minimumFractionDigits:2})}`,status:"真实客户",tone:"green",date:"Excel记录"}});
+  if(name==="供应商管理")return data.commerce.length?[{id:"SUPPLIER-CWF",client:"Commerce Window Fashions (CWF)",product:`已关联 ${data.commerce.length} 笔真实订单`,owner:"采购",value:`$${data.commerce.reduce((s,r)=>s+r.settlement,0).toLocaleString(undefined,{minimumFractionDigits:2})}`,status:"真实数据来源",tone:"green",date:data.updated||"Excel记录"}]:[];
+  if(name==="经营报表")return orderRows;
+  if(name==="利润分析")return [];
+  return [];
+}
+
+function RealOverview({go}:{go:(name:string)=>void}){
+  const {data,loading}=useRealWorkbookData(),total=data.commerce.reduce((s,r)=>s+r.settlement,0),paid=data.commerce.filter(r=>r.remittance.includes('已汇款')).length,dealers=new Set(data.commerce.map(r=>r.dealer).filter(x=>x&&x!=="未填写")).size;
+  const cards=[['真实订单',String(data.commerce.length),'来自 jin汇总(1).xlsx'],['结算金额',`$${total.toLocaleString(undefined,{minimumFractionDigits:2})}`,'Excel结算金额合计'],['已汇款',String(paid),`${Math.max(0,data.commerce.length-paid)}笔未标记`],['真实客户',String(dealers),'按Dealer名称去重']];
+  return <><section className="hero-card"><div><span className="eyebrow">REAL DATA WORKSPACE / 真实数据工作台</span><h1>Braun Blinds 业务中心</h1><p>只显示真实 Excel 与您手工建立的记录；演示订单已删除。</p></div><div className="hero-actions"><button className="secondary" onClick={()=>go('数据中心')}>更新Excel数据</button><button className="primary" onClick={()=>go('上门测量')}>现场测量</button></div><div className="fabric-orb one"/><div className="fabric-orb two"/></section><section className="kpi-grid">{cards.map(x=><article className="kpi" key={x[0]}><span>{x[0]}</span><strong>{loading?'…':x[1]}</strong><small>{x[2]}</small></article>)}</section><section className="panel real-home"><div className="panel-head"><div><span className="eyebrow">BUSINESS AREAS</span><h2>业务模块状态</h2></div></div><div className="area-grid">{[['客户与销售','销售订单',`${data.commerce.length}笔真实订单`],['现场与运营','安装工单','等待录入现场记录'],['采购与财务','采购订单',`${data.commerce.length}笔CWF记录`],['分析与管理','经营报表','基于真实Excel统计']].map(x=><button key={x[0]} onClick={()=>go(x[1])}><b>{x[0]}</b><span>{x[2]}</span><em>打开 →</em></button>)}</div></section></>;
+}
+
+function Overview({ go }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) { return <RealOverview go={go}/> }
+
+function LegacyOverview({ onOpen, go }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) {
   return <>
     <section className="hero-card">
       <div><span className="eyebrow">2026年7月19日 · 星期日</span><h1>您好，Gunther。</h1><p>这里汇总今天的收款、采购、生产、测量、安装和售后事项。</p></div>
@@ -194,16 +215,12 @@ function IntegratedTool({kind}:{kind:"measure"|"complete"}){
 }
 
 type ServiceTicket={id:string;order:string;customer:string;problem:string;category:string;submitted:string;responded:string;scheduled:string;resolved:string;owner:string;status:"待响应"|"处理中"|"已预约"|"已完成";priority:"紧急"|"普通";notes:string};
-const initialTickets:ServiceTicket[]=[
-  {id:"AS-2026-0038",order:"SO-2026-1042",customer:"银湖设计工作室",problem:"客厅右侧蛇形帘运行时有异响，客户要求检查轨道。",category:"运行异响",submitted:"2026-07-19 09:12",responded:"2026-07-19 09:28",scheduled:"2026-07-20 11:30",resolved:"—",owner:"安装二组",status:"已预约",priority:"紧急",notes:"客户上午在家；携带轨道连接件和备用滑轮。"},
-  {id:"AS-2026-0037",order:"SO-2026-1039",customer:"峡谷住宅项目",problem:"主卧斑马帘左侧下垂约1/2英寸，需要重新调平。",category:"安装调整",submitted:"2026-07-18 15:40",responded:"2026-07-18 16:05",scheduled:"2026-07-21 14:00",resolved:"—",owner:"安装一组",status:"处理中",priority:"普通",notes:"先电话确认窗号，再安排上门。"},
-  {id:"AS-2026-0034",order:"SO-2026-1033",customer:"安大略办公室",problem:"两片垂直百叶在运输中损坏，已向供应商申请补件。",category:"损坏/补件",submitted:"2026-07-16 10:20",responded:"2026-07-16 10:34",scheduled:"2026-07-18 08:30",resolved:"2026-07-18 10:15",owner:"金诺亚",status:"已完成",priority:"普通",notes:"补件已更换，客户现场确认完成。"}
-];
+const initialTickets:ServiceTicket[]=[];
 
 function AftercarePage(){
-  const [tickets,setTickets]=useState<ServiceTicket[]>(()=>{if(typeof window==="undefined")return initialTickets;try{return JSON.parse(localStorage.getItem("braun-aftercare-tickets")||"")||initialTickets}catch{return initialTickets}}),[filter,setFilter]=useState("全部"),[selected,setSelected]=useState<ServiceTicket|null>(initialTickets[0]),[creating,setCreating]=useState(false);
+  const [tickets,setTickets]=useState<ServiceTicket[]>(()=>{if(typeof window==="undefined")return initialTickets;try{return JSON.parse(localStorage.getItem("braun-aftercare-real-v2")||"")||initialTickets}catch{return initialTickets}}),[filter,setFilter]=useState("全部"),[selected,setSelected]=useState<ServiceTicket|null>(null),[creating,setCreating]=useState(false);
   const [form,setForm]=useState({order:"",customer:"",problem:"",category:"安装调整",owner:"安装一组",scheduled:""});
-  useEffect(()=>{localStorage.setItem("braun-aftercare-tickets",JSON.stringify(tickets))},[tickets]);
+  useEffect(()=>{localStorage.setItem("braun-aftercare-real-v2",JSON.stringify(tickets))},[tickets]);
   const visible=tickets.filter(t=>filter==="全部"||t.status===filter);
   const advance=(id:string)=>setTickets(all=>all.map(t=>{if(t.id!==id)return t;const next=t.status==="待响应"?"处理中":t.status==="处理中"?"已预约":t.status==="已预约"?"已完成":"已完成";const now=new Date().toLocaleString("zh-CN",{hour12:false});const updated={...t,status:next as ServiceTicket["status"],responded:t.responded==="—"?now:t.responded,resolved:next==="已完成"?now:t.resolved};if(selected?.id===id)setSelected(updated);return updated}));
   const create=(e:React.FormEvent)=>{e.preventDefault();const now=new Date().toLocaleString("zh-CN",{hour12:false});const item:ServiceTicket={id:`AS-2026-${String(tickets.length+39).padStart(4,"0")}`,order:form.order,customer:form.customer,problem:form.problem,category:form.category,submitted:now,responded:"—",scheduled:form.scheduled?form.scheduled.replace("T"," "):"待安排",resolved:"—",owner:form.owner,status:"待响应",priority:"普通",notes:""};setTickets(x=>[item,...x]);setSelected(item);setCreating(false);setForm({order:"",customer:"",problem:"",category:"安装调整",owner:"安装一组",scheduled:""})};
@@ -219,20 +236,11 @@ function AftercarePage(){
 }
 
 type WorkTask={id:string;type:"收款"|"采购"|"测量"|"安装"|"生产"|"售后";order:string;customer:string;title:string;detail:string;owner:string;created:string;due:string;priority:"紧急"|"普通";status:"待处理"|"处理中"|"已完成"};
-const initialTasks:WorkTask[]=[
- {id:"TK-2026-0128",type:"收款",order:"SO-2026-1033",customer:"安大略办公室",title:"定金已逾期5天",detail:"订单定金 $4,950 尚未到账；确认付款方式并记录跟进结果。",owner:"财务",created:"7月14日 09:00",due:"今天 10:00",priority:"紧急",status:"待处理"},
- {id:"TK-2026-0127",type:"采购",order:"SO-2026-1048",customer:"山景别墅项目",title:"供应商交期需要重新确认",detail:"12套电动卷帘原预计7月22日到货，供应商尚未上传装箱照片。",owner:"金诺亚",created:"7月18日 16:20",due:"今天 12:00",priority:"紧急",status:"处理中"},
- {id:"TK-2026-0126",type:"测量",order:"PRJ-2026-0041",customer:"Park Residence",title:"上门测量前确认客户在家",detail:"预约主卧和客厅6个窗位；需确认地址、停车位置和电机电源。",owner:"陈美雅",created:"7月18日 14:10",due:"今天 13:30",priority:"普通",status:"待处理"},
- {id:"TK-2026-0125",type:"安装",order:"SO-2026-1042",customer:"银湖设计工作室",title:"安装工单等待客户确认",detail:"7月22日11:30安装，需确认欠款、详细地址和现场联系人。",owner:"安装二组",created:"7月18日 11:35",due:"今天 15:00",priority:"普通",status:"待处理"},
- {id:"TK-2026-0124",type:"生产",order:"SO-2026-1039",customer:"峡谷住宅项目",title:"检查14件斑马帘装箱数量",detail:"生产已完成，发货前核对窗号、尺寸、颜色和箱唛。",owner:"仓库",created:"7月18日 10:00",due:"7月20日 09:00",priority:"普通",status:"处理中"},
- {id:"TK-2026-0123",type:"售后",order:"SO-2026-1042",customer:"银湖设计工作室",title:"轨道异响售后已预约",detail:"携带备用滑轮和连接件；处理后上传照片并填写完成时间。",owner:"安装二组",created:"7月19日 09:28",due:"7月20日 11:30",priority:"紧急",status:"处理中"},
- {id:"TK-2026-0122",type:"收款",order:"SO-2026-1048",customer:"山景别墅项目",title:"安装前收取50%尾款",detail:"待收 $9,210；安装排期前确认到账。",owner:"财务",created:"7月17日 15:00",due:"7月26日 17:00",priority:"普通",status:"待处理"},
- {id:"TK-2026-0121",type:"安装",order:"SO-2026-1033",customer:"安大略办公室",title:"补充安装工单现场说明",detail:"28个窗位，需两人安装；复制详细地址、欠款和联系人给安装工。",owner:"金诺亚",created:"7月17日 13:15",due:"7月21日 12:00",priority:"普通",status:"待处理"}
-];
+const initialTasks:WorkTask[]=[];
 
 function TasksPage(){
- const [tasks,setTasks]=useState<WorkTask[]>(()=>{if(typeof window==="undefined")return initialTasks;try{return JSON.parse(localStorage.getItem("braun-work-tasks")||"")||initialTasks}catch{return initialTasks}}),[filter,setFilter]=useState("未完成"),[selected,setSelected]=useState<WorkTask|null>(initialTasks[0]);
- useEffect(()=>localStorage.setItem("braun-work-tasks",JSON.stringify(tasks)),[tasks]);
+ const [tasks,setTasks]=useState<WorkTask[]>(()=>{if(typeof window==="undefined")return initialTasks;try{return JSON.parse(localStorage.getItem("braun-work-tasks-real-v2")||"")||initialTasks}catch{return initialTasks}}),[filter,setFilter]=useState("未完成"),[selected,setSelected]=useState<WorkTask|null>(null);
+ useEffect(()=>localStorage.setItem("braun-work-tasks-real-v2",JSON.stringify(tasks)),[tasks]);
  const visible=tasks.filter(t=>filter==="全部"||(filter==="未完成"?t.status!=="已完成":t.type===filter));
  const update=(id:string,patch:Partial<WorkTask>)=>{setTasks(all=>all.map(t=>t.id===id?{...t,...patch}:t));if(selected?.id===id)setSelected({...selected,...patch})};
  const counts={urgent:tasks.filter(t=>t.priority==="紧急"&&t.status!=="已完成").length,today:tasks.filter(t=>t.due.includes("今天")&&t.status!=="已完成").length,active:tasks.filter(t=>t.status==="处理中").length,done:tasks.filter(t=>t.status==="已完成").length};
@@ -242,6 +250,19 @@ function TasksPage(){
   <div className="tasks-layout"><section className="panel task-list">{visible.map(t=><button key={t.id} className={`${selected?.id===t.id?"selected":""} ${t.status==="已完成"?"completed":""}`} onClick={()=>setSelected(t)}><span className={`task-type ${t.type}`}>{t.type}</span><div><div className="task-title"><b>{t.title}</b>{t.priority==="紧急"&&<em>紧急</em>}</div><p>{t.order} · {t.customer}</p><small>负责人：{t.owner}　截止：<strong>{t.due}</strong></small></div><Status tone={t.status==="已完成"?"green":t.status==="处理中"?"blue":"amber"}>{t.status}</Status></button>)}{!visible.length&&<div className="empty-search">当前筛选没有待办事项</div>}</section>
    <aside className="panel task-detail">{selected?<><span className={`task-type ${selected.type}`}>{selected.type}</span><h2>{selected.title}</h2><p className="task-description">{selected.detail}</p><div className="task-info"><div><span>关联订单</span><b>{selected.order}</b></div><div><span>客户/项目</span><b>{selected.customer}</b></div><div><span>负责人</span><b>{selected.owner}</b></div><div><span>建立时间</span><b>{selected.created}</b></div><div><span>截止时间</span><b>{selected.due}</b></div><div><span>当前状态</span><b>{selected.status}</b></div></div><label className="task-owner">重新分配负责人<select value={selected.owner} onChange={e=>update(selected.id,{owner:e.target.value})}>{["Gunther","陈美雅","金诺亚","财务","仓库","安装一组","安装二组"].map(x=><option key={x}>{x}</option>)}</select></label><div className="task-actions"><button className="secondary" onClick={()=>update(selected.id,{due:"明天 10:00"})}>延至明天</button><button className="secondary" onClick={()=>update(selected.id,{status:"处理中"})}>开始处理</button><button className="primary" disabled={selected.status==="已完成"} onClick={()=>update(selected.id,{status:"已完成"})}>标记完成 ✓</button></div></>:<div className="empty-search">请选择一项待办</div>}</aside>
   </div></>;
+}
+
+const cleanedBusinessModules=["销售线索","客户管理","项目管理","销售订单","团队日历","安装工单","生产进度","采购入库","照片资料","采购订单","供应商管理","供应商账单","应收账款","收付款","经营报表","利润分析","产品与文档"];
+function RealBusinessModule({name}:{name:string}){
+  const {data,loading}=useRealWorkbookData(),storageKey=`braun-manual-${name}`;
+  const [manual,setManual]=useState<ModuleRow[]>(()=>{if(typeof window==='undefined')return[];try{return JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{return[]}}),[creating,setCreating]=useState(false),[search,setSearch]=useState(''),[title,setTitle]=useState(''),[detail,setDetail]=useState(''),[value,setValue]=useState('');
+  const save=(rows:ModuleRow[])=>{setManual(rows);localStorage.setItem(storageKey,JSON.stringify(rows))};
+  const add=()=>{if(!title.trim())return;const row:ModuleRow={id:`${name.slice(0,2).toUpperCase()}-${Date.now().toString().slice(-6)}`,client:title.trim(),product:detail.trim()||'手工建立的真实记录',owner:'Gunther',value:value.trim()||'—',status:'待处理',tone:'amber',date:new Date().toLocaleDateString('zh-CN'),manual:true};save([row,...manual]);setTitle('');setDetail('');setValue('');setCreating(false)};
+  const source=realRowsFor(name,data),rows=[...manual,...source].filter(r=>`${r.id}${r.client}${r.product}${r.status}`.toLowerCase().includes(search.toLowerCase()));
+  const complete=(id:string)=>save(manual.map(r=>r.id===id?{...r,status:'已完成',tone:'green'}:r));
+  const remove=(id:string)=>save(manual.filter(r=>r.id!==id));
+  const noSourceNote=name==='利润分析'?'当前Excel没有成本字段，无法真实计算毛利。请导入含成本的表格。':source.length?'已读取真实Excel数据。':'该模块在现有Excel中没有对应字段，请使用“新增真实记录”录入。';
+  return <><div className="module-head"><div><span className="eyebrow">REAL BUSINESS DATA / {en[name]}</span><h1>{name} <small className="en-title">{en[name]}</small></h1><p>{pages[name]?.kicker}</p></div><button className="primary" onClick={()=>setCreating(v=>!v)}>{creating?'关闭':'＋ 新增真实记录'}</button></div><div className="truth-banner"><b>{loading?'正在读取Excel…':noSourceNote}</b><button onClick={()=>location.reload()}>重新读取</button></div>{creating&&<section className="panel real-entry"><label>客户、项目或事项<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="必填"/></label><label>详细说明<input value={detail} onChange={e=>setDetail(e.target.value)} placeholder="订单号、产品、现场情况等"/></label><label>金额或数量<input value={value} onChange={e=>setValue(e.target.value)} placeholder="$0.00 或数量"/></label><button className="primary" onClick={add}>保存记录</button></section>}<div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name}…`}/></label><button onClick={()=>setSearch('未汇款')}>只看未汇款</button><button onClick={()=>setSearch('')}>清除筛选</button></div><div className="panel module-panel"><div className="summary-row"><div><span>真实记录</span><b>{rows.length}</b></div><div><span>Excel导入</span><b>{source.length}</b></div><div><span>手工建立</span><b>{manual.length}</b></div><div><span>数据来源</span><b className="summary-date">{source.length?'Excel':'手工'}</b></div></div><div className="table-wrap"><table><thead><tr><th>编号</th><th>客户/事项</th><th>说明</th><th>金额/数量</th><th>状态</th><th>操作</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td><b>{r.id}</b></td><td>{r.client}</td><td>{r.product}</td><td>{r.value}</td><td><Status tone={r.tone}>{r.status}</Status></td><td>{r.manual?<div className="row-actions"><button onClick={()=>complete(r.id)}>完成</button><button onClick={()=>remove(r.id)}>删除</button></div>:<small>Excel只读</small>}</td></tr>)}</tbody></table>{!rows.length&&<div className="empty-search">暂无真实记录。可点击“新增真实记录”录入。</div>}</div></div></>;
 }
 
 function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; onOpen: (id: string) => void; onNew:()=>void; search:string; setSearch:(v:string)=>void }) {
@@ -257,6 +278,7 @@ function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; 
   if(name==="待办与提醒") return <TasksPage/>;
   if(name==="数据中心") return <DataCenterPage/>;
   if(name==="系统设置") return <SettingsPage/>;
+  if(cleanedBusinessModules.includes(name)) return <RealBusinessModule name={name}/>;
   return <>
     <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {en[name]}</span><h1>{meta.title}<small className="en-title">{en[name]}</small></h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={exportCsv}>导出 / Export</button><button className="primary" onClick={onNew}>＋ 新建 / New</button></div></div>
     <div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name} / Search ${en[name]}...`} /></label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">全部状态 / All</option><option value="attention">需要处理 / Attention</option><option value="active">正常进行 / Active</option></select><button onClick={()=>setSearch('SO-')}>仅销售订单 / Sales</button><button onClick={()=>setCompact(v=>!v)}>{compact?'展开字段 / Expand':'精简字段 / Compact'}</button></div>
