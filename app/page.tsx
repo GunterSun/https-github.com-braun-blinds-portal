@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type NavItem = { label: string; icon: string; badge?: number };
 type NavGroup = { title: string; items: NavItem[] };
@@ -154,6 +154,16 @@ function Overview({ onOpen, go, onNew }: { onOpen: (id: string) => void; go:(nam
   </>;
 }
 
+function IntegratedTool({kind}:{kind:"measure"|"complete"}){
+  const isMeasure=kind==="measure";
+  const src=isMeasure?"https://braun-measure.sundagang91709.chatgpt.site":"/complete/index.html";
+  return <section className="integrated-tool">
+    <div className="tool-banner"><div><span className="eyebrow">BRAUN UNIFIED WORKFLOW / 统一工作流</span><h1>{isMeasure?"现场测量系统":"Braun Complete v3.0"}<small>{isMeasure?"Field Measure":"Quote · Order · Invoice · Fabrication"}</small></h1><p>{isMeasure?"按客户、订单、房间和窗位拍照测量；完成后可发送到报价订单系统。":"导入现场测量结果，补充面料与款式，生成报价、Invoice和加工图。"}</p></div><div><button className="secondary" onClick={()=>window.open(src,"_blank")}>全屏打开 / Open full screen ↗</button>{isMeasure?<a className="primary tool-switch" href="/complete/index.html" target="_blank">下一步：报价 / Quote →</a>:<span className="tool-status">✓ Complete v3.0 已嵌入门户</span>}</div></div>
+    <div className="integration-flow"><span className={isMeasure?"active":"done"}>1　现场测量</span><i>→</i><span className={!isMeasure?"active":""}>2　报价与订单</span><i>→</i><span>3　Invoice / 加工图</span></div>
+    <div className="tool-frame-wrap"><iframe title={isMeasure?"Braun现场测量":"Braun Complete v3.0"} src={src} className="tool-frame" allow="camera; clipboard-read; clipboard-write"/></div>
+  </section>
+}
+
 function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; onOpen: (id: string) => void; onNew:()=>void; search:string; setSearch:(v:string)=>void }) {
   const meta = pages[name] || { title: name, kicker: "管理该业务模块的记录、状态和负责人。" };
   const isCalendar = name === "团队日历";
@@ -161,6 +171,8 @@ function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; 
   const [status,setStatus]=useState("all");
   const [compact,setCompact]=useState(false);
   const exportCsv=()=>{const rows=moduleRows[name]||orders;const csv=['编号,客户,说明,负责人,金额,状态,日期',...rows.map(x=>[x.id,x.client,x.product,x.owner,x.value,x.status,x.date].map(v=>`"${v}"`).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download=`${name}-2026-07.csv`;a.click();URL.revokeObjectURL(a.href)};
+  if(name==="上门测量") return <IntegratedTool kind="measure"/>;
+  if(name==="报价管理") return <IntegratedTool kind="complete"/>;
   return <>
     <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {en[name]}</span><h1>{meta.title}<small className="en-title">{en[name]}</small></h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={exportCsv}>导出 / Export</button><button className="primary" onClick={onNew}>＋ 新建 / New</button></div></div>
     <div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name} / Search ${en[name]}...`} /></label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">全部状态 / All</option><option value="attention">需要处理 / Attention</option><option value="active">正常进行 / Active</option></select><button onClick={()=>setSearch('SO-')}>仅销售订单 / Sales</button><button onClick={()=>setCompact(v=>!v)}>{compact?'展开字段 / Expand':'精简字段 / Compact'}</button></div>
@@ -192,6 +204,7 @@ export default function Home() {
   const [search,setSearch]=useState("");
   const [newOpen,setNewOpen]=useState(false);
   const [toast,setToast]=useState("");
+  useEffect(()=>{const receive=(event:MessageEvent)=>{if(event.data?.type!=="BRAUN_MEASURE_TRANSFER"||!event.data?.payload)return;localStorage.setItem("braun-measure-transfer-pending",JSON.stringify(event.data.payload));setToast("测量数据已进入 Braun Complete v3.0 / Measurement transferred");setActive("报价管理");setTimeout(()=>setToast(""),3200)};window.addEventListener("message",receive);return()=>window.removeEventListener("message",receive)},[]);
   const breadcrumb = useMemo(()=> nav.find(g=>g.items.some(i=>i.label===active))?.title || "工作台",[active]);
   const go = (label:string)=>{setActive(label);setSearch("");setMobile(false);window.scrollTo({top:0,behavior:'smooth'})};
   const saveRecord=(name:string)=>{setNewOpen(false);setToast(`${name} 已保存 / Saved`);setTimeout(()=>setToast(""),2600)};
