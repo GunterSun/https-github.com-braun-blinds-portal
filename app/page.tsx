@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, useEffect, useMemo, useState } from "react";
+
+type SheetCell = string | number | boolean | null;
+type XlsxApi = { read:(data:ArrayBuffer)=>{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json:(sheet:unknown,options:{header:number;defval:null;raw?:boolean})=>SheetCell[][]} };
+declare global { interface Window { XLSX?:XlsxApi } }
 
 type NavItem = { label: string; icon: string; badge?: number };
 type NavGroup = { title: string; items: NavItem[] };
 
 const en: Record<string,string> = {
-  "工作台":"Workspace","经营总览":"Overview","待办与提醒":"Tasks & Alerts","客户与销售":"Sales & CRM","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare",
+  "工作台":"Workspace","经营总览":"Overview","待办与提醒":"Tasks & Alerts","客户与销售":"Sales & CRM","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare","数据中心":"Data Center",
   "现场与运营":"Field & Operations","团队日历":"Calendar","安装工单":"Work Orders","生产进度":"Production","采购入库":"Receiving","照片资料":"Photos","采购与财务":"Purchasing & Finance","采购订单":"Purchase Orders","供应商管理":"Vendors","供应商账单":"Vendor Bills","应收账款":"Receivables","收付款":"Payments","分析与管理":"Insights & Admin","经营报表":"Reports","利润分析":"Profitability","产品与文档":"Resources","系统设置":"Settings"
 };
 
@@ -27,7 +31,7 @@ const nav: NavGroup[] = [
     { label: "应收账款", icon: "↗" }, { label: "收付款", icon: "≈" },
   ]},
   { title: "分析与管理", items: [
-    { label: "经营报表", icon: "↗" }, { label: "利润分析", icon: "%" }, { label: "产品与文档", icon: "⌘" }, { label: "系统设置", icon: "⚙" },
+    { label: "经营报表", icon: "↗" }, { label: "利润分析", icon: "%" }, { label: "数据中心", icon: "↙" }, { label: "产品与文档", icon: "⌘" }, { label: "系统设置", icon: "⚙" },
   ]},
 ];
 
@@ -66,6 +70,7 @@ const pages: Record<string, { title: string; kicker: string }> = {
   经营报表: { title: "经营报表", kicker: "分析收入、成交率、产品结构、采购、安装和团队效率。" },
   利润分析: { title: "利润分析", kicker: "按订单、产品、供应商、销售人员查看收入、成本和毛利。" },
   产品与文档: { title: "产品与文档", kicker: "管理产品规格、面料、测量规则、条款、模板和培训资料。" },
+  数据中心: { title: "数据中心", kicker: "读取真实 Excel 文件，并将批发销售、订单、结算和汇款记录用于网站。" },
   系统设置: { title: "系统设置", kicker: "设置公司资料、员工权限、编号规则、支付方式和通知。" },
   待办与提醒: { title: "待办与提醒", kicker: "集中处理逾期回访、待收款、到货异常和安装确认。" },
 };
@@ -250,6 +255,7 @@ function ModulePage({ name, onOpen, onNew, search, setSearch }: { name: string; 
   if(name==="报价管理") return <IntegratedTool kind="complete"/>;
   if(name==="售后服务") return <AftercarePage/>;
   if(name==="待办与提醒") return <TasksPage/>;
+  if(name==="数据中心") return <DataCenterPage/>;
   if(name==="系统设置") return <SettingsPage/>;
   return <>
     <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {en[name]}</span><h1>{meta.title}<small className="en-title">{en[name]}</small></h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={exportCsv}>导出 / Export</button><button className="primary" onClick={onNew}>＋ 新建 / New</button></div></div>
@@ -266,6 +272,42 @@ function ListView({ name, onOpen, search, status, compact }: { name: string; onO
 function CalendarView(){ const [month,setMonth]=useState(7);const [selected,setSelected]=useState<number|null>(null);const days=Array.from({length:35},(_,i)=>i<3?29+i:i-2); return <div className="panel calendar"><div className="calendar-head"><button onClick={()=>setMonth(m=>m===1?12:m-1)}>←</button><h2>2026年{month}月 <small>/ {['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]}</small></h2><button onClick={()=>setMonth(m=>m===12?1:m+1)}>→</button><span/><Status tone="blue">上门测量</Status><Status tone="green">安装施工</Status><Status tone="amber">方案咨询</Status></div><div className="weekdays">{['周日','周一','周二','周三','周四','周五','周六'].map(d=><b key={d}>{d}</b>)}</div><div className="days">{days.map((d,i)=><button key={i} className={`${i<3?'muted':''} ${selected===i?'selected-day':''}`} onClick={()=>setSelected(i)}><span>{d}</span>{month===7&&i===9&&<em className="event blue">9:00 · 测量</em>}{month===7&&i===11&&<em className="event amber">14:00 · 咨询</em>}{month===7&&i===17&&<em className="event green">11:30 · 安装</em>}{month===7&&i===24&&<em className="event green">8:30 · 安装</em>}</button>)}</div>{selected!==null&&<div className="calendar-selection">已选择 {month}月{days[selected]}日 / Selected date　<button onClick={()=>setSelected(null)}>清除 / Clear</button></div>}</div> }
 
 function ReportView({name}:{name:string}){ return <><section className="kpi-grid report-kpis">{kpis.map((k,i)=><article className="kpi" key={k.label}><div className="kpi-top"><span>{name==='应收账款'&&i===0?'应收余额合计':k.label}</span></div><strong>{k.value}</strong><small>{k.delta}</small></article>)}</section><div className="report-grid"><article className="panel chart-card"><div className="panel-head"><div><span className="eyebrow">近12个月趋势</span><h2>{name}概览</h2></div></div><div className="bars">{[32,48,42,58,68,62,78,72,88,77,92,84].map((v,i)=><div key={i}><i style={{height:`${v}%`}}/><small>{['8月','9月','10月','11月','12月','1月','2月','3月','4月','5月','6月','7月'][i]}</small></div>)}</div></article><article className="panel mix"><span className="eyebrow">产品构成</span><h2>销售产品占比</h2>{[['卷帘 / 阳光面料','36%'],['窗帘 / 轨道','24%'],['百叶 / 垂直帘','19%'],['木百叶 / 百叶窗','12%'],['罗马帘及其他','9%']].map(x=><div key={x[0]}><span>{x[0]}</span><b>{x[1]}</b></div>)}</article></div></> }
+
+type CommerceRow={po:string;dealer:string;sidemark:string;product:string;qty:number;settlement:number;received:number;remittance:string;difference:string};
+type WholesaleRow={seller:string;date:string;reference:string;amount:number};
+type RealWorkbookData={commerce:CommerceRow[];wholesale:WholesaleRow[];sources:string[];updated:string};
+const emptyWorkbookData:RealWorkbookData={commerce:[],wholesale:[],sources:[],updated:""};
+
+function loadXlsxApi(){return new Promise<XlsxApi>((resolve,reject)=>{if(window.XLSX)return resolve(window.XLSX);const existing=document.querySelector('script[data-braun-xlsx]') as HTMLScriptElement|null;if(existing){existing.addEventListener('load',()=>window.XLSX?resolve(window.XLSX):reject(new Error('Excel reader unavailable')));return}const script=document.createElement('script');script.src='/complete/xlsx.full.min.js';script.dataset.braunXlsx='true';script.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error('Excel reader unavailable'));script.onerror=()=>reject(new Error('Excel reader failed to load'));document.head.appendChild(script)})}
+const cell=(v:SheetCell)=>v===null||v===undefined?'':String(v).trim();
+const money=(v:SheetCell)=>{const n=Number(String(v??'').replace(/[$,]/g,''));return Number.isFinite(n)?n:0};
+function parseWorkbook(rows:SheetCell[][],source:string){
+  if(rows.some(r=>r.some(v=>cell(v).includes('客户名字 (Dealer)')))){
+    const header=rows.findIndex(r=>r.some(v=>cell(v).includes('客户名字 (Dealer)')));
+    const commerce=rows.slice(header+1).filter(r=>cell(r[1]).toUpperCase().startsWith('CWF')).map(r=>({po:cell(r[1]).replace(/^CWF\s*/i,'CWF '),dealer:cell(r[5])||'未填写',sidemark:cell(r[6])||'未填写',product:cell(r[7])||'未填写',qty:Number(r[8])||0,settlement:money(r[9]),received:money(r[4]),difference:cell(r[10]),remittance:cell(r[11])||'未汇款'}));
+    return {commerce,wholesale:[] as WholesaleRow[],source};
+  }
+  const wholesale=rows.filter(r=>cell(r[0])&&r.some(v=>cell(v))).map(r=>({seller:cell(r[0]),date:cell(r[1]),reference:cell(r[2]),amount:money(r[3])})).filter(r=>r.seller||r.reference);
+  return {commerce:[] as CommerceRow[],wholesale,source};
+}
+
+function DataCenterPage(){
+  const [data,setData]=useState<RealWorkbookData>(()=>{if(typeof window==='undefined')return emptyWorkbookData;try{return JSON.parse(localStorage.getItem('braun-real-workbooks')||'')||emptyWorkbookData}catch{return emptyWorkbookData}}),[tab,setTab]=useState<'commerce'|'wholesale'>('commerce'),[search,setSearch]=useState(''),[busy,setBusy]=useState(()=>typeof window==='undefined'||!localStorage.getItem('braun-real-workbooks')),[error,setError]=useState('');
+  const readFiles=async(files:Array<{name:string;buffer:ArrayBuffer}>,persist=true)=>{setBusy(true);setError('');try{const xlsx=await loadXlsxApi();const parsed=files.map(file=>{const book=xlsx.read(file.buffer);const sheet=book.Sheets[book.SheetNames[0]];return parseWorkbook(xlsx.utils.sheet_to_json(sheet,{header:1,defval:null,raw:true}),file.name)});const next:RealWorkbookData={commerce:parsed.flatMap(x=>x.commerce),wholesale:parsed.flatMap(x=>x.wholesale),sources:parsed.map(x=>x.source),updated:new Date().toLocaleString('zh-CN')};setData(next);if(persist)localStorage.setItem('braun-real-workbooks',JSON.stringify(next))}catch{setError('无法读取文件，请确认它是有效的 .xlsx 文件。')}finally{setBusy(false)}};
+  const loadBundled=async()=>{const files=await Promise.all([['jin汇总.xlsx','/data/jin汇总.xlsx'],['批发销售.xlsx','/data/批发销售.xlsx']].map(async([name,url])=>({name,buffer:await (await fetch(url)).arrayBuffer()})));await readFiles(files,false)};
+  // Initial file parsing is an external workbook synchronization.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(()=>{if(!data.sources.length)void loadBundled()},[]);
+  const importFiles=async(e:ChangeEvent<HTMLInputElement>)=>{const picked=Array.from(e.target.files||[]);if(!picked.length)return;await readFiles(await Promise.all(picked.map(async f=>({name:f.name,buffer:await f.arrayBuffer()}))));e.target.value=''};
+  const commerce=data.commerce.filter(r=>`${r.po}${r.dealer}${r.sidemark}${r.product}${r.remittance}`.toLowerCase().includes(search.toLowerCase()));
+  const wholesale=data.wholesale.filter(r=>`${r.seller}${r.reference}${r.date}`.toLowerCase().includes(search.toLowerCase()));
+  const total=data.commerce.reduce((sum,r)=>sum+r.settlement,0),paid=data.commerce.filter(r=>r.remittance.includes('已汇款')).length,dealers=new Set(data.commerce.map(r=>r.dealer).filter(x=>x!=='未填写')).size;
+  return <><div className="module-head"><div><span className="eyebrow">REAL WORKBOOKS / DATA CENTER</span><h1>真实数据中心 <small className="en-title">Data Center</small></h1><p>当前数据来自您提供的 Excel；选择电脑中的新版文件即可更新。</p></div><div className="data-actions"><label className="primary file-import">选择电脑文件 / Import<input type="file" accept=".xlsx,.xls" multiple onChange={importFiles}/></label><button className="secondary" onClick={()=>{localStorage.removeItem('braun-real-workbooks');void loadBundled()}}>恢复原始文件</button></div></div>
+  <div className="source-note"><b>数据来源：</b>{data.sources.join('、')||'正在读取…'}<span>最后读取：{data.updated||'—'}</span><small>浏览器只读取您主动选择的文件，不会扫描电脑其他目录。</small></div>{error&&<div className="data-error">{error}</div>}
+  <section className="kpi-grid data-kpis"><article className="kpi"><span>Commerce订单</span><strong>{data.commerce.length}</strong><small>含新增未编号行</small></article><article className="kpi"><span>结算金额</span><strong>${total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong><small>Excel 结算金额合计</small></article><article className="kpi"><span>已汇款</span><strong>{paid}</strong><small>另有 {Math.max(0,data.commerce.length-paid)} 笔未标记</small></article><article className="kpi"><span>经销商</span><strong>{dealers}</strong><small>按客户名称去重</small></article></section>
+  <div className="toolbar data-toolbar"><button className={tab==='commerce'?'selected-filter':''} onClick={()=>setTab('commerce')}>Commerce订单 ({data.commerce.length})</button><button className={tab==='wholesale'?'selected-filter':''} onClick={()=>setTab('wholesale')}>批发销售 ({data.wholesale.length})</button><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="搜索PO、客户、项目、产品…"/></label></div>
+  <div className="panel module-panel real-data-table"><div className="table-wrap">{busy?<div className="empty-search">正在读取真实 Excel 数据…</div>:tab==='commerce'?<table><thead><tr><th>PO号</th><th>客户 / Dealer</th><th>项目代号</th><th>产品</th><th>数量</th><th>结算金额</th><th>已到账</th><th>汇款状态</th></tr></thead><tbody>{commerce.map((r,i)=><tr key={`${r.po}-${i}`}><td><b>{r.po}</b></td><td>{r.dealer}</td><td>{r.sidemark}</td><td>{r.product}</td><td>{r.qty||'—'}</td><td>${r.settlement.toLocaleString(undefined,{minimumFractionDigits:2})}</td><td>{r.received?`$${r.received.toLocaleString(undefined,{minimumFractionDigits:2})}`:'—'}</td><td><Status tone={r.remittance.includes('已汇款')?'green':'amber'}>{r.remittance}</Status></td></tr>)}</tbody></table>:<table><thead><tr><th>销售/来源</th><th>日期</th><th>订单或说明</th><th>金额</th></tr></thead><tbody>{wholesale.map((r,i)=><tr key={`${r.seller}-${i}`}><td><b>{r.seller}</b></td><td>{r.date||'—'}</td><td>{r.reference||'—'}</td><td>{r.amount?`$${r.amount.toLocaleString(undefined,{minimumFractionDigits:2})}`:'—'}</td></tr>)}</tbody></table>}</div></div></>;
+}
 
 type PortalSettings = { company:string; phone:string; email:string; address:string; orderPrefix:string; mfa:boolean; orderAccess:boolean };
 const defaultSettings:PortalSettings = {company:"Braun International, LLC",phone:"626-658-5002",email:"sundagang91709@gmail.com",address:"2115 S. Hellman Avenue, Unit E, Ontario, CA 91761",orderPrefix:"SO",mfa:true,orderAccess:true};
