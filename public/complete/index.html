@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAUN INTERNATIONAL LLC 智能报价与订单管理系统</title>
+    <link rel="stylesheet" href="style.css">
+<!-- Mobile App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Jin报价">
+<!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo">J</div>
+                <h2>BRAUN INTERNATIONAL LLC</h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="tab-calculator">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                    智能计算器
+                </button>
+                <button class="nav-btn" data-tab="tab-materials">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                    物料检索
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>v3.0 Complete (2026.07)</p>
+                <p>📞 +1 (818) 266-9988</p>
+                <p>✉️ sunblinds9@gmail.com</p>
+                <p style="margin-top: 8px; font-weight: 500; color: #fff;">2026.braunblinds.com</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1 id="main-header">BRAUN INTERNATIONAL LLC 智能报价</h1>
+                    <p class="subtitle">Quotation · Invoice · Fabrication Management System</p>
+                </div>
+                <div class="date-badge" id="date-badge">
+                    2026年06月16日
+                </div>
+            </header>
+
+            <!-- Tab 1: Calculator -->
+            <section id="tab-calculator" class="tab-content active-tab">
+                <!-- Row 1: Client Metadata & Shipping -->
+                <div class="grid-2-col">
+                    <div class="card glassmorphism">
+                        <div class="card-header">
+                            <span class="card-num">01</span>
+                            <h3>客户与订单信息</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="meta-customer">客户姓名 (Dealer)</label>
+                                <input type="text" id="meta-customer" placeholder="例如: Blinds America" value="Blinds America">
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-po">订单编号 (PO Number)</label>
+                                <input type="text" id="meta-po" placeholder="例如: CWF 67864" value="CWF 67864">
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-sidemark">项目代号 (Sidemark)</label>
+                                <input type="text" id="meta-sidemark" placeholder="例如: Elizabeth" value="Elizabeth">
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-phone">联系电话 (Phone)</label>
+                                <input type="text" id="meta-phone" placeholder="例如: 201-989-9080" value="201-989-9080">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="meta-address">送货地址 (Shipping Address)</label>
+                                <input type="text" id="meta-address" placeholder="详细送货地址" value="Perfect Fit Window Treatments, Forked River, NJ 08731">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glassmorphism">
+                        <div class="card-header">
+                            <span class="card-num">02</span>
+                            <h3>全局费用设置 & 导入</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="meta-shipping">预计运费 (Shipping Fee)</label>
+                                <div class="input-with-prefix">
+                                    <span class="prefix">$</span>
+                                    <input type="number" id="meta-shipping" value="0" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="global-rod-rate">轨道价格系数</label>
+                                <div class="input-with-suffix">
+                                    <input type="number" id="global-rod-rate" value="0.70" step="0.05" readonly>
+                                    <span class="suffix">/ Inch</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-addition-desc">手动增加项描述</label>
+                                <input type="text" id="meta-addition-desc" placeholder="例如: 安装费/加急费" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-addition-amount">手动增加金额</label>
+                                <div class="input-with-prefix">
+                                    <span class="prefix">$</span>
+                                    <input type="number" id="meta-addition-amount" value="0" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-deduction-desc">手动扣减项描述</label>
+                                <input type="text" id="meta-deduction-desc" placeholder="例如: 客户折旧/返点" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="meta-deduction-amount">手动扣减金额</label>
+                                <div class="input-with-prefix">
+                                    <span class="prefix">$</span>
+                                    <input type="number" id="meta-deduction-amount" value="0" min="0" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Drag and drop upload zone -->
+                        <div class="upload-zone" id="upload-zone" style="margin-top: 15px;">
+                            <div class="upload-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                            </div>
+                            <div class="upload-text">
+                                <p><strong>导入 Excel 订单文件</strong></p>
+                                <p class="subtext">拖拽文件至此 或 <span>点击上传</span></p>
+                            </div>
+                            <input type="file" id="file-uploader" accept=".xlsx, .xls" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Add New Item Form -->
+                <div class="card glassmorphism item-form-card">
+                    <div class="card-header">
+                        <span class="card-num">03</span>
+                        <h3>添加定制产品 (Add Custom Item)</h3>
+                    </div>
+                    <div class="item-type-toggle">
+                        <button type="button" class="type-toggle-btn active" data-type="roman">
+                            <span class="icon">🪟</span> 罗马帘 (Roman Shade)
+                        </button>
+                        <button type="button" class="type-toggle-btn" data-type="drapery">
+                            <span class="icon">🧣</span> 窗帘 (Drapery)
+                        </button>
+                        <button type="button" class="type-toggle-btn" data-type="rod">
+                            <span class="icon">🥢</span> 轨道五金 (Rod & Hardware)
+                        </button>
+                        <button type="button" class="type-toggle-btn" data-type="manual">
+                            <span class="icon">✏️</span> 手动调整 (Adjustment)
+                        </button>
+                    </div>
+
+                    <form id="item-form" class="form-grid">
+                        <input type="hidden" id="form-item-type" value="roman">
+                        
+                        <div class="form-group">
+                            <label for="item-room">房间位置 (Room/Location)</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="item-room" placeholder="例如: BR1W1" required style="flex: 1; margin: 0;">
+                                <button type="button" class="btn btn-secondary" id="btn-camera" style="padding: 0 12px; height: 40px; margin: 0; min-height: unset; display: flex; align-items: center; justify-content: center; gap: 4px;" title="拍照或上传图片">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                                    <span style="font-size: 11px;">拍照/图片</span>
+                                </button>
+                                <input type="file" id="item-photo" accept="image/*" capture="environment" style="display: none;">
+                            </div>
+                            <div id="photo-preview-container" style="display: none; margin-top: 8px; align-items: center; gap: 8px;">
+                                <img id="photo-preview" src="" alt="预览" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--color-border);">
+                                <span style="font-size: 11px; color: var(--color-text-muted);">已选择图片</span>
+                                <button type="button" id="btn-remove-photo" style="background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 11px; padding: 0; margin-left: auto; font-weight: 500;">删除</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="item-qty">数量 (Qty)</label>
+                            <input type="number" id="item-qty" value="1" min="1" required>
+                        </div>
+                        
+                        <!-- Width in inches -->
+                        <div class="form-group">
+                            <label for="item-width">成品宽度 (Width - Inches)</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="item-width" placeholder="例如: 21.625" required>
+                                <span class="suffix">in</span>
+                            </div>
+                        </div>
+
+                        <!-- Height in inches (Not needed for Rod type) -->
+                        <div class="form-group" id="group-height">
+                            <label for="item-height">成品高度 (Height - Inches)</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="item-height" placeholder="例如: 55.5">
+                                <span class="suffix">in</span>
+                            </div>
+                        </div>
+
+                        <!-- Fabric autocomplete (Dynamic for Roman/Drapery) -->
+                        <div class="form-group autocomplete" id="group-fabric">
+                            <label for="item-fabric">面料代码 (Fabric Code)</label>
+                            <input type="text" id="item-fabric" placeholder="输入代码检索，例如: ML-01B">
+                            <div id="autocomplete-list" class="autocomplete-items"></div>
+                        </div>
+
+                        <!-- Dynamic Fields: Roman Shade Specific -->
+                        <div class="form-group dynamic-field roman-only" id="roman-style-group">
+                            <label for="roman-style">款式类别 (Shade Style)</label>
+                            <select id="roman-style">
+                                <option value="plain" selected>Plain Fold & Ribbed (普通折/筋骨褶)</option>
+                                <option value="flat">Flat Roman Shade (平式罗马帘)</option>
+                                <option value="hobbled">Hobbled Roman Shade (水波浪帘)</option>
+                                <option value="tdbu">TDBU Roman Shade (日夜上下拉)</option>
+                                <option value="twin">Twin Roman Shade (双联帘)</option>
+                                <option value="relaxed">Relaxed Waterfall (扇形水波帘)</option>
+                                <option value="tulip">Tulip Waterfall (郁金香水波帘)</option>
+                                <option value="balloon">Balloon Roman (气球波浪帘)</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field roman-only" id="roman-lift-group">
+                            <label for="roman-lift">升降控制 (Lift Control)</label>
+                            <select id="roman-lift">
+                                <option value="cordless" selected>[Standard] Cordless (无绳无马达)</option>
+                                <option value="ccl">Continuous Cord Loop (循环拉绳)</option>
+                                <option value="motorized">Motorized AM25 (电动电机) +$50.00</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field roman-only" id="roman-valance-group">
+                            <label for="roman-valance">带帷幔 (Valance)</label>
+                            <select id="roman-valance">
+                                <option value="no" selected>不带帷幔 (No Valance)</option>
+                                <option value="yes">带帷幔 (With Valance) +$8.00/码</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field roman-only" id="roman-acc-group">
+                            <label for="roman-acc">电机配饰与智能控制</label>
+                            <select id="roman-acc">
+                                <option value="none" selected>无配件</option>
+                                <option value="remote">7通道遥控器 (Remote) +$7.00</option>
+                                <option value="charger">充电器 (Charger) +$3.00</option>
+                                <option value="wifi">WIFI智能网关 (Tuya Hub) +$28.00</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field roman-only" id="roman-lining-group">
+                            <label for="roman-lining">内衬衬布 (Lining)</label>
+                            <select id="roman-lining">
+                                <option value="privacy" selected>Privacy Lining (半遮光隐私衬)</option>
+                                <option value="unlined">Unlined (无衬/单层)</option>
+                                <option value="blackout">Blackout Lining (全遮光衬布) +10%</option>
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Fields: Drapery Specific -->
+                        <div class="form-group dynamic-field drapery-only" id="drapery-header-group" style="display:none;">
+                            <label for="drapery-header">挂法款式 (Header Style)</label>
+                            <select id="drapery-header">
+                                <option value="double_pinch" selected>Double Pinch Pleat (双褶打褶) [Standard]</option>
+                                <option value="french">French Pleat (法式打褶) [Standard]</option>
+                                <option value="tailor">Tailor Pleat (意式打褶) [Standard]</option>
+                                <option value="goblet">Goblet Pleat (高脚杯打褶) [Standard]</option>
+                                <option value="rod_pocket">Rod Pocket (穿杆式) [Standard]</option>
+                                <option value="pencil">Pencil Pleat (铅笔褶) [Standard]</option>
+                                <option value="ripple_fold">Ripple Fold (蛇形帘) [Premium]</option>
+                                <option value="triple_french">Triple French Pleat (三褶法式) [Premium]</option>
+                                <option value="triple_tailor">Triple Tailor Pleat (三褶意式) [Premium]</option>
+                                <option value="inverted">Inverted Pleat (工字褶) [Premium]</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field drapery-only" id="drapery-panel-group" style="display:none;">
+                            <label for="drapery-panel">分幅规格 (Panel Type)</label>
+                            <select id="drapery-panel">
+                                <option value="pair" selected>Pair (双开/对开)</option>
+                                <option value="single">Single (单开/整幅)</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field drapery-only" id="drapery-lining-group" style="display:none;">
+                            <label for="drapery-lining">内衬选择 (Lining)</label>
+                            <select id="drapery-lining">
+                                <option value="none" selected>No Liner (无衬)</option>
+                                <option value="privacy">Privacy Lining (常规防晒内衬) +$1.80/吋</option>
+                                <option value="blackout">Blackout Lining (全遮光内衬) +$2.20/吋</option>
+                                <option value="interlining">160g Interlining Lining (夹棉棉加衬) +$2.00/吋</option>
+                            </select>
+                        </div>
+                        <div class="form-group dynamic-field drapery-only" id="drapery-track-group" style="display:none;">
+                            <label for="drapery-track">配套轨道挂件 (Track)</label>
+                            <select id="drapery-track">
+                                <option value="none" selected>不需要 (使用已有轨道)</option>
+                                <option value="traverse_rod">滑挂杆系统 (Traverse Rod) 每寸$0.7</option>
+                            </select>
+                        </div>
+
+                        <!-- Common Trim Options (For both Roman and Drapery) -->
+                        <div class="form-group" id="group-trim">
+                            <label for="item-trim">花边及工艺 (Trim / Upgrades)</label>
+                            <select id="item-trim">
+                                <option value="none" selected>无花边 (None)</option>
+                                <option value="standard">常规侧边花边 Ribbon/Trim (+$2.50/码)</option>
+                                <option value="special">高档奢华花边 (+$8.00/码)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="group-mount">
+                            <label for="item-mount">安装方式 (Mount / IB or OB)</label>
+                            <select id="item-mount">
+                                <option value="IM" selected>Inside Mount (口内安装 / IB・IM，自动减宽 1/4")</option>
+                                <option value="OM">Outside Mount (口外安装 / OB・OM，不减宽)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Custom Drapery additions -->
+                        <div class="form-group dynamic-field drapery-only" id="drapery-custom-group1" style="display:none;">
+                            <label for="drapery-pleat-upgrade">4" 褶皱间距升级 (Upgrade 4" pleat)</label>
+                            <select id="drapery-pleat-upgrade">
+                                <option value="no" selected>常规间距 (无升级)</option>
+                                <option value="yes">升级 4" 褶皱间距 (+$0.15/吋)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group dynamic-field drapery-only" id="drapery-custom-group2" style="display:none;">
+                            <label for="drapery-tieband">配套挂耳带 (Tieband)</label>
+                            <select id="drapery-tieband">
+                                <option value="no" selected>不需要</option>
+                                <option value="yes">需要 (+$15.00/对)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group dynamic-field drapery-only" id="drapery-custom-group3" style="display:none;">
+                            <label for="drapery-memory">高温定型 (Memory Shaping)</label>
+                            <select id="drapery-memory">
+                                <option value="no" selected>无高温定型 (No)</option>
+                                <option value="yes">高温定型 (+$100.00/幅)</option>
+                            </select>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="form-group full-width" id="group-instructions">
+                            <label for="item-instructions">特殊工艺指令与加工备注 (Special Instructions / Notes)</label>
+                            <input type="text" id="item-instructions" placeholder="输入特殊裁剪、排版要求，如: 6吋前 valance, 附带磁吸等...">
+                        </div>
+
+                        <div class="form-actions-row full-width">
+                            <button type="submit" class="btn btn-primary" id="btn-add-item">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                添加产品至列表
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Row 3: Live Items List -->
+                <div class="card glassmorphism">
+                    <div class="card-header list-header">
+                        <div class="header-left">
+                            <span class="card-num">04</span>
+                            <h3>订单细目表 (Items List)</h3>
+                        </div>
+                        <button class="btn btn-danger-text" id="btn-clear-all">
+                            清空全部细目
+                        </button>
+                        <button class="btn btn-primary" id="btn-import-measure" type="button">
+                            导入测量数据 / Import Measure
+                        </button>
+                        <input type="file" id="measure-file-input" accept=".json,application/json" style="display:none;">
+                    </div>
+                    <div class="table-container">
+                        <table id="items-table">
+                            <thead>
+                                <tr>
+                                    <th width="4%">NO</th>
+                                    <th width="12%">房间位置</th>
+                                    <th width="10%">产品类型</th>
+                                    <th width="14%">成品尺寸 (W×H Inches)</th>
+                                    <th width="15%">面料规格</th>
+                                    <th width="26%">工艺说明描述</th>
+                                    <th width="6%">数量</th>
+                                    <th width="10%">单价 (Rate)</th>
+                                    <th width="12%">总金额 (Amount)</th>
+                                    <th width="6%">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="items-tbody">
+                                <!-- Dynamic rows -->
+                                <tr class="empty-row">
+                                    <td colspan="10">订单中尚无产品，请使用上方表单添加或拖入订单 Excel 进行计算</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Invoice Summary Panel -->
+                    <div class="summary-panel">
+                        <div class="summary-grid">
+                            <div class="summary-line">
+                                <span>产品费用小计 (Products Subtotal)</span>
+                                <span class="val" id="sum-wholesale-subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>超宽大件费累计 (Oversized Surcharge)</span>
+                                <span class="val" id="sum-oversized-cost">$0.00</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>五金轨道费用 (Hardware & Rods)</span>
+                                <span class="val" id="sum-rod-cost">$0.00</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>预计运费金额 (Shipping Fee)</span>
+                                <span class="val" id="sum-shipping">$0.00</span>
+                            </div>
+                            <div class="summary-line" id="sum-line-addition" style="display: none;">
+                                <span id="sum-label-addition">手动增加项</span>
+                                <span class="val" id="sum-val-addition">+$0.00</span>
+                            </div>
+                            <div class="summary-line" id="sum-line-deduction" style="display: none;">
+                                <span id="sum-label-deduction">手动扣减项</span>
+                                <span class="val" id="sum-val-deduction">-$0.00</span>
+                            </div>
+                            <div class="summary-line total">
+                                <span>结算应付总额 (Grand Total)</span>
+                                <span class="val highlight-total" id="sum-grand-total">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Footer -->
+                    <div class="action-footer-row">
+                        <button class="btn btn-secondary" id="btn-export-long-invoice" style="background: linear-gradient(135deg, #2F6B7C, #244F5B); color: white; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v12"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <path d="M5 21h14"></path>
+                            </svg>
+                            下载 Invoice 长图 PDF
+                        </button>
+                        <button class="btn btn-accent" id="btn-print-fab">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="7" y1="8" x2="17" y2="8"></line>
+                                <line x1="7" y1="12" x2="17" y2="12"></line>
+                                <line x1="7" y1="16" x2="13" y2="16"></line>
+                            </svg>
+                            一键生成加工图 / Fabrication
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Materials DB -->
+            <section id="tab-materials" class="tab-content">
+                <div class="card glassmorphism">
+                    <div class="card-header materials-search-header">
+                        <h3>物料参考数据库 (146 种面料)</h3>
+                        <div class="search-bar-container">
+                            <input type="text" id="materials-search-input" placeholder="输入款式、名称、色号检索，如: Serenity 或 RCO-01">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="materials-table">
+                            <thead>
+                                <tr>
+                                    <th width="5%">序号</th>
+                                    <th width="15%">Pattern Code</th>
+                                    <th width="12%">系列 (Collection)</th>
+                                    <th width="10%">内部型号 (Code)</th>
+                                    <th width="15%">颜色 (Color)</th>
+                                    <th width="8%">价格组别</th>
+                                    <th width="10%">面料幅宽</th>
+                                    <th width="10%">面料克重</th>
+                                    <th width="15%">成分 (Composition)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materials-tbody">
+                                <!-- Loaded dynamically via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Print Template Containers -->
+    <div id="print-quote-template" class="print-template"></div>
+    <div id="print-fab-template" class="print-template"></div>
+
+    <!-- SheetJS library -->
+    <script src="xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
