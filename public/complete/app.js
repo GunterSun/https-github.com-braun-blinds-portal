@@ -10069,71 +10069,11 @@ function parseExcelOrderFile(file) {
             });
         }
 
-        // Auto-merge split twin shades (front/back fabrics on separate rows)
-        let mergedItems = [];
-        let i = 0;
-        while (i < importedItems.length) {
-            let curr = importedItems[i];
-            if (i + 1 < importedItems.length) {
-                let nxt = importedItems[i + 1];
-                let sameType = curr.type === 'roman' && nxt.type === 'roman';
-                let sameRoom = curr.room === nxt.room;
-                let sameSize = Math.abs(curr.width - nxt.width) < 0.1 && Math.abs(curr.height - nxt.height) < 0.1;
-                
-                let isSheer = function(fc) {
-                    if (!fc) return false;
-                    let clean = fc.toUpperCase().trim();
-                    return clean.startsWith('SB') || clean.startsWith('SH') || clean.startsWith('DTS') || clean.startsWith('DS') || clean.includes('SHEER');
-                };
-                
-                let currSheer = isSheer(curr.fabric_code);
-                let nxtSheer = isSheer(nxt.fabric_code);
-                let oneSheerOneStd = (currSheer && !nxtSheer) || (!currSheer && nxtSheer);
-                
-                if (sameType && sameRoom && sameSize && oneSheerOneStd) {
-                    let stdItem = currSheer ? nxt : curr;
-                    let sheerItem = currSheer ? curr : nxt;
-                    
-                    stdItem.fabric_code = "Front : " + stdItem.fabric_code + "\nBack : " + sheerItem.fabric_code + "(Sheer)";
-                    if (stdItem.pattern_name || sheerItem.pattern_name) {
-                        stdItem.pattern_name = "Front : " + (stdItem.pattern_name || '') + "\nBack : " + (sheerItem.pattern_name || '');
-                    }
-                    stdItem.shade_style = "twin";
-                    stdItem.lift_control = "cordless";
-                    
-                    let stdLining = (stdItem.lining || '').toLowerCase();
-                    let sheerLining = (sheerItem.lining || '').toLowerCase();
-                    if (stdLining.includes('blackout') || sheerLining.includes('blackout') || stdLining.includes('bo') || sheerLining.includes('bo')) {
-                        stdItem.lining = 'blackout';
-                    } else {
-                        stdItem.lining = 'privacy';
-                    }
-                    
-                    if (sheerItem.valance === 'yes') {
-                        stdItem.valance = 'yes';
-                    }
-                    
-                    let combinedSpecial = stdItem.special_instructions || '';
-                    if (sheerItem.special_instructions && sheerItem.special_instructions !== combinedSpecial) {
-                        combinedSpecial += (combinedSpecial ? '\n' : '') + sheerItem.special_instructions;
-                    }
-                    stdItem.special_instructions = combinedSpecial;
-                    
-                    stdItem.pricing = calculateItemPrice(stdItem);
-                    
-                    mergedItems.push(stdItem);
-                    i += 2;
-                    continue;
-                }
-            }
-            mergedItems.push(curr);
-            i++;
+        // Each Excel row is one independent, single-layer finished product.
+        // Never combine matching rows into a twin/double-layer Roman shade.
+        for (let idx = 0; idx < importedItems.length; idx++) {
+            importedItems[idx].number = idx + 1;
         }
-        
-        for (let idx = 0; idx < mergedItems.length; idx++) {
-            mergedItems[idx].number = idx + 1;
-        }
-        importedItems = mergedItems;
 
         if (importedItems.length > 0) {
             const hasRods = importedItems.some(item => item.type === 'rod');

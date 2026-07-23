@@ -1,4 +1,4 @@
-BRAUN INTERNATIONAL LLC — Complete v3.0
+BRAUN INTERNATIONAL LLC — Complete v3.1
 
 使用方法：
 1. 解压全部文件到同一个文件夹。
@@ -19,6 +19,7 @@ BRAUN INTERNATIONAL LLC — Complete v3.0
 - 取消加工图第一页空白
 - 取消最后多余空白页
 - 手机、平板、电脑兼容
+- Excel 每一行按独立单层产品导入，不自动合并为双层罗马帘
 
 注意：
 所有四个文件必须放在同一目录：
@@ -28,7 +29,7 @@ app.js
 xlsx.full.min.js
 BRAUN MEASURE CONNECTION / 测量系统连接
 1. 在在线测量系统填写并保存客户、订单、房间和窗户数据。
-2. 点击“发送到 Complete v3.0”，下载 Braun_Measure_*.json。
+2. 点击“发送到 Complete v3.1”，下载 Braun_Measure_*.json。
 3. 打开本系统，在订单细目表右上方点击“导入测量数据”。
 4. 选择 JSON 文件；系统自动导入客户、PO、电话、地址、房间、窗户、宽高、口深、IB/OB、照片和备注。
 5. 导入后补充面料、款式与控制方式，再生成报价、Invoice 和加工图。
