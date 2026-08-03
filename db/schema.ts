@@ -57,6 +57,12 @@ export const customerOrders = sqliteTable("customer_orders", {
   status: text("status").notNull().default("draft"),
   invoiceNumber: text("invoice_number"),
   confirmedAt: text("confirmed_at"),
+  paymentStatus: text("payment_status").notNull().default("unpaid"),
+  amountPaid: real("amount_paid").notNull().default(0),
+  paymentCurrency: text("payment_currency").notNull().default("usd"),
+  stripeSessionId: text("stripe_session_id"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  paidAt: text("paid_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
