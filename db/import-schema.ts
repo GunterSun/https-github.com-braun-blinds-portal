@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const importBatches = sqliteTable("import_batches", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -41,3 +41,23 @@ export const importRows = sqliteTable("import_rows", {
   reviewedAt: text("reviewed_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, table => ({ sourceUnique: uniqueIndex("import_rows_batch_source_unique").on(table.batchId, table.sourceSheet, table.sourceRow, table.recordType, table.currency) }));
+
+export const businessLedgerEntries = sqliteTable("business_ledger_entries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  importBatchId: integer("import_batch_id").notNull(),
+  importRowId: integer("import_row_id").notNull().unique(),
+  recordType: text("record_type").notNull(),
+  orderId: integer("order_id"),
+  orderNumber: text("order_number").notNull().default(""),
+  counterparty: text("counterparty").notNull().default(""),
+  project: text("project").notNull().default(""),
+  description: text("description").notNull().default(""),
+  amount: real("amount").notNull(),
+  currency: text("currency").notNull(),
+  businessStatus: text("business_status").notNull().default(""),
+  notes: text("notes").notNull().default(""),
+  sourceSheet: text("source_sheet").notNull(),
+  sourceRow: integer("source_row").notNull(),
+  createdByUserId: integer("created_by_user_id").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ batchIdx: index("business_ledger_entries_batch_idx").on(table.importBatchId) }));
