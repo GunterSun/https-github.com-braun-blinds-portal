@@ -72,7 +72,7 @@ export default function Portal({user, signOutPath, customerAuth}:{user:User;sign
     const sqft=Math.max(item.minSqFt,(Number(form.width)*Number(form.height))/144);
     const qty=Math.max(1,Number(form.quantity));
     const configured=item.rate !== null;
-    const retail=configured ? Math.round(sqft*item.rate*qty*100)/100 : 0;
+    const retail=configured ? Math.round(sqft*(item.rate ?? 0)*qty*100)/100 : 0;
     const discount=profile?.status==="active" ? profile.discountPercent : 0;
     return {sqft,retail,wholesale:Math.round(retail*(1-discount/100)*100)/100,discount,configured};
   },[form,profile]);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentAppUser } from "@/lib/v4-auth";
-import { ROLE_MENUS } from "@/lib/roles";
+import { visibleNavigation } from "@/lib/permissions";
 
 export async function GET() {
   const user = await getCurrentAppUser();
@@ -15,7 +15,7 @@ export async function GET() {
       phone: user.phone,
       role: user.role,
       customerId: user.customerId,
-      menus: ROLE_MENUS[user.role],
+      menus: visibleNavigation(user.role),
     },
   });
 }

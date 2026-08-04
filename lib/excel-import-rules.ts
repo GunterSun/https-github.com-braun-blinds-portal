@@ -46,7 +46,7 @@ function rowBase(fileName:string,sheetName:string,rowNumber:number,row:unknown[]
   return { source:{fileName,sheetName,rowNumber}, quantity:null, warnings:[], raw:row };
 }
 export function parseCommerceRows(fileName:string,sheetName:string,rows:unknown[][]):NormalizedImportRow[]{
-  return rows.slice(4).map((row,index)=>{
+  return rows.slice(4).map<NormalizedImportRow>((row,index)=>{
     const orderNumber=normalizeOrderNumber(row[1]); const amount=toAmount(row[9]); const warnings:string[]=[];
     if(!orderNumber) warnings.push("缺少订单号"); if(amount===null) warnings.push("结算金额为空或无效");
     if(typeof row[3]==="number"&&Math.abs(row[3])>10_000_000) warnings.push("发现异常长数字，未作为金额导入");
@@ -64,9 +64,9 @@ export function parseWholesaleSummary(fileName:string,sheetName:string,rows:unkn
   const result:NormalizedImportRow[]=[];
   rows.slice(1).forEach((row,index)=>{const customer=cleanText(row[0]);const orderNumber=normalizeOrderNumber(row[2]);const date=excelSerialToIso(row[1]);const receivable=toAmount(row[3]);
     if(!customer&&!orderNumber&&receivable===null)return;
-    if(receivable!==null) result.push({...rowBase(fileName,sheetName,index+2,row),recordType:"order",orderNumber,customer,project:cleanText(row[2]),product:"应收款",amount:receivable,currency:"USD",status:cleanText(row[16]),notes:[date,cleanText(row[19])].filter(Boolean).join(" | ")});
+    if(receivable!==null) result.push({...rowBase(fileName,sheetName,index+2,row),recordType:"order" as const,orderNumber,customer,project:cleanText(row[2]),product:"应收款",amount:receivable,currency:"USD",status:cleanText(row[16]),notes:[date,cleanText(row[19])].filter(Boolean).join(" | ")});
     for(let col=4;col<20;col++){const amount=toAmount(row[col]); if(amount===null)continue; const label=cleanText(rows[0]?.[col])||cleanText(row[col-1])||`支出列 ${col+1}`;
-      result.push({...rowBase(fileName,sheetName,index+2,row),recordType:"expense",orderNumber,customer,project:cleanText(row[2]),product:label,amount,currency:"RMB",status:"",notes:[date,cleanText(row[19]),`原列 ${col+1}`].filter(Boolean).join(" | "),warnings:["汇总页支出默认按人民币导入；请在预览中核对少数美元项目"]});}
+      result.push({...rowBase(fileName,sheetName,index+2,row),recordType:"expense" as const,orderNumber,customer,project:cleanText(row[2]),product:label,amount,currency:"RMB",status:"",notes:[date,cleanText(row[19]),`原列 ${col+1}`].filter(Boolean).join(" | "),warnings:["汇总页支出默认按人民币导入；请在预览中核对少数美元项目"]});}
   }); return result;
 }
 export function parsePaulSheet(fileName:string,sheetName:string,rows:unknown[][]):NormalizedImportRow[]{

@@ -43,7 +43,7 @@ function calculateOrder(incoming:OrderLine[],discountPercent:number){
   if(!incoming.length) throw new Error("请至少添加一个窗户 / Add at least one window");
   const items=incoming.map((line,index)=>{
     const product=Z_SERIES_CATALOG.find(item=>item.id===line.itemId);
-    if(!product) throw new Error(`Invalid product on line ${index+1}`);
+    if(!product) throw new Error(`产品目录未配置或第 ${index+1} 行产品无效 / Product catalog unavailable or invalid item`);
     const quantity=Math.max(1,Math.floor(Number(line.quantity)||1));
     const width=Math.max(0,Number(line.width)||0);
     const height=Math.max(0,Number(line.height)||0);
