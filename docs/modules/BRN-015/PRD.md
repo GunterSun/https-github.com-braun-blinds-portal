@@ -1,4 +1,4 @@
-# BRN-010 Braun AI Agent — 产品需求
+# BRN-015 Braun AI Agent — 产品需求
 
 ## 1. 目标
 

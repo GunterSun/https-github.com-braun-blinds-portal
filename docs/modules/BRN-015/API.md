@@ -1,4 +1,4 @@
-# BRN-010 Braun AI Agent — API 规范
+# BRN-015 Braun AI Agent — API 规范
 
 ## 1. Agent 管理
 

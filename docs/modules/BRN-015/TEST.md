@@ -1,4 +1,4 @@
-# BRN-010 Braun AI Agent — 验收清单
+# BRN-015 Braun AI Agent — 验收清单
 
 ## A. 权限
 
