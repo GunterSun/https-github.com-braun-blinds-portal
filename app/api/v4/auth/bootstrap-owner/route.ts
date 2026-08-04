@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { email?: string; username?: string; password?: string; displayName?: string };
+  let body: { email?: string; username?: string; password?: string; displayName?: string; phone?: string };
   try {
     body = await request.json();
   } catch {
@@ -26,8 +26,10 @@ export async function POST(request: NextRequest) {
   const username = String(body.username || "").trim().toLowerCase();
   const password = String(body.password || "");
   const displayName = String(body.displayName || "Owner").trim();
-  if (!email || !username || password.length < 10) {
-    return NextResponse.json({ error: "Email、username 必填，密码至少 10 位" }, { status: 400 });
+  const phone = String(body.phone || "").trim().slice(0, 50);
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (!email || !username || phoneDigits.length < 7 || phoneDigits.length > 20 || password.length < 10) {
+    return NextResponse.json({ error: "Email、username、有效手机号必填，密码至少 10 位" }, { status: 400 });
   }
 
   const db = await getDb();
@@ -45,6 +47,7 @@ export async function POST(request: NextRequest) {
       passwordHash: passwordData.hash,
       passwordSalt: passwordData.salt,
       displayName,
+      phone,
       role: "owner",
       status: "active",
     }).returning({ id: appUsers.id });
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     action: "bootstrap_owner_created",
     entityType: "app_user",
     entityId: String(ownerId || ""),
-    details: { email, username, bootstrapMethod: validPrivateSiteOwner ? "private_site_owner" : "bootstrap_key" },
+    details: { email, username, phoneAdded: true, bootstrapMethod: validPrivateSiteOwner ? "private_site_owner" : "bootstrap_key" },
   });
 
   return NextResponse.json({ ok: true, ownerId }, { status: 201 });

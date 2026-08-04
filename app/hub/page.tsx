@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { UNIFIED_MODULES } from "@/lib/unified-modules";
 
 type Role = "owner" | "sales" | "factory" | "installer" | "customer";
-type CurrentUser = { displayName:string; role:Role };
+type CurrentUser = { displayName:string; email:string; phone:string; role:Role };
 
 const roleNames:Record<Role,{zh:string;en:string}> = {
   owner:{zh:"老板 / 管理员",en:"Owner / Admin"},
@@ -18,13 +18,18 @@ export default function UnifiedHubPage(){
   const [lang,setLang]=useState<"zh"|"en">("zh");
   const [user,setUser]=useState<CurrentUser|null>(null);
   const [loading,setLoading]=useState(true);
+  const [phone,setPhone]=useState("");
+  const [phoneSaving,setPhoneSaving]=useState(false);
+  const [phoneMessage,setPhoneMessage]=useState("");
 
   useEffect(()=>{
     fetch("/api/v4/auth/me",{cache:"no-store"})
       .then(async response=>response.ok?response.json():null)
       .then(data=>{
         if(data?.authenticated&&data.user?.role){
-          setUser({displayName:data.user.displayName||data.user.username||data.user.email,role:data.user.role});
+          const nextUser={displayName:data.user.displayName||data.user.username||data.user.email,email:data.user.email,phone:data.user.phone||"",role:data.user.role};
+          setUser(nextUser);
+          setPhone(nextUser.phone);
         }
       })
       .finally(()=>setLoading(false));
@@ -41,6 +46,18 @@ export default function UnifiedHubPage(){
     if(status==="migrating")return t("正在整合","Migrating");
     return t("计划中","Planned");
   };
+  const savePhone=async()=>{
+    if(phoneSaving)return;
+    setPhoneSaving(true);setPhoneMessage("");
+    try{
+      const response=await fetch("/api/v4/auth/me",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone})});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||t("保存失败","Save failed"));
+      setUser(current=>current?{...current,phone:data.phone}:current);
+      setPhone(data.phone);
+      setPhoneMessage(t("手机号已保存","Phone number saved"));
+    }catch(reason){setPhoneMessage(reason instanceof Error?reason.message:t("保存失败","Save failed"))}finally{setPhoneSaving(false)}
+  };
 
   return <main style={{minHeight:"100vh",background:"#f4f1ea",fontFamily:"Arial, PingFang SC, sans-serif",color:"#1f2a25"}}>
     <header style={{background:"#173f35",color:"white",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap"}}>
@@ -56,6 +73,11 @@ export default function UnifiedHubPage(){
         <h2 style={{margin:"0 0 8px"}}>{t("以后只从这里进入","Use this as the single entry point")}</h2>
         <p style={{margin:0,lineHeight:1.7,color:"#5b655f"}}>{t("三个旧门户的有效功能会逐步迁移到这里。所有新客户、订单、Invoice、付款、物流和安装数据将统一写入同一数据库。迁移完成前，标记为“正在整合”的模块可能仍会打开现有页面。","Useful features from the three older portals are being moved here. New customers, orders, invoices, payments, shipments and installations will use one database. During migration, modules marked Migrating may still open an existing page.")}</p>
       </div>
+
+      {user&&<section style={{background:"white",border:"1px solid #ded9ce",borderRadius:18,padding:22,marginBottom:22,display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(260px,100%),1fr))",gap:18,alignItems:"end"}}>
+        <div><div style={{fontSize:12,color:"#7a847f",letterSpacing:.7}}>{t("老板账号资料","OWNER PROFILE")}</div><h2 style={{margin:"7px 0 5px",fontSize:20}}>{user.displayName}</h2><div style={{color:"#69716d",fontSize:14}}>{user.email}</div></div>
+        <div><label style={{display:"block",fontSize:13,fontWeight:700,marginBottom:7}}>{t("手机号","Phone number")}</label><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><input aria-label={t("手机号","Phone number")} type="tel" inputMode="tel" autoComplete="tel" placeholder={t("例如 626-555-0123","e.g. 626-555-0123")} value={phone} onChange={event=>setPhone(event.target.value)} style={{boxSizing:"border-box",flex:"1 1 190px",border:"1px solid #cbd5cf",borderRadius:9,padding:"10px 12px",font:"inherit"}}/><button onClick={()=>void savePhone()} disabled={phoneSaving} style={{border:0,borderRadius:9,padding:"10px 16px",background:"#1f5b49",color:"white",fontWeight:700,cursor:"pointer"}}>{phoneSaving?t("保存中…","Saving…"):t(user.phone?"更新手机号":"增加手机号",user.phone?"Update phone":"Add phone")}</button></div>{phoneMessage&&<div role="status" style={{marginTop:7,fontSize:12,color:phoneMessage.includes("失败")||phoneMessage.includes("valid")?"#9b3d30":"#17603f"}}>{phoneMessage}</div>}</div>
+      </section>}
 
       {loading?<div style={{padding:30,textAlign:"center"}}>{t("正在读取账号权限…","Loading account permissions…")}</div>:
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:16}}>
