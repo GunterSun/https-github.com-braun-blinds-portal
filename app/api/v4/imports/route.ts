@@ -25,6 +25,9 @@ export async function GET() {
       rolledBackAt: importBatches.rolledBackAt,
       createdAt: importBatches.createdAt,
       committedRows: sql<number>`sum(case when ${importRows.importStatus} = 'committed' then 1 else 0 end)`,
+      pendingRows: sql<number>`sum(case when ${importRows.reviewStatus} = 'pending' then 1 else 0 end)`,
+      approvedRows: sql<number>`sum(case when ${importRows.reviewStatus} = 'approved' then 1 else 0 end)`,
+      rejectedRows: sql<number>`sum(case when ${importRows.reviewStatus} = 'rejected' then 1 else 0 end)`,
     })
     .from(importBatches)
     .leftJoin(importRows, eq(importRows.batchId, importBatches.id))
