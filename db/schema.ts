@@ -278,3 +278,12 @@ export const invoiceSignatureEvents = sqliteTable("invoice_signature_events", {
   metadataJson: text("metadata_json").notNull().default("{}"),
   occurredAt: text("occurred_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({ requestIdx: index("invoice_signature_events_request_idx").on(table.requestId) }));
+
+export const invoiceSignatures = sqliteTable("invoice_signatures", {
+  id: integer("id").primaryKey({ autoIncrement: true }), requestId: integer("request_id").notNull().unique(),
+  invoiceVersionId: integer("invoice_version_id").notNull(), signerName: text("signer_name").notNull(), signerEmail: text("signer_email").notNull(),
+  signaturePointsJson: text("signature_points_json").notNull(), consentTextVersion: text("consent_text_version").notNull(),
+  signedAtUtc: text("signed_at_utc").notNull(), timezone: text("timezone").notNull(), documentSha256: text("document_sha256").notNull(),
+  verificationCode: text("verification_code").notNull().unique(), ipAddressHash: text("ip_address_hash").notNull().default(""),
+  userAgentHash: text("user_agent_hash").notNull().default(""), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
