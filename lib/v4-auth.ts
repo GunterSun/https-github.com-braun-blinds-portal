@@ -5,7 +5,9 @@ import { appSessions, appUsers, auditLogs } from "@/db/schema";
 
 export const V4_SESSION_COOKIE = "braun_v4_session";
 const SESSION_DAYS = 14;
-const PBKDF2_ITERATIONS = 210_000;
+// Cloudflare Workers Web Crypto currently rejects PBKDF2 counts above 100,000.
+// Keep this at the runtime maximum so hashing works identically during setup and login.
+const PBKDF2_ITERATIONS = 100_000;
 
 export type AppRole = "owner" | "sales" | "factory" | "installer" | "customer";
 

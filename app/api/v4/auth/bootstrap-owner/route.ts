@@ -36,16 +36,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Owner 已存在，bootstrap 已关闭" }, { status: 409 });
   }
 
-  const passwordData = await hashPassword(password);
-  const result = await db.insert(appUsers).values({
-    email,
-    username,
-    passwordHash: passwordData.hash,
-    passwordSalt: passwordData.salt,
-    displayName,
-    role: "owner",
-    status: "active",
-  }).returning({ id: appUsers.id });
+  let result: { id: number }[];
+  try {
+    const passwordData = await hashPassword(password);
+    result = await db.insert(appUsers).values({
+      email,
+      username,
+      passwordHash: passwordData.hash,
+      passwordSalt: passwordData.salt,
+      displayName,
+      role: "owner",
+      status: "active",
+    }).returning({ id: appUsers.id });
+  } catch {
+    return NextResponse.json({ error: "Owner 初始化失败，请稍后重试" }, { status: 500 });
+  }
 
   const ownerId = result[0]?.id;
   await writeAuditLog({
