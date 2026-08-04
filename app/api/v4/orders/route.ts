@@ -71,7 +71,13 @@ export async function GET(request: NextRequest) {
   const totals = await db.select({ total: count() }).from(orders)
     .innerJoin(customers, eq(orders.customerId, customers.id)).where(where);
 
-  return NextResponse.json({ orders: rows, page, pageSize, total: Number(totals[0]?.total || 0) });
+  return NextResponse.json({
+    orders: rows,
+    page,
+    pageSize,
+    total: Number(totals[0]?.total || 0),
+    capabilities: { create: hasPermission(user.role, "orders.create") },
+  });
 }
 
 export async function POST(request: NextRequest) {
