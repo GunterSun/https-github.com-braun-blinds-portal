@@ -35,5 +35,9 @@ export const importRows = sqliteTable("import_rows", {
   targetEntityType: text("target_entity_type"),
   targetEntityId: text("target_entity_id"),
   importStatus: text("import_status").notNull().default("preview"),
+  reviewStatus: text("review_status").notNull().default("pending"),
+  reviewNote: text("review_note").notNull().default(""),
+  reviewedByUserId: integer("reviewed_by_user_id"),
+  reviewedAt: text("reviewed_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, table => ({ sourceUnique: uniqueIndex("import_rows_batch_source_unique").on(table.batchId, table.sourceSheet, table.sourceRow, table.recordType, table.currency) }));
