@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const appUsers = sqliteTable("app_users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -25,6 +25,73 @@ export const appSessions = sqliteTable("app_sessions", {
   revokedAt: text("revoked_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const productCategories = sqliteTable("product_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  parentId: integer("parent_id"),
+  code: text("code").notNull().unique(),
+  nameEn: text("name_en").notNull(),
+  nameZh: text("name_zh").notNull(),
+  status: text("status").notNull().default("active"),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const catalogProducts = sqliteTable("catalog_products", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  categoryId: integer("category_id").notNull(),
+  sku: text("sku").notNull().unique(),
+  productType: text("product_type").notNull(),
+  nameEn: text("name_en").notNull(),
+  nameZh: text("name_zh").notNull(),
+  descriptionEn: text("description_en").notNull().default(""),
+  descriptionZh: text("description_zh").notNull().default(""),
+  status: text("status").notNull().default("draft"),
+  defaultUom: text("default_uom").notNull().default("each"),
+  taxable: integer("taxable", { mode: "boolean" }).notNull().default(true),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  typeStatusIdx: index("catalog_products_type_status_idx").on(table.productType, table.status),
+  categoryIdx: index("catalog_products_category_idx").on(table.categoryId),
+}));
+
+export const shutterSpecifications = sqliteTable("shutter_specifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  productId: integer("product_id").notNull().unique(),
+  material: text("material").notNull(),
+  panelConfiguration: text("panel_configuration").notNull(),
+  louverSize: text("louver_size").notNull(),
+  frameType: text("frame_type").notNull(),
+  dividerRailRule: text("divider_rail_rule").notNull().default("optional"),
+  tiltType: text("tilt_type").notNull().default("traditional"),
+  hingeOptionsJson: text("hinge_options_json").notNull().default("[]"),
+  shapeOptionsJson: text("shape_options_json").notNull().default("[]"),
+  colorOptionsJson: text("color_options_json").notNull().default("[]"),
+});
+
+export const blindSpecifications = sqliteTable("blind_specifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  productId: integer("product_id").notNull().unique(),
+  blindType: text("blind_type").notNull(),
+  material: text("material").notNull(),
+  orientation: text("orientation").notNull(),
+  slatOrVaneSize: text("slat_or_vane_size").notNull(),
+  liftType: text("lift_type").notNull(),
+  tiltType: text("tilt_type").notNull(),
+  valanceOptionsJson: text("valance_options_json").notNull().default("[]"),
+  ladderOptionsJson: text("ladder_options_json").notNull().default("[]"),
+  colorOptionsJson: text("color_options_json").notNull().default("[]"),
+});
+
+export const productAuditEvents = sqliteTable("product_audit_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  productId: integer("product_id").notNull(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(),
+  detailsJson: text("details_json").notNull().default("{}"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ productIdx: index("product_audit_events_product_idx").on(table.productId) }));
 
 export const customers = sqliteTable("customers", {
   id: integer("id").primaryKey({ autoIncrement: true }),
