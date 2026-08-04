@@ -1,0 +1,12 @@
+"use client";
+
+import Link from "next/link";
+import { FormEvent, useState } from "react";
+
+export default function LoginPage(){
+  const [login,setLogin]=useState(""),[password,setPassword]=useState(""),[saving,setSaving]=useState(false),[error,setError]=useState("");
+  const submit=async(event:FormEvent)=>{event.preventDefault();if(saving)return;setSaving(true);setError("");try{const response=await fetch("/api/v4/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({login,password})});const data=await response.json();if(!response.ok)throw new Error(data.error||"登录失败");location.href="/hub"}catch(reason){setError(reason instanceof Error?reason.message:"登录失败");setSaving(false)}};
+  return <main className="page"><form className="card" onSubmit={submit}><small>BRAUN SMART PORTAL · V4</small><h1>老板与团队登录</h1><p>Owner、Sales、Factory、Installer 和 Customer 使用各自账号进入统一门户。</p><label>邮箱或用户名<input autoComplete="username" required value={login} onChange={event=>setLogin(event.target.value)}/></label><label>密码<input autoComplete="current-password" required type="password" value={password} onChange={event=>setPassword(event.target.value)}/></label>{error&&<div className="error">{error}</div>}<button disabled={saving}>{saving?"正在登录…":"登录 / Sign in"}</button><div className="links"><Link href="/setup-owner">首次建立 Owner 账号</Link><Link href="/">返回旧工作台</Link></div></form><style jsx>{styles}</style></main>;
+}
+
+const styles=`.page{min-height:100vh;display:grid;place-items:center;background:#f4f1ea;color:#173f35;padding:20px;font-family:Arial,"PingFang SC",sans-serif}.card{box-sizing:border-box;width:min(460px,100%);background:#fff;border:1px solid #dcd8cd;border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(25,55,45,.1)}small{letter-spacing:1px;color:#6b7a74}h1{margin:9px 0;font-size:29px}p{color:#68746e;line-height:1.6}label{display:grid;gap:7px;margin-top:15px;font-size:13px;font-weight:800}input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd5cf;border-radius:10px;font:inherit}button{width:100%;border:0;border-radius:10px;padding:12px;margin-top:18px;background:#1f5b49;color:#fff;font-weight:800;cursor:pointer}button:disabled{opacity:.5}.error{background:#fff0ec;color:#963c31;padding:11px;border-radius:9px;margin-top:14px}.links{display:flex;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}.links a{color:#1f5b49;font-size:13px}`;

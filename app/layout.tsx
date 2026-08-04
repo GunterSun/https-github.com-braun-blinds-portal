@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Starter Project",
-  description: "A clean starting point for building your site.",
+  title: "Braun Blinds Smart Portal",
+  description: "Braun Blinds unified customer, order, finance, factory, logistics and installation portal.",
   other: {
     "codex-preview": "development",
   },

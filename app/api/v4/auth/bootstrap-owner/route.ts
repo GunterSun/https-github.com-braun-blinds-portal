@@ -6,12 +6,12 @@ import { hashPassword, writeAuditLog } from "@/lib/v4-auth";
 
 export async function POST(request: NextRequest) {
   const bootstrapKey = process.env.V4_BOOTSTRAP_KEY;
-  if (!bootstrapKey) {
-    return NextResponse.json({ error: "V4_BOOTSTRAP_KEY 尚未配置", setupRequired: true }, { status: 503 });
-  }
-
   const suppliedKey = request.headers.get("x-bootstrap-key") || "";
-  if (suppliedKey !== bootstrapKey) {
+  const sitesEmail = String(request.headers.get("oai-authenticated-user-email") || "").trim().toLowerCase();
+  const allowedOwnerEmail = String(process.env.V4_OWNER_EMAIL || "").trim().toLowerCase();
+  const validBootstrapKey = Boolean(bootstrapKey && suppliedKey && suppliedKey === bootstrapKey);
+  const validPrivateSiteOwner = Boolean(allowedOwnerEmail && sitesEmail && sitesEmail === allowedOwnerEmail);
+  if (!validBootstrapKey && !validPrivateSiteOwner) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     action: "bootstrap_owner_created",
     entityType: "app_user",
     entityId: String(ownerId || ""),
-    details: { email, username },
+    details: { email, username, bootstrapMethod: validPrivateSiteOwner ? "private_site_owner" : "bootstrap_key" },
   });
 
   return NextResponse.json({ ok: true, ownerId }, { status: 201 });
