@@ -1,4 +1,4 @@
-# BRN-013 Developer Platform — 架构与安全
+# BRN-017 Developer Platform — 架构与安全
 
 ## 1. 架构
 
