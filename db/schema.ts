@@ -240,3 +240,41 @@ export const invoiceSequences = sqliteTable("invoice_sequences", {
   lastNumber: integer("last_number").notNull().default(0),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const invoiceVersions = sqliteTable("invoice_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  orderId: integer("order_id").notNull(),
+  invoiceNumber: text("invoice_number").notNull(),
+  version: integer("version").notNull(),
+  snapshotJson: text("snapshot_json").notNull(),
+  documentSha256: text("document_sha256").notNull(),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ invoiceVersionUnique: uniqueIndex("invoice_versions_invoice_version_unique").on(table.invoiceNumber, table.version) }));
+
+export const invoiceSignatureRequests = sqliteTable("invoice_signature_requests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  invoiceVersionId: integer("invoice_version_id").notNull(),
+  invoiceNumber: text("invoice_number").notNull(),
+  signerEmail: text("signer_email").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  idempotencyKey: text("idempotency_key").notNull().unique(),
+  status: text("status").notNull().default("pending"),
+  expiresAt: text("expires_at").notNull(),
+  createdBy: integer("created_by").notNull(),
+  viewedAt: text("viewed_at"),
+  signedAt: text("signed_at"),
+  declinedAt: text("declined_at"),
+  revokedAt: text("revoked_at"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ invoiceStatusIdx: index("invoice_signature_requests_invoice_status_idx").on(table.invoiceNumber, table.status) }));
+
+export const invoiceSignatureEvents = sqliteTable("invoice_signature_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  requestId: integer("request_id").notNull(),
+  eventType: text("event_type").notNull(),
+  actorType: text("actor_type").notNull(),
+  actorId: text("actor_id").notNull().default(""),
+  metadataJson: text("metadata_json").notNull().default("{}"),
+  occurredAt: text("occurred_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ requestIdx: index("invoice_signature_events_request_idx").on(table.requestId) }));
