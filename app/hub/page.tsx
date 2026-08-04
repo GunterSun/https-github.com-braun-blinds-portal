@@ -69,7 +69,7 @@ export default function UnifiedHubPage(){
         </a>)}
       </div>}
 
-      {!user&&!loading&&<div style={{marginTop:22,background:"#fff7e4",border:"1px solid #ead39c",borderRadius:14,padding:16}}>{t("当前未检测到 V4 登录。你仍可进入现有客户门户；统一登录页面完成后，此入口会自动按角色显示菜单。","No V4 session was detected. You can still enter the current customer portal; once the unified login page is completed, this hub will automatically show role-based modules.")}</div>}
+      {!user&&!loading&&<div style={{marginTop:22,background:"#fff7e4",border:"1px solid #ead39c",borderRadius:14,padding:16,display:"flex",justifyContent:"space-between",gap:14,alignItems:"center",flexWrap:"wrap"}}><span>{t("当前未登录 V4 账号，请登录后进入老板或团队工作区。","Sign in with your V4 account to open the Owner or team workspace.")}</span><a href="/login" style={{background:"#1f5b49",color:"white",padding:"10px 14px",borderRadius:9,textDecoration:"none",fontWeight:700}}>{t("登录统一门户 →","Sign in →")}</a></div>}
     </section>
   </main>;
 }
