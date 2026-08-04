@@ -46,6 +46,7 @@ No feature should exist only in chat history.
 - BRN-015 Braun AI agents and controlled automation
 - BRN-016 Auditable business workflow engine
 - BRN-017 Developer platform, APIs and webhooks
+- BRN-018 Computer Use Agent and controlled browser operations
 
 ## Current status
 
