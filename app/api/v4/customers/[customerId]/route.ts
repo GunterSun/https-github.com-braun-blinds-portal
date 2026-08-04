@@ -26,7 +26,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ cu
     return NextResponse.json({ customer: publicCustomer(row[0]), contacts: contacts.filter((item) => item.customerVisible),
       addresses, orders: recentOrders });
   }
-  return NextResponse.json({ customer: row[0], contacts, addresses, orders: recentOrders });
+  return NextResponse.json({ customer: safeCustomer(row[0]), contacts, addresses, orders: recentOrders });
 }
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ customerId: string }> }) {
@@ -64,8 +64,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ c
 }
 
 function parseId(value: string) { const parsed = Number(value); return Number.isInteger(parsed) && parsed > 0 ? parsed : null; }
+function safeCustomer(customer: typeof customers.$inferSelect) {
+  return omit(customer, ["passwordHash", "passwordSalt", "passwordEncrypted"]);
+}
 function publicCustomer(customer: typeof customers.$inferSelect) {
-  return omit(customer, ["passwordHash", "passwordSalt", "passwordEncrypted", "discountPercent",
+  return omit(safeCustomer(customer), ["discountPercent",
     "defaultDiscountValue", "defaultDiscountType", "taxDocumentId", "salesOwnerUserId"]);
 }
 function omit<T extends Record<string, unknown>, K extends keyof T>(value: T, keys: readonly K[]): Omit<T, K> {

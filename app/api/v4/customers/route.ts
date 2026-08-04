@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
       emailNormalized: email, isPrimary: true });
     await writeAuditLog({ userId: user.id, action: "customer_created", entityType: "customer", entityId: String(created[0].id),
       details: { customerNumber, customerType, duplicateCandidateIds: duplicates.map((item) => item.id) } });
-    return NextResponse.json({ customer: created[0] }, { status: 201 });
+    return NextResponse.json({ customer: { id: created[0].id, customerNumber: created[0].customerNumber,
+      customerType: created[0].customerType, displayName: created[0].displayName, companyName: created[0].companyName,
+      contactName: created[0].contactName, email: created[0].email, phone: created[0].phone, status: created[0].status } }, { status: 201 });
   } catch { return NextResponse.json({ error: "客户创建失败；邮箱或编号可能重复" }, { status: 409 }); }
 }
 

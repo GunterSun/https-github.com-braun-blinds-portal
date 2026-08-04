@@ -11,7 +11,7 @@ export type UnifiedModule = {
 
 export const UNIFIED_MODULES: UnifiedModule[] = [
   { key:"dashboard", zh:"老板工作台", en:"Owner Dashboard", descriptionZh:"订单、收款、应收、生产、物流和安装总览。", descriptionEn:"Orders, payments, receivables, production, shipping and installation overview.", href:"/portal", roles:["owner"], status:"migrating" },
-  { key:"customers", zh:"客户与订单", en:"Customers & Orders", descriptionZh:"统一管理客户、项目、订单和沟通记录。", descriptionEn:"Manage customers, projects, orders and communications.", href:"/portal", roles:["owner","sales"], status:"available" },
+  { key:"customers", zh:"客户与订单", en:"Customers & Orders", descriptionZh:"统一管理客户、项目、订单和沟通记录。", descriptionEn:"Manage customers, projects, orders and communications.", href:"/customers", roles:["owner","sales"], status:"available" },
   { key:"calculators", zh:"报价计算器", en:"Pricing Calculators", descriptionZh:"Braun 与 Jin 计算器统一入口。", descriptionEn:"Unified access to Braun and Jin calculators.", href:"/portal", roles:["owner","sales","customer"], status:"migrating" },
   { key:"invoice", zh:"Invoice 与收款", en:"Invoices & Payments", descriptionZh:"五位数 Invoice、付款状态和信用卡收款。", descriptionEn:"Five-digit invoices, payment status and card payments.", href:"/portal", roles:["owner","sales","customer"], status:"available" },
   { key:"data-import", zh:"真实数据导入中心", en:"Real Data Import Center", descriptionZh:"上传批发销售和 Jin 汇总 Excel，先预览币种、重复项和异常数据，再确认导入。", descriptionEn:"Upload Wholesale Sales and Jin Summary workbooks, then preview currencies, duplicates and anomalies before import.", href:"/data-import", roles:["owner"], status:"available" },
