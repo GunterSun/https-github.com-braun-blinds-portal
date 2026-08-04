@@ -45,6 +45,7 @@ No feature should exist only in chat history.
 - BRN-014 Owner dashboard and management reporting
 - BRN-015 Braun AI agents and controlled automation
 - BRN-016 Auditable business workflow engine
+- BRN-017 Developer platform, APIs and webhooks
 
 ## Current status
 

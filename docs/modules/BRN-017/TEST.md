@@ -1,4 +1,4 @@
-# BRN-013 Developer Platform — 验收清单
+# BRN-017 Developer Platform — 验收清单
 
 ## A. 应用与凭证
 
