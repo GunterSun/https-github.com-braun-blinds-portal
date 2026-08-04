@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type User = { displayName: string; email: string; isAdmin: boolean };
 type Profile = { email: string; companyName: string; contactName: string; phone?: string; discountPercent: number; status: string };
@@ -49,13 +49,13 @@ export default function Portal({user, signOutPath, customerAuth}:{user:User;sign
   const fabricCodes = useMemo(()=>Array.from(new Set(zCatalog.map(item=>item.fabricCode))),[zCatalog]);
   const [zForm,setZForm] = useState({projectName:""});
 
-  const loadProfile = () => fetch("/api/profile").then(r=>r.json()).then(d=>setProfile(d.profile));
-  const loadCustomers = () => user.isAdmin && fetch("/api/customers",{cache:"no-store"})
+  const loadProfile = useCallback(() => fetch("/api/profile").then(r=>r.json()).then(d=>setProfile(d.profile)),[]);
+  const loadCustomers = useCallback(() => user.isAdmin && fetch("/api/customers",{cache:"no-store"})
     .then(async res=>({ok:res.ok,data:await res.json()}))
     .then(({ok,data})=>{
       if(!ok) throw new Error(data.error??"Unable to load customer accounts");
       setCustomers(data.customers??[]);
-    });
+    }),[user.isAdmin]);
   useEffect(()=>{
     loadProfile(); loadCustomers();
     if(!user.isAdmin) fetch("/api/z-series").then(r=>r.json()).then(d=>{
@@ -65,7 +65,7 @@ export default function Portal({user, signOutPath, customerAuth}:{user:User;sign
       }
     });
     if(!user.isAdmin) fetch("/api/orders").then(r=>r.json()).then(d=>setOrders(d.orders??[]));
-  },[]);
+  },[loadCustomers,loadProfile,user.isAdmin]);
 
   const totals = useMemo(()=>{
     const item=CATALOG[form.product];

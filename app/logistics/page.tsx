@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 type Carrier={name:string;kind:string;base:number;days:string;note:string};
 const carriers:Carrier[]=[
@@ -36,7 +37,7 @@ export default function LogisticsPage(){
  const results=useMemo(()=>{if(!ready)return[];const cubic=L*W*H/1728;const lengthFactor=L>108?1.58:L>96?1.28:1;const volumeFactor=Math.max(1,Math.sqrt(cubic/6));const weightFactor=Math.max(1,Math.sqrt(lb/25));const unitFactor=1+Math.max(0,Q-1)*.22;const extras=(residential?68:0)+(liftgate?55:0)+(appointment?35:0);return carriers.map(c=>{const midpoint=(c.base+(zone-1)*36)*lengthFactor*volumeFactor*weightFactor*unitFactor+extras;const spread=c.name==="uShip"?.28:.18;return{...c,low:midpoint*(1-spread),high:midpoint*(1+spread)}}).sort((a,b)=>a.low-b.low)},[ready,L,W,H,lb,Q,zone,residential,liftgate,appointment]);
  const mode=!L?"请输入包装后的真实长度。":L>108?"超过普通包裹108英寸上限：建议LTL、长件拼车或改为分段包装。":L>96?"可尝试UPS/FedEx企业账号，但超长附加费可能使LTL更便宜。":"适合比较UPS/FedEx Ground企业折扣与LTL。";
  return <main className="page">
-  <header className="hero"><div><span>BRAUN BLINDS · NATIONAL LOGISTICS</span><h1>全国物流与超长窗帘杆比价</h1><p>所有尺寸、重量、件数和邮编均由员工按每票货物手动输入。</p></div><a href="/">返回业务中心</a></header>
+  <header className="hero"><div><span>BRAUN BLINDS · NATIONAL LOGISTICS</span><h1>全国物流与超长窗帘杆比价</h1><p>所有尺寸、重量、件数和邮编均由员工按每票货物手动输入。</p></div><Link href="/">返回业务中心</Link></header>
   <section className="notice"><b>重要：</b>页面显示的是预算参考区间，不是承运商实时合同价。最终发货前必须在对应平台重新询价。</section>
   <section className="grid"><article className="card"><div className="title"><span>01</span><div><h2>手动输入货物资料</h2><p>请填写包装后的外箱尺寸和毛重</p></div></div>
    <div className="formGrid">

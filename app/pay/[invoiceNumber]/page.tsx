@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 
 type Invoice = {
@@ -109,7 +110,7 @@ export default function InvoicePaymentPage() {
             )}
 
             <small>信用卡资料由 Stripe 安全处理，Braun Portal 不保存完整卡号。<br/>Card details are processed securely by Stripe and are not stored in Braun Portal.</small>
-            <a href="/">← 返回客户门户 / Return to Customer Portal</a>
+            <Link href="/">← 返回客户门户 / Return to Customer Portal</Link>
           </>
         ) : null}
       </section>

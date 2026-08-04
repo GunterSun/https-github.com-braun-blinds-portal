@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type PackageRow = {
   id: string;
@@ -39,6 +40,9 @@ export default function ShippingPage() {
       const raw = localStorage.getItem("braun-shipping-draft-v1");
       if (!raw) return;
       const parsed = JSON.parse(raw);
+      // Restoring an external localStorage draft after hydration intentionally
+      // synchronizes the client state once on mount.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (parsed.packages) setPackages(parsed.packages);
       if (parsed.destination) setDestination(parsed.destination);
       if (parsed.service) setService(parsed.service);
@@ -82,7 +86,7 @@ export default function ShippingPage() {
           <h1>物流比价与超长件发货</h1>
           <p>Shipping comparison and long-package workflow</p>
         </div>
-        <a className="back" href="/">← 返回业务门户</a>
+        <Link className="back" href="/">← 返回业务门户</Link>
       </header>
 
       <section className="notice">

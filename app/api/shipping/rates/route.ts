@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 type Parcel = { length:number; width:number; height:number; weight:number };
 type Address = { name?:string; company?:string; street1:string; street2?:string; city:string; state:string; zip:string; country?:string; phone?:string; email?:string };
 type RateRequest = { addressFrom:Address; addressTo:Address; parcels:Parcel[] };
+type ShippoRate = { object_id:string; provider:string; servicelevel?:{name?:string;token?:string}; amount:string; currency:string; estimated_days?:number; duration_terms?:string; arrives_by?:string; attributes?:string[] };
+type ShippoResponse = { object_id?:string; rates?:ShippoRate[]; [key:string]:unknown };
 
 const SHIPPO_URL = "https://api.goshippo.com/shipments";
 
@@ -30,10 +32,10 @@ export async function POST(req:NextRequest){
     };
 
     const response=await fetch(SHIPPO_URL,{method:"POST",headers:{Authorization:`ShippoToken ${token}`,"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store"});
-    const data=await response.json();
+    const data=await response.json() as ShippoResponse;
     if(!response.ok) return NextResponse.json({error:"Shippo 报价失败",details:data},{status:response.status});
 
-    const rates=(data.rates||[]).map((r:any)=>({
+    const rates=(data.rates||[]).map((r)=>({
       id:r.object_id,
       carrier:r.provider,
       service:r.servicelevel?.name||r.servicelevel?.token,
@@ -43,7 +45,7 @@ export async function POST(req:NextRequest){
       durationTerms:r.duration_terms,
       arrivesBy:r.arrives_by,
       attributes:r.attributes||[]
-    })).sort((a:any,b:any)=>a.amount-b.amount);
+    })).sort((a,b)=>a.amount-b.amount);
 
     return NextResponse.json({shipmentId:data.object_id,rates});
   }catch(error){

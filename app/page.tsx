@@ -137,11 +137,6 @@ const moduleRows: Record<string, ModuleRow[]> = {
   ]
 };
 
-function Spark({ values }: { values: number[] }) {
-  const points = values.map((v, i) => `${i * 18},${56 - v}`).join(" ");
-  return <svg className="spark" viewBox="0 0 126 58" aria-hidden="true"><polyline points={points} /></svg>;
-}
-
 function Status({ children, tone = "blue" }: { children: React.ReactNode; tone?: string }) {
   return <span className={`status ${tone}`}><i />{children}</span>;
 }
@@ -171,40 +166,6 @@ function RealOverview({go}:{go:(name:string)=>void}){
 
 function Overview({ go }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) { return <RealOverview go={go}/> }
 
-function LegacyOverview({ onOpen, go }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) {
-  return <>
-    <section className="hero-card">
-      <div><span className="eyebrow">2026年7月19日 · 星期日</span><h1>您好，Gunther。</h1><p>这里汇总今天的收款、采购、生产、测量、安装和售后事项。</p></div>
-      <div className="hero-actions"><button className="secondary" onClick={()=>go('团队日历')}>查看日历 / Calendar</button><button className="primary" onClick={()=>go('报价管理')}>打开报价系统 / Quote</button></div>
-      <div className="fabric-orb one"/><div className="fabric-orb two"/>
-    </section>
-    <section className="kpi-grid">
-      {kpis.map((k) => <article className="kpi" key={k.label}><div className="kpi-top"><span>{k.label}</span><b>{k.icon}</b></div><strong>{k.value}</strong><div className="kpi-foot"><small>{k.delta}</small><Spark values={k.trend}/></div></article>)}
-    </section>
-    <section className="dashboard-grid">
-      <article className="panel orders-panel">
-        <div className="panel-head"><div><span className="eyebrow">订单流程</span><h2>进行中的销售订单</h2></div><button className="text-button" onClick={()=>go('销售订单')}>查看全部 / View all →</button></div>
-        <div className="table-wrap"><table><thead><tr><th>订单编号</th><th>客户 / 产品</th><th>负责人</th><th>订单金额</th><th>当前状态</th><th>下一节点</th></tr></thead><tbody>{orders.map(o => <tr key={o.id} onClick={() => onOpen(o.id)}><td><b>{o.id}</b></td><td><strong>{o.client}</strong><small>{o.product}</small></td><td>{o.owner}</td><td>{o.value}</td><td><Status tone={o.tone}>{o.status}</Status></td><td>{o.date}</td></tr>)}</tbody></table></div>
-      </article>
-      <aside className="right-stack">
-        <article className="panel focus"><div className="panel-head"><div><span className="eyebrow">今日重点</span><h2>8项工作需要处理</h2></div></div>
-          <button className="focus-row" onClick={()=>go('应收账款')}><span className="focus-icon warm">$</span><span><b>3笔定金待收取</b><small>合计待收 $12,410</small></span><em>→</em></button>
-          <button className="focus-row" onClick={()=>go('采购订单')}><span className="focus-icon red">!</span><span><b>2个订单存在交期风险</b><small>供应商预计发货日期已变更</small></span><em>→</em></button>
-          <button className="focus-row" onClick={()=>go('安装工单')}><span className="focus-icon green">✓</span><span><b>3张工单可完工结算</b><small>等待客户签字确认</small></span><em>→</em></button>
-        </article>
-        <article className="panel pipeline"><div className="panel-head"><div><span className="eyebrow">销售漏斗</span><h2>报价进展</h2></div><b>$46.2K</b></div>
-          {[['草稿','5','$18.4K'],['已发送','8','$21.6K'],['已批准','3','$6.2K']].map((x,i)=><div className="pipe" key={x[0]}><div><span>{x[0]}</span><b>{x[1]}</b></div><div className="bar"><i style={{width:`${74-i*19}%`}}/></div><small>{x[2]}</small></div>)}
-        </article>
-      </aside>
-    </section>
-    <section className="lower-grid">
-      <article className="panel schedule"><div className="panel-head"><div><span className="eyebrow">现场团队</span><h2>即将开始的预约</h2></div><button className="text-button" onClick={()=>go('团队日历')}>查看完整排程 / Schedule →</button></div>
-        {[['9:00','上门测量','峡谷住宅项目','陈美雅 · 帕萨迪纳'],['11:30','安装施工','银湖设计工作室','安装二组 · 洛杉矶'],['2:00','方案咨询','公园路住宅','朴立欧 · 亚凯迪亚']].map((a,i)=><div className="appointment" key={a[0]}><time>{a[0]}<small>{i<2?'上午':'下午'}</small></time><i/><span><Status tone={i===1?'green':'blue'}>{a[1]}</Status><b>{a[2]}</b><small>{a[3]}</small></span><em>•••</em></div>)}
-      </article>
-      <article className="panel margin"><div className="panel-head"><div><span className="eyebrow">毛利健康度</span><h2>综合毛利率</h2></div><select aria-label="报表周期"><option>本月 / Month</option><option>本季度 / Quarter</option><option>本年 / Year</option></select></div><div className="margin-body"><div className="ring"><span>42.8%<small>提升2.1点</small></span></div><div><b>目标毛利率 40%</b><p>整体毛利高于目标，其中电动产品和窗帘项目表现最好。</p><button className="text-button" onClick={()=>go('利润分析')}>查看利润分析 / Profitability →</button></div></div></article>
-    </section>
-  </>;
-}
 
 function IntegratedTool({kind}:{kind:"measure"|"complete"}){
   const isMeasure=kind==="measure";
