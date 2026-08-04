@@ -19,5 +19,5 @@ export const UNIFIED_MODULES: UnifiedModule[] = [
   { key:"shipping", zh:"物流中心", en:"Shipping Center", descriptionZh:"多箱报价、运单、Tracking 和运输成本。", descriptionEn:"Multi-package rates, labels, tracking and shipping cost analysis.", href:"/portal", roles:["owner","sales"], status:"migrating" },
   { key:"installation", zh:"安装中心", en:"Installation Center", descriptionZh:"安装排期、导航、照片、签字和完工确认。", descriptionEn:"Scheduling, navigation, photos, signatures and completion.", href:"/portal", roles:["owner","sales","installer","customer"], status:"migrating" },
   { key:"finance", zh:"财务与利润", en:"Finance & Profit", descriptionZh:"美元/人民币、收支、订单成本和利润。", descriptionEn:"USD/CNY, cash flow, order costs and profit.", href:"/portal", roles:["owner"], status:"planned" },
-  { key:"resources", zh:"产品资料中心", en:"Product Resources", descriptionZh:"价格表、说明书、面料、专利和安装手册。", descriptionEn:"Price lists, manuals, fabrics, patents and installation guides.", href:"/portal", roles:["owner","sales","factory","installer","customer"], status:"planned" },
+  { key:"resources", zh:"产品与价格中心", en:"Product & Pricing Center", descriptionZh:"统一产品主档、Shutters、Blinds、价格表和安装资料。", descriptionEn:"Unified product records, shutters, blinds, price books and installation resources.", href:"/catalog", roles:["owner","sales","factory","installer","customer"], status:"available" },
 ];
