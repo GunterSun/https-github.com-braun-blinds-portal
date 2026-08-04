@@ -1,4 +1,4 @@
-# BRN-010 Braun AI Agent — 架构与安全
+# BRN-015 Braun AI Agent — 架构与安全
 
 ## 1. 架构
 
