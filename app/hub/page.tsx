@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { UNIFIED_MODULES } from "@/lib/unified-modules";
+import commonEn from "@/locales/en/common.json";import commonZh from "@/locales/zh-CN/common.json";
 
 type Role = "owner" | "sales" | "factory" | "installer" | "customer";
-type CurrentUser = { displayName:string; email:string; phone:string; role:Role };
+type CurrentUser = { displayName:string; email:string; phone:string; role:Role; preferredLocale:"en"|"zh-CN" };
 
 const roleNames:Record<Role,{zh:string;en:string}> = {
   owner:{zh:"老板 / 管理员",en:"Owner / Admin"},
@@ -15,7 +16,7 @@ const roleNames:Record<Role,{zh:string;en:string}> = {
 };
 
 export default function UnifiedHubPage(){
-  const [lang,setLang]=useState<"zh"|"en">("zh");
+  const [lang,setLang]=useState<"zh-CN"|"en">("zh-CN");
   const [user,setUser]=useState<CurrentUser|null>(null);
   const [loading,setLoading]=useState(true);
   const [phone,setPhone]=useState("");
@@ -27,9 +28,10 @@ export default function UnifiedHubPage(){
       .then(async response=>response.ok?response.json():null)
       .then(data=>{
         if(data?.authenticated&&data.user?.role){
-          const nextUser={displayName:data.user.displayName||data.user.username||data.user.email,email:data.user.email,phone:data.user.phone||"",role:data.user.role};
+          const nextUser:CurrentUser={displayName:data.user.displayName||data.user.username||data.user.email,email:data.user.email,phone:data.user.phone||"",role:data.user.role,preferredLocale:data.user.preferredLocale==="en"?"en":"zh-CN"};
           setUser(nextUser);
           setPhone(nextUser.phone);
+          setLang(nextUser.preferredLocale);
         }
       })
       .finally(()=>setLoading(false));
@@ -40,7 +42,8 @@ export default function UnifiedHubPage(){
     return UNIFIED_MODULES.filter(module=>module.roles.includes(role));
   },[user]);
 
-  const t=(zh:string,en:string)=>lang==="zh"?zh:en;
+  const t=(zh:string,en:string)=>lang==="zh-CN"?zh:en;const common=lang==="zh-CN"?commonZh:commonEn;
+  const changeLanguage=async()=>{const preferredLocale=lang==="zh-CN"?"en":"zh-CN";setLang(preferredLocale);if(user){const response=await fetch("/api/v4/auth/me",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({preferredLocale})});if(response.ok)setUser(current=>current?{...current,preferredLocale}:current)}};
   const statusLabel=(status:"available"|"migrating"|"planned")=>{
     if(status==="available")return t("可使用","Available");
     if(status==="migrating")return t("正在整合","Migrating");
@@ -63,8 +66,8 @@ export default function UnifiedHubPage(){
     <header style={{background:"#173f35",color:"white",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap"}}>
       <div><div style={{fontSize:13,opacity:.78,letterSpacing:1.2}}>BRAUN INTERNATIONAL, LLC</div><h1 style={{margin:"6px 0 0",fontSize:28}}>{t("Braun Smart Portal 统一入口","Braun Smart Portal Unified Hub")}</h1></div>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        {user&&<span style={{fontSize:14}}>{user.displayName} · {lang==="zh"?roleNames[user.role].zh:roleNames[user.role].en}</span>}
-        <button onClick={()=>setLang(lang==="zh"?"en":"zh")} style={{border:"1px solid rgba(255,255,255,.45)",background:"transparent",color:"white",borderRadius:9,padding:"9px 12px",cursor:"pointer"}}>{lang==="zh"?"English":"中文"}</button>
+        {user&&<span style={{fontSize:14}}>{user.displayName} · {lang==="zh-CN"?roleNames[user.role].zh:roleNames[user.role].en}</span>}
+        <button aria-label={common.language} onClick={()=>void changeLanguage()} style={{border:"1px solid rgba(255,255,255,.45)",background:"transparent",color:"white",borderRadius:9,padding:"9px 12px",cursor:"pointer"}}>{common.language}</button>
       </div>
     </header>
 
@@ -83,10 +86,10 @@ export default function UnifiedHubPage(){
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:16}}>
         {modules.map(module=><a key={module.key} href={module.href} style={{display:"block",background:"white",border:"1px solid #ded9ce",borderRadius:16,padding:20,textDecoration:"none",color:"inherit",boxShadow:"0 8px 24px rgba(40,50,45,.04)"}}>
           <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"flex-start"}}>
-            <h3 style={{margin:0,fontSize:19}}>{lang==="zh"?module.zh:module.en}</h3>
+            <h3 style={{margin:0,fontSize:19}}>{lang==="zh-CN"?module.zh:module.en}</h3>
             <span style={{fontSize:12,padding:"5px 8px",borderRadius:999,background:module.status==="available"?"#e4f3eb":module.status==="migrating"?"#fff2d8":"#ececea",color:module.status==="available"?"#17603f":module.status==="migrating"?"#8a5a00":"#626661",whiteSpace:"nowrap"}}>{statusLabel(module.status)}</span>
           </div>
-          <p style={{margin:"12px 0 18px",lineHeight:1.6,color:"#69716d"}}>{lang==="zh"?module.descriptionZh:module.descriptionEn}</p>
+          <p style={{margin:"12px 0 18px",lineHeight:1.6,color:"#69716d"}}>{lang==="zh-CN"?module.descriptionZh:module.descriptionEn}</p>
           <strong style={{color:"#1f5b49"}}>{t("进入模块 →","Open module →")}</strong>
         </a>)}
       </div>}
