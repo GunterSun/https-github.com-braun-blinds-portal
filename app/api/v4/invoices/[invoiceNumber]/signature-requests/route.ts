@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { customerOrders, invoiceSignatureEvents, invoiceSignatureRequests, invoiceVersions } from "@/db/schema";
@@ -17,6 +17,8 @@ export async function POST(request:NextRequest,context:{params:Promise<{invoiceN
   const db=await getDb();
   const existing=await db.select({id:invoiceSignatureRequests.id,status:invoiceSignatureRequests.status,expiresAt:invoiceSignatureRequests.expiresAt}).from(invoiceSignatureRequests).where(eq(invoiceSignatureRequests.idempotencyKey,idempotencyKey)).limit(1);
   if(existing.length)return NextResponse.json({ok:true,reused:true,request:existing[0]});
+  const active=await db.select({id:invoiceSignatureRequests.id,status:invoiceSignatureRequests.status,expiresAt:invoiceSignatureRequests.expiresAt}).from(invoiceSignatureRequests).where(and(eq(invoiceSignatureRequests.invoiceNumber,invoiceNumber),inArray(invoiceSignatureRequests.status,["pending","viewed"]))).orderBy(desc(invoiceSignatureRequests.createdAt)).limit(1);
+  if(active.length&&new Date(active[0].expiresAt)>new Date())return NextResponse.json({error:"此 Invoice 已有有效签名请求；请使用原链接或先撤销请求",request:active[0]},{status:409});
   const order=await db.select().from(customerOrders).where(eq(customerOrders.invoiceNumber,invoiceNumber)).limit(1);
   if(!order.length)return NextResponse.json({error:"Invoice 不存在"},{status:404});
   const invoice=order[0],snapshot={invoiceNumber,orderNumber:invoice.orderNumber,customerEmail:invoice.customerEmail,projectName:invoice.projectName,itemsJson:invoice.itemsJson,wholesaleTotal:invoice.wholesaleTotal,discountPercent:invoice.discountPercent,paymentCurrency:invoice.paymentCurrency,confirmedAt:invoice.confirmedAt};
