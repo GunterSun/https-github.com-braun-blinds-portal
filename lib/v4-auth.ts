@@ -72,6 +72,7 @@ export async function getCurrentAppUser() {
       username: appUsers.username,
       displayName: appUsers.displayName,
       phone: appUsers.phone,
+      preferredLocale: appUsers.preferredLocale,
       role: appUsers.role,
       status: appUsers.status,
       customerId: appUsers.customerId,

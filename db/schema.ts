@@ -9,6 +9,7 @@ export const appUsers = sqliteTable("app_users", {
   passwordSalt: text("password_salt").notNull(),
   displayName: text("display_name").notNull().default(""),
   phone: text("phone").notNull().default(""),
+  preferredLocale: text("preferred_locale").notNull().default("zh-CN"),
   role: text("role").notNull().default("customer"),
   status: text("status").notNull().default("active"),
   customerId: integer("customer_id"),
