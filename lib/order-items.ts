@@ -1,4 +1,5 @@
 import { money } from "@/lib/order-access";
+import { parseMeasurement } from "@/lib/measurement-sixteenths";
 
 const SOURCE_CALCULATORS = new Set(["Braun", "Jin", "manual"]);
 
@@ -7,18 +8,26 @@ export function parseOrderItem(body: Record<string, unknown>, owner: boolean) {
   const sourceCalculator = text(body.sourceCalculator || "manual", 20);
   const quantity = Number(body.quantity ?? 1);
   const unitPrice = Number(body.unitPrice ?? 0);
-  const width = optionalNumber(body.width);
-  const height = optionalNumber(body.height);
+  let widthMeasurement, heightMeasurement;
+  try {
+    const sourceUnit=body.sourceUnit==="cm"?"cm":"in";
+    widthMeasurement=parseMeasurement(body.widthSixteenths!==undefined?Number(body.widthSixteenths)/16:body.width,sourceUnit);
+    heightMeasurement=parseMeasurement(body.heightSixteenths!==undefined?Number(body.heightSixteenths)/16:body.height,sourceUnit);
+  } catch(error) { return { error:error instanceof Error?error.message:"尺寸格式无效" } as const; }
   if (!productType) return { error:"产品类型不能为空" } as const;
   if (!SOURCE_CALCULATORS.has(sourceCalculator)) return { error:"产品来源无效" } as const;
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10_000) return { error:"数量必须为 1–10000 的整数" } as const;
   if (!Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 10_000_000) return { error:"单价无效" } as const;
-  if (width === undefined || height === undefined) return { error:"尺寸必须为空或有效正数" } as const;
   const cost = optionalNumber(body.costEstimateUsd);
   if (cost === undefined) return { error:"成本估算必须为空或有效正数" } as const;
   const value = {
     sourceCalculator, productType, style:text(body.style,120), fabricCode:text(body.fabricCode,120),
-    width, height, quantity, mountType:text(body.mountType,80), controlType:text(body.controlType,80),
+    width:widthMeasurement?.sixteenths===undefined?null:widthMeasurement.sixteenths/16,
+    height:heightMeasurement?.sixteenths===undefined?null:heightMeasurement.sixteenths/16,
+    widthSixteenths:widthMeasurement?.sixteenths??null,heightSixteenths:heightMeasurement?.sixteenths??null,
+    widthSourceValue:widthMeasurement?.sourceValue||"",heightSourceValue:heightMeasurement?.sourceValue||"",
+    sourceUnit:widthMeasurement?.sourceUnit||heightMeasurement?.sourceUnit||"in",
+    quantity, mountType:text(body.mountType,80), controlType:text(body.controlType,80),
     lining:text(body.lining,80), unitPrice:money(unitPrice), lineTotal:money(unitPrice*quantity),
     costEstimateUsd:owner ? cost : null, notes:text(body.notes,1000), sortOrder:integer(body.sortOrder,0),
   };
