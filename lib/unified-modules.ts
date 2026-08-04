@@ -10,6 +10,7 @@ export type UnifiedModule = {
 };
 
 export const UNIFIED_MODULES: UnifiedModule[] = [
+  { key:"search", zh:"全局搜索", en:"Global Search", descriptionZh:"按订单号、客户、电话、邮箱、Invoice 和地址查找真实记录。", descriptionEn:"Find authorized records by order, customer, phone, email, invoice or address.", href:"/search", roles:["owner","sales","factory","installer","customer"], status:"available" },
   { key:"dashboard", zh:"老板工作台", en:"Owner Dashboard", descriptionZh:"订单、收款、应收、生产、物流和安装总览。", descriptionEn:"Orders, payments, receivables, production, shipping and installation overview.", href:"/portal", roles:["owner"], status:"migrating" },
   { key:"customers", zh:"客户与订单", en:"Customers & Orders", descriptionZh:"统一管理客户、项目、订单和沟通记录。", descriptionEn:"Manage customers, projects, orders and communications.", href:"/customers", roles:["owner","sales"], status:"available" },
   { key:"calculators", zh:"报价计算器", en:"Pricing Calculators", descriptionZh:"Braun 与 Jin 计算器统一入口。", descriptionEn:"Unified access to Braun and Jin calculators.", href:"/portal", roles:["owner","sales","customer"], status:"migrating" },
