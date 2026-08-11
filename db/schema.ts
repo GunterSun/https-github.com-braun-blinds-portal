@@ -350,3 +350,10 @@ export const roomSketchVersions = sqliteTable("room_sketch_versions", {
   createdBy: integer("created_by").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => ({ roomVersionUnique: uniqueIndex("room_sketch_versions_room_version_unique").on(table.roomId, table.version), roomIdx: index("room_sketch_versions_room_idx").on(table.roomId) }));
+
+export const wallElevationVersions = sqliteTable("wall_elevation_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }), roomId: integer("room_id").notNull(), version: integer("version").notNull(),
+  title: text("title").notNull(), windowIdsJson: text("window_ids_json").notNull(), measurementVersionIdsJson: text("measurement_version_ids_json").notNull(),
+  configurationJson: text("configuration_json").notNull().default("{}"), language: text("language").notNull().default("bilingual"),
+  createdBy: integer("created_by").notNull(), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table=>({ roomVersionUnique:uniqueIndex("wall_elevation_versions_room_version_unique").on(table.roomId,table.version),roomIdx:index("wall_elevation_versions_room_idx").on(table.roomId) }));
