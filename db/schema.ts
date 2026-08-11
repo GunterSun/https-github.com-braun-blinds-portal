@@ -288,3 +288,54 @@ export const invoiceSignatures = sqliteTable("invoice_signatures", {
   verificationCode: text("verification_code").notNull().unique(), ipAddressHash: text("ip_address_hash").notNull().default(""),
   userAgentHash: text("user_agent_hash").notNull().default(""), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const measureProperties = sqliteTable("measure_properties", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  customerId: integer("customer_id"),
+  name: text("name").notNull(),
+  address: text("address").notNull().default(""),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ customerIdx: index("measure_properties_customer_idx").on(table.customerId) }));
+
+export const measureRooms = sqliteTable("measure_rooms", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  propertyId: integer("property_id").notNull(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ propertyIdx: index("measure_rooms_property_idx").on(table.propertyId) }));
+
+export const measureWindows = sqliteTable("measure_windows", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  propertyId: integer("property_id").notNull(),
+  roomId: integer("room_id").notNull(),
+  code: text("code").notNull(),
+  notes: text("notes").notNull().default(""),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ propertyCodeUnique: uniqueIndex("measure_windows_property_code_unique").on(table.propertyId, table.code), roomIdx: index("measure_windows_room_idx").on(table.roomId) }));
+
+export const measurementVersions = sqliteTable("measurement_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  windowId: integer("window_id").notNull(),
+  version: integer("version").notNull(),
+  productType: text("product_type").notNull(),
+  mountType: text("mount_type").notNull().default("inside"),
+  controlSide: text("control_side").notNull().default("unspecified"),
+  status: text("status").notNull().default("draft"),
+  obstacleNotes: text("obstacle_notes").notNull().default(""),
+  notes: text("notes").notNull().default(""),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ windowVersionUnique: uniqueIndex("measurement_versions_window_version_unique").on(table.windowId, table.version), windowIdx: index("measurement_versions_window_idx").on(table.windowId) }));
+
+export const measurementValues = sqliteTable("measurement_values", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  measurementVersionId: integer("measurement_version_id").notNull(),
+  fieldKey: text("field_key").notNull(),
+  totalSixteenths: integer("total_sixteenths").notNull(),
+  wholeInches: integer("whole_inches").notNull(),
+  fractionSixteenths: integer("fraction_sixteenths").notNull().default(0),
+  sourceValue: text("source_value").notNull(),
+}, (table) => ({ versionFieldUnique: uniqueIndex("measurement_values_version_field_unique").on(table.measurementVersionId, table.fieldKey) }));
