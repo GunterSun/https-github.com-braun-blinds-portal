@@ -339,3 +339,14 @@ export const measurementValues = sqliteTable("measurement_values", {
   fractionSixteenths: integer("fraction_sixteenths").notNull().default(0),
   sourceValue: text("source_value").notNull(),
 }, (table) => ({ versionFieldUnique: uniqueIndex("measurement_values_version_field_unique").on(table.measurementVersionId, table.fieldKey) }));
+
+export const roomSketchVersions = sqliteTable("room_sketch_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  roomId: integer("room_id").notNull(),
+  version: integer("version").notNull(),
+  objectsJson: text("objects_json").notNull().default("[]"),
+  scaleLabel: text("scale_label").notNull().default("not_to_scale"),
+  internalNotes: text("internal_notes").notNull().default(""),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({ roomVersionUnique: uniqueIndex("room_sketch_versions_room_version_unique").on(table.roomId, table.version), roomIdx: index("room_sketch_versions_room_idx").on(table.roomId) }));
