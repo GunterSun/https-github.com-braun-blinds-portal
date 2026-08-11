@@ -1,0 +1,12 @@
+CREATE TABLE `measure_properties` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`customer_id` integer,`name` text NOT NULL,`address` text DEFAULT '' NOT NULL,`created_by` integer NOT NULL,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE INDEX `measure_properties_customer_idx` ON `measure_properties` (`customer_id`);
+CREATE TABLE `measure_rooms` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`property_id` integer NOT NULL,`name` text NOT NULL,`sort_order` integer DEFAULT 0 NOT NULL,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE INDEX `measure_rooms_property_idx` ON `measure_rooms` (`property_id`);
+CREATE TABLE `measure_windows` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`property_id` integer NOT NULL,`room_id` integer NOT NULL,`code` text NOT NULL,`notes` text DEFAULT '' NOT NULL,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE UNIQUE INDEX `measure_windows_property_code_unique` ON `measure_windows` (`property_id`,`code`);
+CREATE INDEX `measure_windows_room_idx` ON `measure_windows` (`room_id`);
+CREATE TABLE `measurement_versions` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`window_id` integer NOT NULL,`version` integer NOT NULL,`product_type` text NOT NULL,`mount_type` text DEFAULT 'inside' NOT NULL,`control_side` text DEFAULT 'unspecified' NOT NULL,`status` text DEFAULT 'draft' NOT NULL,`obstacle_notes` text DEFAULT '' NOT NULL,`notes` text DEFAULT '' NOT NULL,`created_by` integer NOT NULL,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE UNIQUE INDEX `measurement_versions_window_version_unique` ON `measurement_versions` (`window_id`,`version`);
+CREATE INDEX `measurement_versions_window_idx` ON `measurement_versions` (`window_id`);
+CREATE TABLE `measurement_values` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`measurement_version_id` integer NOT NULL,`field_key` text NOT NULL,`total_sixteenths` integer NOT NULL,`whole_inches` integer NOT NULL,`fraction_sixteenths` integer DEFAULT 0 NOT NULL,`source_value` text NOT NULL);
+CREATE UNIQUE INDEX `measurement_values_version_field_unique` ON `measurement_values` (`measurement_version_id`,`field_key`);
