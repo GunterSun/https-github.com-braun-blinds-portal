@@ -59,6 +59,14 @@ export const customerQuoteSignatures = sqliteTable("customer_quote_signatures", 
   id: integer("id").primaryKey({ autoIncrement: true }), quoteVersionId: integer("quote_version_id").notNull().unique(), userId: integer("user_id").notNull(), printedName: text("printed_name").notNull(), timezone: text("timezone").notNull(), disclaimerVersion: text("disclaimer_version").notNull(), signatureText: text("signature_text").notNull(), signedDocumentSha256: text("signed_document_sha256").notNull(), ipAddressHash: text("ip_address_hash").notNull(), userAgentHash: text("user_agent_hash").notNull(), idempotencyKey: text("idempotency_key").notNull().unique(), signedAt: text("signed_at").notNull(),
 }, table => ({ userIdx: index("customer_quote_signatures_user_idx").on(table.userId) }));
 
+export const customerBillingInvoices = sqliteTable("customer_billing_invoices", {
+  id: integer("id").primaryKey({ autoIncrement: true }), invoiceNumber: text("invoice_number").notNull().unique(), quoteVersionId: integer("quote_version_id").notNull(), customerId: integer("customer_id").notNull(), propertyId: integer("property_id").notNull(), version: integer("version").notNull().default(1), currency: text("currency").notNull(), total: real("total").notNull(), depositRequired: real("deposit_required").notNull().default(0), dueDate: text("due_date").notNull(), status: text("status").notNull().default("issued"), customerSnapshotJson: text("customer_snapshot_json").notNull(), documentSha256: text("document_sha256").notNull(), createdBy: integer("created_by").notNull(), issuedAt: text("issued_at").notNull(), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ propertyIdx: index("customer_billing_invoices_property_idx").on(table.propertyId), quoteIdx: index("customer_billing_invoices_quote_idx").on(table.quoteVersionId) }));
+
+export const customerBillingTransactions = sqliteTable("customer_billing_transactions", {
+  id: integer("id").primaryKey({ autoIncrement: true }), invoiceId: integer("invoice_id").notNull(), transactionType: text("transaction_type").notNull(), status: text("status").notNull(), amount: real("amount").notNull(), currency: text("currency").notNull(), provider: text("provider").notNull(), providerSessionId: text("provider_session_id").unique(), providerTransactionId: text("provider_transaction_id"), providerEventId: text("provider_event_id").unique(), idempotencyKey: text("idempotency_key").notNull().unique(), receiptNumber: text("receipt_number").unique(), occurredAt: text("occurred_at").notNull(), metadataJson: text("metadata_json").notNull().default("{}"), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ invoiceIdx: index("customer_billing_transactions_invoice_idx").on(table.invoiceId) }));
+
 export const productCategories = sqliteTable("product_categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   parentId: integer("parent_id"),
