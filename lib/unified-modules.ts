@@ -10,6 +10,8 @@ export type UnifiedModule = {
 };
 
 export const UNIFIED_MODULES: UnifiedModule[] = [
+  { key:"customer-portal", zh:"我的房产", en:"My Properties", descriptionZh:"查看明确授权的房产、房间、Window 和客户可见状态。", descriptionEn:"View explicitly authorized properties, rooms, Windows and customer-visible statuses.", href:"/customer-portal", roles:["customer"], status:"available" },
+  { key:"customer-access", zh:"客户门户授权", en:"Customer Access", descriptionZh:"邀请家庭联系人并授予或撤销指定 Property 权限。", descriptionEn:"Invite household contacts and grant or revoke property-specific access.", href:"/customer-access", roles:["owner"], status:"available" },
   { key:"search", zh:"全局搜索", en:"Global Search", descriptionZh:"按订单号、客户、电话、邮箱、Invoice 和地址查找真实记录。", descriptionEn:"Find authorized records by order, customer, phone, email, invoice or address.", href:"/search", roles:["owner","sales","factory","installer","customer"], status:"available" },
   { key:"dashboard", zh:"老板工作台", en:"Owner Dashboard", descriptionZh:"订单、收款、应收、生产、物流和安装总览。", descriptionEn:"Orders, payments, receivables, production, shipping and installation overview.", href:"/portal", roles:["owner"], status:"migrating" },
   { key:"customers", zh:"客户与订单", en:"Customers & Orders", descriptionZh:"统一管理客户、项目、订单和沟通记录。", descriptionEn:"Manage customers, projects, orders and communications.", href:"/customers", roles:["owner","sales"], status:"available" },

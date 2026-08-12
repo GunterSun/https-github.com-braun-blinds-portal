@@ -27,6 +27,26 @@ export const appSessions = sqliteTable("app_sessions", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const customerPropertyAccess = sqliteTable("customer_property_access", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  customerId: integer("customer_id").notNull(),
+  propertyId: integer("property_id").notNull(),
+  accessRole: text("access_role").notNull().default("household"),
+  status: text("status").notNull().default("active"),
+  grantedBy: integer("granted_by").notNull(),
+  grantedAt: text("granted_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  revokedBy: integer("revoked_by"),
+  revokedAt: text("revoked_at"),
+}, table => ({ userPropertyUnique: uniqueIndex("customer_property_access_user_property_unique").on(table.userId, table.propertyId), propertyIdx: index("customer_property_access_property_idx").on(table.propertyId) }));
+
+export const customerInvitations = sqliteTable("customer_invitations", {
+  id: integer("id").primaryKey({ autoIncrement: true }), customerId: integer("customer_id").notNull(), propertyId: integer("property_id").notNull(),
+  email: text("email").notNull(), phone: text("phone").notNull().default(""), displayName: text("display_name").notNull(), accessRole: text("access_role").notNull().default("household"),
+  tokenHash: text("token_hash").notNull().unique(), status: text("status").notNull().default("pending"), expiresAt: text("expires_at").notNull(), invitedBy: integer("invited_by").notNull(), acceptedByUserId: integer("accepted_by_user_id"),
+  acceptedAt: text("accepted_at"), revokedAt: text("revoked_at"), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ propertyIdx: index("customer_invitations_property_idx").on(table.propertyId) }));
+
 export const productCategories = sqliteTable("product_categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   parentId: integer("parent_id"),
