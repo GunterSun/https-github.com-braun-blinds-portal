@@ -47,6 +47,18 @@ export const customerInvitations = sqliteTable("customer_invitations", {
   acceptedAt: text("accepted_at"), revokedAt: text("revoked_at"), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, table => ({ propertyIdx: index("customer_invitations_property_idx").on(table.propertyId) }));
 
+export const customerQuoteVersions = sqliteTable("customer_quote_versions", {
+  id: integer("id").primaryKey({ autoIncrement: true }), quoteNumber: text("quote_number").notNull(), version: integer("version").notNull(),
+  customerId: integer("customer_id").notNull(), propertyId: integer("property_id").notNull(), handoffId: integer("handoff_id").notNull(),
+  status: text("status").notNull().default("issued"), currency: text("currency").notNull().default("USD"), subtotal: real("subtotal").notNull(), discountAmount: real("discount_amount").notNull().default(0), taxAmount: real("tax_amount").notNull().default(0), installationFee: real("installation_fee").notNull().default(0), depositRequired: real("deposit_required").notNull().default(0), total: real("total").notNull(),
+  terms: text("terms").notNull().default(""), validUntil: text("valid_until").notNull(), renderingUrlsJson: text("rendering_urls_json").notNull().default("[]"), optionsJson: text("options_json").notNull().default("[]"), selectedOptionIdsJson: text("selected_option_ids_json").notNull().default("[]"),
+  sourceSnapshotJson: text("source_snapshot_json").notNull(), documentSha256: text("document_sha256").notNull(), createdBy: integer("created_by").notNull(), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`), signedAt: text("signed_at"),
+}, table => ({ quoteVersionUnique: uniqueIndex("customer_quote_versions_number_version_unique").on(table.quoteNumber, table.version), handoffIdx: index("customer_quote_versions_handoff_idx").on(table.handoffId), propertyIdx: index("customer_quote_versions_property_idx").on(table.propertyId) }));
+
+export const customerQuoteSignatures = sqliteTable("customer_quote_signatures", {
+  id: integer("id").primaryKey({ autoIncrement: true }), quoteVersionId: integer("quote_version_id").notNull().unique(), userId: integer("user_id").notNull(), printedName: text("printed_name").notNull(), timezone: text("timezone").notNull(), disclaimerVersion: text("disclaimer_version").notNull(), signatureText: text("signature_text").notNull(), signedDocumentSha256: text("signed_document_sha256").notNull(), ipAddressHash: text("ip_address_hash").notNull(), userAgentHash: text("user_agent_hash").notNull(), idempotencyKey: text("idempotency_key").notNull().unique(), signedAt: text("signed_at").notNull(),
+}, table => ({ userIdx: index("customer_quote_signatures_user_idx").on(table.userId) }));
+
 export const productCategories = sqliteTable("product_categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   parentId: integer("parent_id"),

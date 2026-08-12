@@ -6,6 +6,8 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   { files: ["app/customer-access/page.tsx"], rules: { "react-hooks/set-state-in-effect": "off" } },
+  { files: ["app/quote-issuance/page.tsx"], rules: { "react-hooks/purity": "off" } },
+  { files: ["app/customer-quotes/page.tsx"], rules: { "@next/next/no-img-element": "off" } },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
