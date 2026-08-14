@@ -312,6 +312,9 @@ export const offlineSyncOperations = sqliteTable("offline_sync_operations", {
   payloadJson: text("payload_json").notNull().default("{}"),
   status: text("status").notNull().default("accepted"),
   conflictJson: text("conflict_json"),
+  resolutionReason: text("resolution_reason"),
+  resolvedBy: integer("resolved_by"),
+  resolvedAt: text("resolved_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, table => ({ packageIdx: index("offline_sync_operations_package_idx").on(table.packageId, table.createdAt) }));
 
