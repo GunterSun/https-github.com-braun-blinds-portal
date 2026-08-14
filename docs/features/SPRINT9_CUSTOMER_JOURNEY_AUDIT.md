@@ -5,3 +5,5 @@ The Owner-only audit evaluates one Property against authoritative source records
 Missing data remains a failed check. The audit never manufactures `paid`, `delivered`, `completed`, warranty, or service evidence and never exposes internal costs, factory notes, internal-only messages, passwords, signature text, or raw payment metadata.
 
 Every failed check links the Owner to the corresponding evidence workspace. Those links assist remediation but never change the audit result by themselves.
+
+When all eight checks pass, the Owner may certify an immutable acceptance snapshot. The snapshot stores the exact evidence JSON and SHA-256 in D1, is idempotent for identical evidence, and is never available while any check remains false.
