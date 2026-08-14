@@ -282,6 +282,39 @@ export const auditLogs = sqliteTable("audit_logs", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const offlineJobPackages = sqliteTable("offline_job_packages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  installationJobId: integer("installation_job_id").notNull(),
+  assignedUserId: integer("assigned_user_id").notNull(),
+  state: text("state").notNull().default("online_only"),
+  sourceVersion: integer("source_version").notNull(),
+  snapshotJson: text("snapshot_json").notNull(),
+  snapshotSha256: text("snapshot_sha256").notNull(),
+  expiresAt: text("expires_at").notNull(),
+  downloadedAt: text("downloaded_at"),
+  lastSyncedAt: text("last_synced_at"),
+  revokedAt: text("revoked_at"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({
+  jobUserUnique: uniqueIndex("offline_job_packages_job_user_unique").on(table.installationJobId, table.assignedUserId),
+  assignedIdx: index("offline_job_packages_assigned_idx").on(table.assignedUserId, table.state),
+}));
+
+export const offlineSyncOperations = sqliteTable("offline_sync_operations", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  packageId: integer("package_id").notNull(),
+  assignedUserId: integer("assigned_user_id").notNull(),
+  clientOperationId: text("client_operation_id").notNull().unique(),
+  operationType: text("operation_type").notNull(),
+  baseSourceVersion: integer("base_source_version").notNull(),
+  payloadJson: text("payload_json").notNull().default("{}"),
+  status: text("status").notNull().default("accepted"),
+  conflictJson: text("conflict_json"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ packageIdx: index("offline_sync_operations_package_idx").on(table.packageId, table.createdAt) }));
+
 export const invoiceSequences = sqliteTable("invoice_sequences", {
   id: integer("id").primaryKey(),
   lastNumber: integer("last_number").notNull().default(0),
