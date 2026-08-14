@@ -7,3 +7,5 @@ Missing data remains a failed check. The audit never manufactures `paid`, `deliv
 Every failed check links the Owner to the corresponding evidence workspace. Those links assist remediation but never change the audit result by themselves.
 
 When all eight checks pass, the Owner may certify an immutable acceptance snapshot. The snapshot stores the exact evidence JSON and SHA-256 in D1, is idempotent for identical evidence, and is never available while any check remains false.
+
+Certified snapshots can be opened by the Owner as a bilingual print-ready certificate and saved as PDF from the browser. The certificate endpoint recomputes the stored SHA-256 and rejects tampered or incomplete evidence before returning any content.
