@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, max } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
-import { measureProperties, measureRooms, measureWindows, measurementValues, measurementVersions } from "@/db/schema";
+import { measureProperties, measureRooms, measureWindows, measurementMedia, measurementValues, measurementVersions } from "@/db/schema";
 import { getCurrentAppUser, writeAuditLog } from "@/lib/v4-auth";
 import {requiredMeasureFields,requiresPowerConfirmation} from "@/lib/measure-product-requirements";
 
@@ -20,8 +20,8 @@ export async function GET(){
   const rooms=await db.select().from(measureRooms).where(inArray(measureRooms.propertyId,propertyIds)).orderBy(asc(measureRooms.sortOrder),asc(measureRooms.id));
   const windows=await db.select().from(measureWindows).where(inArray(measureWindows.propertyId,propertyIds)).orderBy(asc(measureWindows.code));
   const windowIds=windows.map(item=>item.id),versions=windowIds.length?await db.select().from(measurementVersions).where(inArray(measurementVersions.windowId,windowIds)).orderBy(desc(measurementVersions.version)):[];
-  const versionIds=versions.map(item=>item.id),values=versionIds.length?await db.select().from(measurementValues).where(inArray(measurementValues.measurementVersionId,versionIds)):[];
-  return NextResponse.json({properties:properties.map(property=>({...property,rooms:rooms.filter(room=>room.propertyId===property.id).map(room=>({...room,windows:windows.filter(window=>window.roomId===room.id).map(window=>({...window,versions:versions.filter(version=>version.windowId===window.id).map(version=>({...version,values:values.filter(value=>value.measurementVersionId===version.id)}))}))}))}))});
+  const versionIds=versions.map(item=>item.id),values=versionIds.length?await db.select().from(measurementValues).where(inArray(measurementValues.measurementVersionId,versionIds)):[],media=versionIds.length?await db.select({measurementVersionId:measurementMedia.measurementVersionId}).from(measurementMedia).where(inArray(measurementMedia.measurementVersionId,versionIds)):[];
+  return NextResponse.json({properties:properties.map(property=>({...property,rooms:rooms.filter(room=>room.propertyId===property.id).map(room=>({...room,windows:windows.filter(window=>window.roomId===room.id).map(window=>({...window,versions:versions.filter(version=>version.windowId===window.id).map(version=>({...version,values:values.filter(value=>value.measurementVersionId===version.id),mediaCount:media.filter(item=>item.measurementVersionId===version.id).length}))}))}))}))});
 }
 
 export async function POST(request:NextRequest){
