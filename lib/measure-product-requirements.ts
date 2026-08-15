@@ -14,3 +14,10 @@ export function requiredMeasureFields(productType:string,mountType:string){
 }
 
 export function requiresPowerConfirmation(productType:string){return productType==="motorized"}
+
+const THREE_POINT_GROUPS=[["width_left","width_center","width_right"],["height_left","height_center","height_right"]];
+export const THREE_POINT_TOLERANCE_SIXTEENTHS=8;
+export function measureThreePointSpread(values:{fieldKey:string;totalSixteenths:number}[]){
+ const map=new Map(values.map(value=>[value.fieldKey,value.totalSixteenths]));
+ return THREE_POINT_GROUPS.reduce((largest,group)=>{const points=group.map(key=>map.get(key)).filter((value):value is number=>value!==undefined);return points.length===3?Math.max(largest,Math.max(...points)-Math.min(...points)):largest},0);
+}
