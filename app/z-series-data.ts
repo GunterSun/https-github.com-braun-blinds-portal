@@ -91,13 +91,21 @@ export function zSeriesWholesalePrice(retail: number, discountPercent: number) {
   return Math.round(retail * (1 - discountPercent / 100) * 100) / 100;
 }
 
+export function isSixteenthInch(value: number) {
+  return Number.isFinite(value) && Math.abs(value * 16 - Math.round(value * 16)) < 1e-9;
+}
+
 export type ZSeriesDimensionError =
+  | "width_not_sixteenth" | "height_not_sixteenth" | "depth_not_sixteenth"
   | "width_too_small" | "width_too_large"
   | "height_too_small" | "height_too_large"
   | "depth_required" | "depth_too_small";
 
 export function validateZSeriesDimensions(item: ZSeriesCatalogItem, width: number, height: number, depth?: number): ZSeriesDimensionError[] {
   const errors: ZSeriesDimensionError[] = [];
+  if (!isSixteenthInch(width)) errors.push("width_not_sixteenth");
+  if (!isSixteenthInch(height)) errors.push("height_not_sixteenth");
+  if (depth != null && Number.isFinite(depth) && !isSixteenthInch(depth)) errors.push("depth_not_sixteenth");
   if (width < item.minWidth) errors.push("width_too_small");
   if (width > item.maxWidth) errors.push("width_too_large");
   if (height < item.minHeight) errors.push("height_too_small");
