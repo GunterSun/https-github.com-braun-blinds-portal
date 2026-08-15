@@ -41,6 +41,9 @@ async function sendOrderNotification(details:{
 
 const dimensionMessage=(errors:string[],index:number)=>{
   const names:Record<string,string>={
+    width_not_sixteenth:"宽度必须精确到 1/16 英寸 / Width must use 1/16-inch increments",
+    height_not_sixteenth:"高度必须精确到 1/16 英寸 / Height must use 1/16-inch increments",
+    depth_not_sixteenth:"深度必须精确到 1/16 英寸 / Depth must use 1/16-inch increments",
     width_too_small:"宽度低于允许范围 / Width below minimum",
     width_too_large:"宽度超过允许范围 / Width above maximum",
     height_too_small:"高度低于允许范围 / Height below minimum",
