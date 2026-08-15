@@ -7,6 +7,10 @@ const fail = (message) => {
 
 if (Z_SERIES_CONFIGS.length !== 16) fail(`expected 16 configs, got ${Z_SERIES_CONFIGS.length}`);
 if (Z_SERIES_FABRICS.length !== 58) fail(`expected 58 fabrics, got ${Z_SERIES_FABRICS.length}`);
+const fabricCodes = Z_SERIES_FABRICS.map((row) => row[0]);
+const productCodes = Z_SERIES_CONFIGS.map((row) => row[0]);
+if (new Set(fabricCodes).size !== fabricCodes.length) fail("duplicate fabric code");
+if (new Set(productCodes).size !== productCodes.length) fail("duplicate product code");
 
 let validRows = 0;
 for (const fabric of Z_SERIES_FABRICS) {
@@ -25,6 +29,10 @@ for (const fabric of Z_SERIES_FABRICS) {
     validRows += 1;
     if (!Number.isFinite(price) || price <= 0) fail(`invalid price ${price} for ${fabricCode}/${Z_SERIES_CONFIGS[index]?.[0]}`);
   });
+}
+
+for (const [tierIndex, tier] of Z_SERIES_PRICE_TIERS.entries()) {
+  if (tier.length !== Z_SERIES_CONFIGS.length) fail(`tier ${tierIndex} length ${tier.length} does not match config count ${Z_SERIES_CONFIGS.length}`);
 }
 
 if (validRows !== 800) fail(`expected 800 valid price rows, got ${validRows}`);
