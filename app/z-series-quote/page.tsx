@@ -78,11 +78,11 @@ export default function ZSeriesQuotePage() {
     fetch("/api/z-series/catalog", { cache: "no-store" })
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error || "Catalog unavailable");
+        if (!r.ok) throw new Error(d.error || "目录暂不可用 / Catalog unavailable");
         setItems(d.items || []);
         setDiscountPercent(Number(d.discountPercent) || 0);
       })
-      .catch((e) => setMessage(e instanceof Error ? e.message : "Catalog unavailable"));
+      .catch((e) => setMessage(e instanceof Error ? e.message : "目录暂不可用 / Catalog unavailable"));
   }, []);
 
   const fabrics = useMemo(() => {
@@ -136,7 +136,7 @@ export default function ZSeriesQuotePage() {
       <nav><button onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/z-series-quote-review">{t("正式 Z 系列报价", "Formal Z-Series Quotes")}</Link><Link href="/hub">{t("工作中心", "Hub")}</Link></nav>
     </header>
 
-    <p className="truth">{t("本页只进行价格试算，不保存、不签发、也不会更改正式 Quote 或 Order。正式价格与费用须由授权人员审核后签发。", "This page is an estimate only. It does not save, issue, or change a formal Quote or Order. Authorized staff must review and issue all formal prices and charges.")}</p>
+    <p className="truth">{t("本页只进行价格试算，不保存、不签发、也不会更改正式报价或订单。正式价格与费用须由授权人员审核后签发。", "This page is an estimate only. It does not save, issue, or change a formal Quote or Order. Authorized staff must review and issue all formal prices and charges.")}</p>
 
     {message && <p className="message">{message}</p>}
 
@@ -149,26 +149,26 @@ export default function ZSeriesQuotePage() {
 
     {selected && <section className="card">
       <h2>{t("产品信息", "Product details")}</h2>
-      <div className="product"><span><b>{selected.fabricCode}</b><small>{lang === "zh" ? selected.descriptionZh : selected.descriptionEn}</small></span><span><b>{selected.productCode}</b><small>{lang === "zh" ? selected.systemZh : selected.systemEn} · {lang === "zh" ? selected.styleZh : selected.styleEn}</small></span><span><b>USD ${selected.retail.toFixed(2)}</b><small>{t("Retail 零售价", "Retail / 零售价")}</small></span><span><b>USD ${selected.wholesale.toFixed(2)}</b><small>{t(`客户批发价 · 折扣 ${discountPercent}%`, `Customer wholesale · ${discountPercent}% discount`)}</small></span></div>
-      <p className="limit">{t("尺寸限制", "Size limits")}: W {selected.minWidth}–{selected.maxWidth}{"\""} · H {selected.minHeight}–{selected.maxHeight}{"\""} · D &gt; {selected.minDepthExclusive}{"\""}</p>
+      <div className="product"><span><b>{selected.fabricCode}</b><small>{lang === "zh" ? selected.descriptionZh : selected.descriptionEn}</small></span><span><b>{selected.productCode}</b><small>{lang === "zh" ? selected.systemZh : selected.systemEn} · {lang === "zh" ? selected.styleZh : selected.styleEn}</small></span><span><b>USD ${selected.retail.toFixed(2)}</b><small>{t("零售价 / Retail", "Retail / 零售价")}</small></span><span><b>USD ${selected.wholesale.toFixed(2)}</b><small>{t(`客户批发价 / Wholesale · 折扣 ${discountPercent}%`, `Customer wholesale / 客户批发价 · ${discountPercent}% discount`)}</small></span></div>
+      <p className="limit">{t("尺寸限制", "Size limits")}: {t("宽度", "Width")} {selected.minWidth}–{selected.maxWidth}{"\""} · {t("高度", "Height")} {selected.minHeight}–{selected.maxHeight}{"\""} · {t("深度", "Depth")} &gt; {selected.minDepthExclusive}{"\""}</p>
     </section>}
 
     <section className="card">
       <h2>{t("尺寸 · 精确到 1/16 英寸", "Dimensions · exact to 1/16 inch")}</h2>
       <div className="dimensionGrid">
-        <Dimension label={t("宽度 Width", "Width 宽度")} whole={widthWhole} frac={widthFrac} setWhole={setWidthWhole} setFrac={setWidthFrac} />
-        <Dimension label={t("高度 Height", "Height 高度")} whole={heightWhole} frac={heightFrac} setWhole={setHeightWhole} setFrac={setHeightFrac} />
-        <Dimension label={t("深度 Depth", "Depth 深度")} whole={depthWhole} frac={depthFrac} setWhole={setDepthWhole} setFrac={setDepthFrac} />
+        <Dimension label={t("宽度 / Width", "Width / 宽度")} unit={t("英寸 / in", "in / 英寸")} whole={widthWhole} frac={widthFrac} setWhole={setWidthWhole} setFrac={setWidthFrac} />
+        <Dimension label={t("高度 / Height", "Height / 高度")} unit={t("英寸 / in", "in / 英寸")} whole={heightWhole} frac={heightFrac} setWhole={setHeightWhole} setFrac={setHeightFrac} />
+        <Dimension label={t("深度 / Depth", "Depth / 深度")} unit={t("英寸 / in", "in / 英寸")} whole={depthWhole} frac={depthFrac} setWhole={setDepthWhole} setFrac={setDepthFrac} />
         <label>{t("数量 / Quantity", "Quantity / 数量")}<input type="number" min="1" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} /></label>
       </div>
-      <p>{t("当前尺寸", "Current size")}: {format16(width)} × {format16(height)} · D {format16(depth)}</p>
+      <p>{t("当前尺寸", "Current size")}: {format16(width)} × {format16(height)} · {t("深度", "Depth")} {format16(depth)}</p>
       {dimensionErrors.length > 0 && <div className="errors">{dimensionErrors.map((e) => <div key={e}>⚠ {e}</div>)}</div>}
       <button className="primary" onClick={addLine}>{t("加入报价", "Add to quotation")}</button>
     </section>
 
     <section className="card">
       <h2>{t("报价明细", "Quotation lines")}</h2>
-      {!lines.length ? <p>{t("尚未添加窗位", "No windows added yet")}</p> : <div className="tableWrap"><table><thead><tr><th>{t("房间", "Room")}</th><th>{t("窗位", "Window")}</th><th>{t("面料", "Fabric")}</th><th>{t("产品", "Product")}</th><th>{t("尺寸", "Size")}</th><th>{t("数量", "Qty")}</th><th>Retail</th><th>Wholesale</th><th></th></tr></thead><tbody>{lines.map((l) => <tr key={l.id}><td>{l.room}</td><td>{l.window}</td><td>{l.item.fabricCode}</td><td>{l.item.productCode}</td><td>{format16(l.width)} × {format16(l.height)} · D {format16(l.depth)}</td><td>{l.quantity}</td><td>${(l.item.retail * l.quantity).toFixed(2)}</td><td>${(l.item.wholesale * l.quantity).toFixed(2)}</td><td><button onClick={() => setLines((x) => x.filter((v) => v.id !== l.id))}>{t("删除", "Remove")}</button></td></tr>)}</tbody></table></div>}
+      {!lines.length ? <p>{t("尚未添加窗位", "No windows added yet")}</p> : <div className="tableWrap"><table><thead><tr><th>{t("房间", "Room")}</th><th>{t("窗位", "Window")}</th><th>{t("面料", "Fabric")}</th><th>{t("产品", "Product")}</th><th>{t("尺寸", "Size")}</th><th>{t("数量", "Qty")}</th><th>{t("零售价 / Retail", "Retail / 零售价")}</th><th>{t("批发价 / Wholesale", "Wholesale / 批发价")}</th><th></th></tr></thead><tbody>{lines.map((l) => <tr key={l.id}><td>{l.room}</td><td>{l.window}</td><td>{l.item.fabricCode}</td><td>{l.item.productCode}</td><td>{format16(l.width)} × {format16(l.height)} · {t("深度", "Depth")} {format16(l.depth)}</td><td>{l.quantity}</td><td>${(l.item.retail * l.quantity).toFixed(2)}</td><td>${(l.item.wholesale * l.quantity).toFixed(2)}</td><td><button onClick={() => setLines((x) => x.filter((v) => v.id !== l.id))}>{t("删除", "Remove")}</button></td></tr>)}</tbody></table></div>}
     </section>
 
     <section className="card totalsCard">
@@ -178,22 +178,22 @@ export default function ZSeriesQuotePage() {
         <label>{t("产品小计税率 % / Product subtotal tax %", "Product subtotal tax % / 产品小计税率 %")}<input type="number" min="0" step="0.01" value={taxPercent} onChange={(e) => setTaxPercent(Number(e.target.value))} /></label>
       </div>
       <div className="totals">
-        <span>{t("Retail 小计", "Retail subtotal")}<b>USD ${retailSubtotal.toFixed(2)}</b></span>
-        <span>{t(`Wholesale 小计（账户折扣 ${discountPercent}%）`, `Wholesale subtotal (${discountPercent}% account discount)`)}<b>USD ${wholesaleSubtotal.toFixed(2)}</b></span>
+        <span>{t("零售小计 / Retail subtotal", "Retail subtotal / 零售小计")}<b>USD ${retailSubtotal.toFixed(2)}</b></span>
+        <span>{t(`批发小计 / Wholesale subtotal（账户折扣 ${discountPercent}%）`, `Wholesale subtotal / 批发小计 (${discountPercent}% account discount)`)}<b>USD ${wholesaleSubtotal.toFixed(2)}</b></span>
         <span>{t("安装费", "Installation")}<b>USD ${Math.max(0, installationFee).toFixed(2)}</b></span>
         <span>{t("运输费", "Shipping")}<b>USD ${Math.max(0, shippingFee).toFixed(2)}</b></span>
         <span>{t("产品小计税额（试算）", "Product subtotal tax estimate")}<b>USD ${taxAmount.toFixed(2)}</b></span>
         <span className="grand">{t("报价总额", "Quotation total")}<b>USD ${total.toFixed(2)}</b></span>
       </div>
-      <p className="note">{t("说明：Z 系列产品价格来自正式价格表。安装费、运输费和产品小计税率由用户仅为本次试算输入，不写回产品价格或正式 Quote。最终税费必须由授权人员按实际规则审核。", "Note: Z-Series product prices come from the approved price list. Installation, shipping and product-subtotal tax are user-entered for this estimate only and are not written to product pricing or a formal Quote. Authorized staff must review final tax and charges.")}</p>
+      <p className="note">{t("说明：Z 系列产品价格来自正式价格表。安装费、运输费和产品小计税率由用户仅为本次试算输入，不写回产品价格或正式报价。最终税费必须由授权人员按实际规则审核。", "Note: Z-Series product prices come from the approved price list. Installation, shipping and product-subtotal tax are user-entered for this estimate only and are not written to product pricing or a formal Quote. Authorized staff must review final tax and charges.")}</p>
     </section>
 
     <style jsx>{styles}</style>
   </main>;
 }
 
-function Dimension({ label, whole, frac, setWhole, setFrac }: { label: string; whole: number; frac: number; setWhole: (v: number) => void; setFrac: (v: number) => void }) {
-  return <label>{label}<div className="fraction"><input type="number" min="0" value={whole} onChange={(e) => setWhole(Number(e.target.value))} /><select value={frac} onChange={(e) => setFrac(Number(e.target.value))}>{fracOptions.map((f) => <option key={f} value={f}>{f === 0 ? "—" : `${f}/16`}</option>)}</select><span>in</span></div></label>;
+function Dimension({ label, unit, whole, frac, setWhole, setFrac }: { label: string; unit: string; whole: number; frac: number; setWhole: (v: number) => void; setFrac: (v: number) => void }) {
+  return <label>{label}<div className="fraction"><input type="number" min="0" value={whole} onChange={(e) => setWhole(Number(e.target.value))} /><select value={frac} onChange={(e) => setFrac(Number(e.target.value))}>{fracOptions.map((f) => <option key={f} value={f}>{f === 0 ? "—" : `${f}/16`}</option>)}</select><span>{unit}</span></div></label>;
 }
 
 const styles = `.page{min-height:100vh;background:#f4f1ea;color:#1b392f;padding:20px;font-family:Arial,"PingFang SC",sans-serif}header,.card,.message,.truth{max-width:1180px;margin:auto;box-sizing:border-box}header{background:#153f34;color:#fff;padding:24px;border-radius:20px;display:flex;justify-content:space-between;gap:20px}header h1{margin:6px 0}header nav{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}button,header a{border:0;border-radius:9px;padding:10px 13px;background:#dfb45c;color:#173f35;font-weight:800;cursor:pointer;text-decoration:none}.truth{margin-top:12px;background:#fff4d9;border-left:5px solid #c88b22;padding:12px;border-radius:8px}.message{margin-top:12px;background:#e7f0eb;padding:10px;border-radius:10px}.card{margin-top:14px;background:#fff;border:1px solid #ddd7ca;border-radius:16px;padding:18px}.grid,.dimensionGrid,.fees{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}label{display:grid;gap:6px;font-weight:700}input,select{padding:10px;border:1px solid #cfd6d1;border-radius:8px;background:#fff;min-width:0}.product{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.product span{background:#f1f4f1;padding:12px;border-radius:10px;display:grid}.product small{margin-top:5px}.limit,.note{background:#f6f4ee;padding:10px;border-radius:8px}.fraction{display:grid;grid-template-columns:1fr 1fr auto;gap:5px;align-items:center}.errors{margin:12px 0;color:#9b2f20;font-weight:700}.primary{background:#1f6751;color:#fff}.tableWrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px}th,td{border-bottom:1px solid #e3e3df;padding:9px;text-align:left}.totalsCard{display:grid;gap:15px}.totals{margin-left:auto;width:min(520px,100%);display:grid;gap:7px}.totals span{display:flex;justify-content:space-between;border-top:1px solid #e1e4df;padding-top:7px}.totals .grand{font-size:21px;font-weight:900}@media(max-width:800px){.page{padding:10px}header{flex-direction:column}.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr 1fr}}@media(max-width:520px){.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr}}`;
