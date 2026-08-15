@@ -422,6 +422,11 @@ export const measurementValues = sqliteTable("measurement_values", {
   sourceValue: text("source_value").notNull(),
 }, (table) => ({ versionFieldUnique: uniqueIndex("measurement_values_version_field_unique").on(table.measurementVersionId, table.fieldKey) }));
 
+export const measurementMedia = sqliteTable("measurement_media", {
+  id: integer("id").primaryKey({ autoIncrement: true }), propertyId: integer("property_id").notNull(), windowId: integer("window_id").notNull(), measurementVersionId: integer("measurement_version_id").notNull(),
+  uploadedBy: integer("uploaded_by").notNull(), objectKey: text("object_key").notNull().unique(), contentType: text("content_type").notNull(), fileName: text("file_name").notNull(), sizeBytes: integer("size_bytes").notNull(), sha256: text("sha256").notNull(), annotation: text("annotation").notNull().default(""), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table => ({ versionIdx: index("measurement_media_version_idx").on(table.measurementVersionId, table.createdAt), windowIdx: index("measurement_media_window_idx").on(table.windowId) }));
+
 export const roomSketchVersions = sqliteTable("room_sketch_versions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   roomId: integer("room_id").notNull(),
