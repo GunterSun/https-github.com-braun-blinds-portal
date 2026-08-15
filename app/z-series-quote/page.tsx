@@ -133,7 +133,7 @@ export default function ZSeriesQuotePage() {
         <h1>{t("Z 系列价格试算", "Z-Series Price Estimate")}</h1>
         <p>{t("正式产品价格表 · USD · 产品价不含安装与运输 · 尺寸精确到 1/16 英寸", "Approved product price list · USD · Product price excludes installation and shipping · Dimensions to 1/16 inch")}</p>
       </div>
-      <nav><button onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/customer-quotes">{t("正式报价", "Formal Quotes")}</Link><Link href="/hub">{t("工作中心", "Hub")}</Link></nav>
+      <nav><button onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/z-series-quote-review">{t("正式 Z 系列报价", "Formal Z-Series Quotes")}</Link><Link href="/hub">{t("工作中心", "Hub")}</Link></nav>
     </header>
 
     <p className="truth">{t("本页只进行价格试算，不保存、不签发、也不会更改正式 Quote 或 Order。正式价格与费用须由授权人员审核后签发。", "This page is an estimate only. It does not save, issue, or change a formal Quote or Order. Authorized staff must review and issue all formal prices and charges.")}</p>
