@@ -10,6 +10,7 @@ export type UnifiedModule = {
 };
 
 export const UNIFIED_MODULES: UnifiedModule[] = [
+  { key:"field-today", zh:"今日现场任务", en:"Today’s Field Tasks", descriptionZh:"按当前账号权限汇总真实测量与安装任务，精确进入对应工作流。", descriptionEn:"Role-scoped real Measure and Installation tasks with exact workflow links.", href:"/field-today", roles:["owner","sales","installer"], status:"available" },
   { key:"customer-portal", zh:"我的房产", en:"My Properties", descriptionZh:"查看明确授权的房产、房间、Window 和客户可见状态。", descriptionEn:"View explicitly authorized properties, rooms, Windows and customer-visible statuses.", href:"/customer-portal", roles:["customer"], status:"available" },
   { key:"customer-access", zh:"客户门户授权", en:"Customer Access", descriptionZh:"邀请家庭联系人并授予或撤销指定 Property 权限。", descriptionEn:"Invite household contacts and grant or revoke property-specific access.", href:"/customer-access", roles:["owner"], status:"available" },
   { key:"customer-quotes", zh:"我的报价与签署", en:"My Quotes & Signature", descriptionZh:"按 Room/Window 查看准确尺寸、效果图、报价选项并电子签署。", descriptionEn:"Review exact Room/Window measurements, renderings and options, then e-sign.", href:"/customer-quotes", roles:["customer"], status:"available" },

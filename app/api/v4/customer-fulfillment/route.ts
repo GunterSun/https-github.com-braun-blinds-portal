@@ -33,7 +33,7 @@ export async function GET() {
   const u = await getCurrentAppUser();
   if (!u) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   const db = await getDb();
-  if (u.role === "owner") return NextResponse.json({ fulfillments: await list(), properties: await db.select({ id: measureProperties.id, name: measureProperties.name, customerId: measureProperties.customerId }).from(measureProperties).limit(500), windows: await db.select({ id: measureWindows.id, propertyId: measureWindows.propertyId, code: measureWindows.code }).from(measureWindows).limit(2000) });
+  if (u.role === "owner") return NextResponse.json({ fulfillments: await list(), properties: await db.select({ id: measureProperties.id, name: measureProperties.name, address: measureProperties.address, customerId: measureProperties.customerId }).from(measureProperties).limit(500), windows: await db.select({ id: measureWindows.id, propertyId: measureWindows.propertyId, code: measureWindows.code }).from(measureWindows).limit(2000) });
   if (u.role !== "customer") return NextResponse.json({ error: "Permission denied" }, { status: 403 });
   const grants = await db.select({ id: customerPropertyAccess.propertyId }).from(customerPropertyAccess).where(and(eq(customerPropertyAccess.userId, u.id), eq(customerPropertyAccess.status, "active")));
   return NextResponse.json({ fulfillments: await list(grants.map((x) => x.id)) });
