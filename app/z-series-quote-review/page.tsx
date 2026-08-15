@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 type ZLine={room:string;windowCode:string;fabricCode:string;productCode:string;descriptionZh:string;descriptionEn:string;systemZh:string;systemEn:string;styleZh:string;styleEn:string;structureZh:string;structureEn:string;constructionZh:string;constructionEn:string;width:number;height:number;depth:number;quantity:number;unitPrice:number;lineTotal:number;currency:string};
 type Quote={id:number;quoteNumber:string;version:number;status:string;currency:string;subtotal:number;discountAmount:number;taxAmount:number;installationFee:number;shippingFee:number;depositRequired:number;total:number;balance:number;terms:string;validUntil:string;documentSha256:string;signedAt:string|null;source:{zSeries?:{source:string;priceMode:string;lines:ZLine[]}}};
-const fraction=(value:number)=>{const six=Math.round(value*16),whole=Math.floor(six/16),r=((six%16)+16)%16;if(!r)return `${whole}”`;return `${whole} ${r}/16”`};
+const fraction=(value:number)=>{const six=Math.round(value*16),whole=Math.floor(six/16),r=((six%16)+16)%16;if(!r)return `${whole}”`;return `${whole?`${whole} `:""}${r}/16”`};
 
 export default function ZSeriesQuoteReview(){
   const[lang,setLang]=useState<"zh"|"en">("zh"),[quotes,setQuotes]=useState<Quote[]>([]),[message,setMessage]=useState(""),[signing,setSigning]=useState<number|null>(null),[name,setName]=useState(""),[signature,setSignature]=useState(""),[accepted,setAccepted]=useState(false);
