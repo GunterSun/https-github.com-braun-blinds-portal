@@ -7,7 +7,10 @@ export async function GET() {
     return Response.json({ error: "未授权 / Unauthorized" }, { status: 401 });
   }
 
-  const discountPercent = Number(customer.discountPercent) || 0;
+  const discountPercent = Number(customer.discountPercent);
+  if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+    return Response.json({ error: "客户折扣配置无效，请联系老板审核 / Customer discount configuration is invalid; Owner review required" }, { status: 409 });
+  }
   return Response.json({
     source: Z_SERIES_SOURCE,
     discountPercent,

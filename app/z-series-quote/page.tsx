@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type CatalogItem = {
@@ -100,11 +101,11 @@ export default function ZSeriesQuotePage() {
   const dimensionErrors = useMemo(() => {
     if (!selected) return [] as string[];
     const errors: string[] = [];
-    if (width < selected.minWidth) errors.push(t(`宽度不能小于 ${selected.minWidth}\"`, `Width must be at least ${selected.minWidth}\"`));
-    if (width > selected.maxWidth) errors.push(t(`宽度不能大于 ${selected.maxWidth}\"`, `Width cannot exceed ${selected.maxWidth}\"`));
-    if (height < selected.minHeight) errors.push(t(`高度不能小于 ${selected.minHeight}\"`, `Height must be at least ${selected.minHeight}\"`));
-    if (height > selected.maxHeight) errors.push(t(`高度不能大于 ${selected.maxHeight}\"`, `Height cannot exceed ${selected.maxHeight}\"`));
-    if (depth <= selected.minDepthExclusive) errors.push(t(`深度必须大于 ${selected.minDepthExclusive}\"`, `Depth must be greater than ${selected.minDepthExclusive}\"`));
+    if (width < selected.minWidth) errors.push(lang === "zh" ? `宽度不能小于 ${selected.minWidth}\"` : `Width must be at least ${selected.minWidth}\"`);
+    if (width > selected.maxWidth) errors.push(lang === "zh" ? `宽度不能大于 ${selected.maxWidth}\"` : `Width cannot exceed ${selected.maxWidth}\"`);
+    if (height < selected.minHeight) errors.push(lang === "zh" ? `高度不能小于 ${selected.minHeight}\"` : `Height must be at least ${selected.minHeight}\"`);
+    if (height > selected.maxHeight) errors.push(lang === "zh" ? `高度不能大于 ${selected.maxHeight}\"` : `Height cannot exceed ${selected.maxHeight}\"`);
+    if (depth <= selected.minDepthExclusive) errors.push(lang === "zh" ? `深度必须大于 ${selected.minDepthExclusive}\"` : `Depth must be greater than ${selected.minDepthExclusive}\"`);
     return errors;
   }, [selected, width, height, depth, lang]);
 
@@ -129,11 +130,13 @@ export default function ZSeriesQuotePage() {
     <header>
       <div>
         <small>Z SERIES · BRAUN BLINDS</small>
-        <h1>{t("Z 系列报价系统", "Z-Series Quotation")}</h1>
-        <p>{t("正式价格表 · USD · 产品价不含安装与运输 · 尺寸精确到 1/16 英寸", "Approved price list · USD · Product price excludes installation and shipping · Dimensions to 1/16 inch")}</p>
+        <h1>{t("Z 系列价格试算", "Z-Series Price Estimate")}</h1>
+        <p>{t("正式产品价格表 · USD · 产品价不含安装与运输 · 尺寸精确到 1/16 英寸", "Approved product price list · USD · Product price excludes installation and shipping · Dimensions to 1/16 inch")}</p>
       </div>
-      <button onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button>
+      <nav><button onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/customer-quotes">{t("正式报价", "Formal Quotes")}</Link><Link href="/hub">{t("工作中心", "Hub")}</Link></nav>
     </header>
+
+    <p className="truth">{t("本页只进行价格试算，不保存、不签发、也不会更改正式 Quote 或 Order。正式价格与费用须由授权人员审核后签发。", "This page is an estimate only. It does not save, issue, or change a formal Quote or Order. Authorized staff must review and issue all formal prices and charges.")}</p>
 
     {message && <p className="message">{message}</p>}
 
@@ -147,7 +150,7 @@ export default function ZSeriesQuotePage() {
     {selected && <section className="card">
       <h2>{t("产品信息", "Product details")}</h2>
       <div className="product"><span><b>{selected.fabricCode}</b><small>{lang === "zh" ? selected.descriptionZh : selected.descriptionEn}</small></span><span><b>{selected.productCode}</b><small>{lang === "zh" ? selected.systemZh : selected.systemEn} · {lang === "zh" ? selected.styleZh : selected.styleEn}</small></span><span><b>USD ${selected.retail.toFixed(2)}</b><small>{t("Retail 零售价", "Retail / 零售价")}</small></span><span><b>USD ${selected.wholesale.toFixed(2)}</b><small>{t(`客户批发价 · 折扣 ${discountPercent}%`, `Customer wholesale · ${discountPercent}% discount`)}</small></span></div>
-      <p className="limit">{t("尺寸限制", "Size limits")}: W {selected.minWidth}–{selected.maxWidth}\" · H {selected.minHeight}–{selected.maxHeight}\" · D &gt; {selected.minDepthExclusive}\"</p>
+      <p className="limit">{t("尺寸限制", "Size limits")}: W {selected.minWidth}–{selected.maxWidth}{"\""} · H {selected.minHeight}–{selected.maxHeight}{"\""} · D &gt; {selected.minDepthExclusive}{"\""}</p>
     </section>}
 
     <section className="card">
@@ -172,17 +175,17 @@ export default function ZSeriesQuotePage() {
       <div className="fees">
         <label>{t("安装费 / Installation", "Installation / 安装费")}<input type="number" min="0" step="0.01" value={installationFee} onChange={(e) => setInstallationFee(Number(e.target.value))} /></label>
         <label>{t("运输费 / Shipping", "Shipping / 运输费")}<input type="number" min="0" step="0.01" value={shippingFee} onChange={(e) => setShippingFee(Number(e.target.value))} /></label>
-        <label>{t("税率 % / Tax %", "Tax % / 税率 %")}<input type="number" min="0" step="0.01" value={taxPercent} onChange={(e) => setTaxPercent(Number(e.target.value))} /></label>
+        <label>{t("产品小计税率 % / Product subtotal tax %", "Product subtotal tax % / 产品小计税率 %")}<input type="number" min="0" step="0.01" value={taxPercent} onChange={(e) => setTaxPercent(Number(e.target.value))} /></label>
       </div>
       <div className="totals">
         <span>{t("Retail 小计", "Retail subtotal")}<b>USD ${retailSubtotal.toFixed(2)}</b></span>
         <span>{t(`Wholesale 小计（账户折扣 ${discountPercent}%）`, `Wholesale subtotal (${discountPercent}% account discount)`)}<b>USD ${wholesaleSubtotal.toFixed(2)}</b></span>
         <span>{t("安装费", "Installation")}<b>USD ${Math.max(0, installationFee).toFixed(2)}</b></span>
         <span>{t("运输费", "Shipping")}<b>USD ${Math.max(0, shippingFee).toFixed(2)}</b></span>
-        <span>{t("税", "Tax")}<b>USD ${taxAmount.toFixed(2)}</b></span>
+        <span>{t("产品小计税额（试算）", "Product subtotal tax estimate")}<b>USD ${taxAmount.toFixed(2)}</b></span>
         <span className="grand">{t("报价总额", "Quotation total")}<b>USD ${total.toFixed(2)}</b></span>
       </div>
-      <p className="note">{t("说明：Z 系列产品价格来自正式价格表。安装费、运输费和税单独计算，不写回产品价格。", "Note: Z-Series product prices come from the approved price list. Installation, shipping and tax are calculated separately and never merged into product price.")}</p>
+      <p className="note">{t("说明：Z 系列产品价格来自正式价格表。安装费、运输费和产品小计税率由用户仅为本次试算输入，不写回产品价格或正式 Quote。最终税费必须由授权人员按实际规则审核。", "Note: Z-Series product prices come from the approved price list. Installation, shipping and product-subtotal tax are user-entered for this estimate only and are not written to product pricing or a formal Quote. Authorized staff must review final tax and charges.")}</p>
     </section>
 
     <style jsx>{styles}</style>
@@ -193,4 +196,4 @@ function Dimension({ label, whole, frac, setWhole, setFrac }: { label: string; w
   return <label>{label}<div className="fraction"><input type="number" min="0" value={whole} onChange={(e) => setWhole(Number(e.target.value))} /><select value={frac} onChange={(e) => setFrac(Number(e.target.value))}>{fracOptions.map((f) => <option key={f} value={f}>{f === 0 ? "—" : `${f}/16`}</option>)}</select><span>in</span></div></label>;
 }
 
-const styles = `.page{min-height:100vh;background:#f4f1ea;color:#1b392f;padding:20px;font-family:Arial,"PingFang SC",sans-serif}header,.card,.message{max-width:1180px;margin:auto;box-sizing:border-box}header{background:#153f34;color:#fff;padding:24px;border-radius:20px;display:flex;justify-content:space-between;gap:20px}header h1{margin:6px 0}button{border:0;border-radius:9px;padding:10px 13px;background:#dfb45c;color:#173f35;font-weight:800;cursor:pointer}.message{margin-top:12px;background:#e7f0eb;padding:10px;border-radius:10px}.card{margin-top:14px;background:#fff;border:1px solid #ddd7ca;border-radius:16px;padding:18px}.grid,.dimensionGrid,.fees{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}label{display:grid;gap:6px;font-weight:700}input,select{padding:10px;border:1px solid #cfd6d1;border-radius:8px;background:#fff;min-width:0}.product{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.product span{background:#f1f4f1;padding:12px;border-radius:10px;display:grid}.product small{margin-top:5px}.limit,.note{background:#f6f4ee;padding:10px;border-radius:8px}.fraction{display:grid;grid-template-columns:1fr 1fr auto;gap:5px;align-items:center}.errors{margin:12px 0;color:#9b2f20;font-weight:700}.primary{background:#1f6751;color:#fff}.tableWrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px}th,td{border-bottom:1px solid #e3e3df;padding:9px;text-align:left}.totalsCard{display:grid;gap:15px}.totals{margin-left:auto;width:min(520px,100%);display:grid;gap:7px}.totals span{display:flex;justify-content:space-between;border-top:1px solid #e1e4df;padding-top:7px}.totals .grand{font-size:21px;font-weight:900}@media(max-width:800px){.page{padding:10px}header{flex-direction:column}.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr 1fr}}@media(max-width:520px){.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr}}`;
+const styles = `.page{min-height:100vh;background:#f4f1ea;color:#1b392f;padding:20px;font-family:Arial,"PingFang SC",sans-serif}header,.card,.message,.truth{max-width:1180px;margin:auto;box-sizing:border-box}header{background:#153f34;color:#fff;padding:24px;border-radius:20px;display:flex;justify-content:space-between;gap:20px}header h1{margin:6px 0}header nav{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}button,header a{border:0;border-radius:9px;padding:10px 13px;background:#dfb45c;color:#173f35;font-weight:800;cursor:pointer;text-decoration:none}.truth{margin-top:12px;background:#fff4d9;border-left:5px solid #c88b22;padding:12px;border-radius:8px}.message{margin-top:12px;background:#e7f0eb;padding:10px;border-radius:10px}.card{margin-top:14px;background:#fff;border:1px solid #ddd7ca;border-radius:16px;padding:18px}.grid,.dimensionGrid,.fees{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}label{display:grid;gap:6px;font-weight:700}input,select{padding:10px;border:1px solid #cfd6d1;border-radius:8px;background:#fff;min-width:0}.product{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.product span{background:#f1f4f1;padding:12px;border-radius:10px;display:grid}.product small{margin-top:5px}.limit,.note{background:#f6f4ee;padding:10px;border-radius:8px}.fraction{display:grid;grid-template-columns:1fr 1fr auto;gap:5px;align-items:center}.errors{margin:12px 0;color:#9b2f20;font-weight:700}.primary{background:#1f6751;color:#fff}.tableWrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px}th,td{border-bottom:1px solid #e3e3df;padding:9px;text-align:left}.totalsCard{display:grid;gap:15px}.totals{margin-left:auto;width:min(520px,100%);display:grid;gap:7px}.totals span{display:flex;justify-content:space-between;border-top:1px solid #e1e4df;padding-top:7px}.totals .grand{font-size:21px;font-weight:900}@media(max-width:800px){.page{padding:10px}header{flex-direction:column}.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr 1fr}}@media(max-width:520px){.grid,.dimensionGrid,.fees,.product{grid-template-columns:1fr}}`;
