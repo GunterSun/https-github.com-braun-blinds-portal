@@ -3858,6 +3858,82 @@ Estimated price: ${outPriceVal.textContent}`;
       try {
         localStorage.setItem(LOCAL_QUOTE_SEQ_KEY, maxSeq.toString());
       } catch (e) {}
+
+      // 4. Ensure Built-In v1.1 and v1.2 Historical Records are seeded if not present
+      let currentOrders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      let currentProfiles = JSON.parse(localStorage.getItem(LOCAL_SAVED_PROFILES_KEY) || '[]');
+
+      let updated = false;
+
+      // Seed S-51001 (v1.1 赵总项目)
+      if (!currentOrders.some(o => o.quoteNo === 'S-51001')) {
+        currentOrders.unshift({
+          quoteNo: 'S-51001',
+          customerName: '赵总 (Mr. Zhao)',
+          projType: '加州别墅全屋 Z系列罗马帘定制项目 (v1.1)',
+          phone: '+1 (408) 688-9210',
+          email: 'zhao.california@braunblinds.com',
+          address: '2840 Shadow Creek Dr, San Jose, CA 95138',
+          date: '2026-08-01',
+          itemCount: 18,
+          grandTotal: '$11,704.29',
+          updatedAt: '2026-08-01T10:00:00Z',
+          version: 'Braun-Z-1.1'
+        });
+        updated = true;
+      }
+
+      // Seed S-51002 (v1.2 孙总项目)
+      if (!currentOrders.some(o => o.quoteNo === 'S-51002')) {
+        currentOrders.splice(1, 0, {
+          quoteNo: 'S-51002',
+          customerName: '孙总 (Mr. Sun)',
+          projType: '纽约商业公寓精做卷帘与斑马帘采购项目 (v1.2)',
+          phone: '+1 (212) 555-0198',
+          email: 'sun.manhattan@braunblinds.com',
+          address: '432 Park Ave, Apt 58B, New York, NY 10022',
+          date: '2026-08-10',
+          itemCount: 12,
+          grandTotal: '$8,450.00',
+          updatedAt: '2026-08-10T14:30:00Z',
+          version: 'Braun-Z-1.2'
+        });
+        updated = true;
+      }
+
+      // Seed Customer Profiles for 赵总 and 孙总
+      if (!currentProfiles.some(p => p.name && p.name.includes('赵总'))) {
+        currentProfiles.unshift({
+          name: '赵总 (Mr. Zhao)',
+          proj: '加州别墅全屋定制项目 (v1.1)',
+          phone: '+1 (408) 688-9210',
+          email: 'zhao.california@braunblinds.com',
+          address: '2840 Shadow Creek Dr, San Jose, CA 95138',
+          orderCount: 1,
+          updatedAt: '2026-08-01T10:00:00Z'
+        });
+        updated = true;
+      }
+
+      if (!currentProfiles.some(p => p.name && p.name.includes('孙总'))) {
+        currentProfiles.splice(1, 0, {
+          name: '孙总 (Mr. Sun)',
+          proj: '纽约商业公寓采购项目 (v1.2)',
+          phone: '+1 (212) 555-0198',
+          email: 'sun.manhattan@braunblinds.com',
+          address: '432 Park Ave, Apt 58B, New York, NY 10022',
+          orderCount: 1,
+          updatedAt: '2026-08-10T14:30:00Z'
+        });
+        updated = true;
+      }
+
+      if (updated) {
+        try {
+          localStorage.setItem(LOCAL_ORDERS_HISTORY_KEY, JSON.stringify(currentOrders));
+          localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(currentProfiles));
+        } catch(e) {}
+      }
     }
 
     // Initial Engine Bootstrap
