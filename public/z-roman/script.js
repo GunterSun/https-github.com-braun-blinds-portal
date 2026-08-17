@@ -912,7 +912,7 @@ Estimated price: ${outPriceVal.textContent}`;
 
             // 4. Add Smart Hub Line Item
             if (smartId !== 'none' && smartObj) {
-              const smartMsrp = smartObj.price_usd || 35;
+              const smartMsrp = smartObj.price_usd || 144;
               const smartFinal = Math.round(smartMsrp * hwDiscount * 100) / 100;
               romanQuoteItems.push({
                 id: Date.now() + 3,
@@ -2352,8 +2352,35 @@ Estimated price: ${outPriceVal.textContent}`;
           matchedSys = trackSys;
         }
 
+        // Smart Hardware Accessory Mapping
+        let motorId = 'none';
+        let remoteId = 'none';
+        let smartId = 'none';
+
+        if (combinedText.includes('奥科') || combinedText.includes('a-ok') || combinedText.includes('aok')) {
+          motorId = 'aok_motor_222';
+        } else if (combinedText.includes('双电机') || combinedText.includes('dual motor')) {
+          motorId = 'dual_motor';
+        } else if (combinedText.includes('电动') || combinedText.includes('电机') || combinedText.includes('motorized') || combinedText.includes('motor')) {
+          motorId = 'single_motor';
+        }
+
+        if (combinedText.includes('6通道') || combinedText.includes('调光遥控器') || combinedText.includes('precision') || combinedText.includes('6-ch')) {
+          remoteId = 'remote_precision_6ch';
+        } else if (combinedText.includes('15通道') || combinedText.includes('15频') || combinedText.includes('15-ch')) {
+          remoteId = 'remote_15ch';
+        } else if (combinedText.includes('遥控器') || combinedText.includes('单通道') || combinedText.includes('remote') || combinedText.includes('1-ch')) {
+          remoteId = 'remote_1ch';
+        }
+
+        if (combinedText.includes('智能网关') || combinedText.includes('智能盒') || combinedText.includes('网关') || combinedText.includes('hub') || combinedText.includes('gateway')) {
+          smartId = 'smart_hub';
+        } else if (combinedText.includes('太阳能') || combinedText.includes('solar')) {
+          smartId = 'solar_panel';
+        }
+
         const pricing = ROMAN_DB.calculateItemPrice(
-          matchedSys.code, defaultFab.code, wNum, hNum, 'none', 'none', 'none', romanDiscountFactor
+          matchedSys.code, defaultFab.code, wNum, hNum, motorId, remoteId, smartId, romanDiscountFactor, romanHardwareFloorFactor
         );
 
         parsedItems.push({
@@ -2367,8 +2394,8 @@ Estimated price: ${outPriceVal.textContent}`;
           sqm: pricing.sqm,
           qty: qtyNum,
           mount: mountVal,
-          control: 'Cordless (无绳手提)',
-          addons: '',
+          control: motorId !== 'none' ? 'Motorized Remote (电动驱动)' : 'Cordless (无绳手提)',
+          addons: motorId !== 'none' ? 'Motor/Remote/Smart' : '',
           msrp_unit: pricing.msrp_price,
           final_unit: pricing.final_unit_price,
           amount: Math.round(pricing.final_unit_price * qtyNum * 100) / 100
