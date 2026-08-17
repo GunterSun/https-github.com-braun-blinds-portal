@@ -657,10 +657,7 @@ Estimated price: ${outPriceVal.textContent}`;
           let perc = parseFloat(valStr);
           if (isNaN(perc)) perc = 30;
           if (perc < 0) perc = 0;
-          if (perc > 30) {
-            perc = 30; // Strictly cap manual discount to 3折 (30% / 0.30 max)
-            e.target.value = 30;
-          }
+          if (perc > 100) perc = 100;
           let factor = perc / 100;
 
           // Highlight matching preset button if any

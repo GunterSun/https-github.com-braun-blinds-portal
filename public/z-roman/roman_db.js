@@ -12,7 +12,7 @@ const ROMAN_DB = {
   PRODUCT_CATEGORIES: [
     { id: 'roman', name_cn: 'Z系列罗马帘', name_en: 'Z Series Roman Shades', icon: '🏮' },
     { id: 'roller', name_cn: '精做卷帘', name_en: 'Roller Shades', icon: '📜' },
-    { id: 'zebra', name_cn: '双层斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
+    { id: 'zebra', name_cn: '斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
     { id: 'sheer', name_cn: '香格里拉柔纱帘', name_en: 'Shangri-La Sheer Shades', icon: '🪟' },
     { id: 'butterfly', name_cn: '蝴蝶帘', name_en: 'Butterfly Sheer Shades', icon: '🦋' }
   ],

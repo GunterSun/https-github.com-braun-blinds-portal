@@ -235,16 +235,15 @@
               <div class="manual-discount-container">
                 <div class="manual-discount-input-wrap">
                   <span class="input-prefix">折扣率:</span>
-                  <input type="number" id="custom-discount-input" min="1" max="30" value="30" step="1" class="manual-disc-input" placeholder="手动录入折扣 (最高3折 / 30)">
+                  <input type="number" id="custom-discount-input" min="1" max="100" value="30" step="1" class="manual-disc-input" placeholder="手动录入折扣 (如 30 表示 3折)">
                   <span class="input-suffix">%</span>
                 </div>
                 <div class="discount-presets-quick">
-                  <span class="quick-label">快捷选择 (最高3折限制):</span>
+                  <span class="quick-label">快捷选择:</span>
                   <button type="button" class="discount-btn active" data-factor="0.30">3折 (70% OFF / 0.30)</button>
-                  <button type="button" class="discount-btn" data-factor="0.25">2.5折 (75% OFF / 0.25)</button>
-                  <button type="button" class="discount-btn" data-factor="0.20">2折 (80% OFF / 0.20)</button>
-                  <button type="button" class="discount-btn" data-factor="0.18">1.8折 (82% OFF / 0.18)</button>
-                  <button type="button" class="discount-btn" data-factor="0.16">1.6折 (84% OFF / 0.16)</button>
+                  <button type="button" class="discount-btn" data-factor="0.40">4折 (60% OFF / 0.40)</button>
+                  <button type="button" class="discount-btn" data-factor="0.50">5折 (50% OFF / 0.50)</button>
+                  <button type="button" class="discount-btn" data-factor="1.00">原价 (100% MSRP)</button>
                 </div>
               </div>
             </div>
@@ -358,7 +357,7 @@
                 </button>
                 <button type="button" class="category-tab-btn" data-cat="zebra">
                   <span class="cat-icon">🦓</span>
-                  <span class="cat-title">双层斑马帘 <br><span class="sub">Zebra Blinds</span></span>
+                  <span class="cat-title">斑马帘 <br><span class="sub">Zebra Blinds</span></span>
                 </button>
                 <button type="button" class="category-tab-btn" data-cat="sheer">
                   <span class="cat-icon">🪟</span>
@@ -1021,7 +1020,7 @@
                 <label class="form-label" style="font-weight: 700; color: #0f172a;">选定产品与型号下拉选择 (Select Product & Model):</label>
                 <select id="prop-input-model" class="form-select" style="font-weight: 700; color: #0f172a; border: 1.5px solid #0f172a;">
                   <option value="Roller Shade（卷帘）" selected>Roller Shade（卷帘）</option>
-                  <option value="Zebra Blind（双层斑马帘）">Zebra Blind（双层斑马帘）</option>
+                  <option value="Zebra Blind（斑马帘）">Zebra Blind（斑马帘）</option>
                   <option value="Roman Shade（Z系列罗马帘）">Roman Shade（Z系列罗马帘）</option>
                   <option value="LM0002 方形无绳系统 (Square Cordless)">LM0002 方形无绳系统 (Square Cordless)</option>
                   <option value="lM0018 方形无绳缝边包中梁 (Square Cordless Lockstitch)">lM0018 方形无绳缝边包中梁 (Square Cordless Lockstitch)</option>
@@ -1505,7 +1504,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260817_v1.2.4"></script>
-  <script src="script.js?v=20260817_v1.2.4"></script>
+  <script src="roman_db.js?v=20260817_v1.2.5"></script>
+  <script src="script.js?v=20260817_v1.2.5"></script>
 </body>
 </html>
