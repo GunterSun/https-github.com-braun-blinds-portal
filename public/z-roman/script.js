@@ -3737,7 +3737,131 @@ Estimated price: ${outPriceVal.textContent}`;
       reader.readAsText(file);
     }
 
+    function migrateAndPreserveAllHistoricalData() {
+      // 1. Migrate & deduplicate historical orders across all legacy version keys
+      const orderKeys = [
+        'braun_z_orders_history_v1',
+        'braun_z_orders_history_v1.0',
+        'braun_z_orders_history_v1.1',
+        'braun_z_orders_history_v1.2',
+        'braun_z_orders_history_v1.3',
+        'braun_z_orders_history',
+        'roman_quote_orders_history',
+        'braun_orders_history_master',
+        'braun_saved_orders_v1'
+      ];
+
+      let masterOrdersMap = new Map();
+
+      orderKeys.forEach(k => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list.forEach(o => {
+                if (o && (o.quoteNo || o.orderId)) {
+                  const key = o.quoteNo || o.orderId;
+                  if (!masterOrdersMap.has(key)) {
+                    masterOrdersMap.set(key, o);
+                  } else {
+                    const existing = masterOrdersMap.get(key);
+                    if (new Date(o.updatedAt || 0) > new Date(existing.updatedAt || 0)) {
+                      masterOrdersMap.set(key, o);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        } catch (e) {}
+      });
+
+      const mergedOrders = Array.from(masterOrdersMap.values());
+      if (mergedOrders.length > 0) {
+        try {
+          localStorage.setItem(LOCAL_ORDERS_HISTORY_KEY, JSON.stringify(mergedOrders));
+        } catch (e) {}
+      }
+
+      // 2. Migrate & deduplicate customer profiles across all legacy version keys
+      const profileKeys = [
+        LOCAL_SAVED_PROFILES_KEY,
+        'braun_saved_customer_profiles_v1',
+        'braun_saved_customer_profiles_v1.0',
+        'braun_saved_customer_profiles_v1.1',
+        'braun_saved_customer_profiles_v1.2',
+        'braun_saved_customer_profiles_v1.3',
+        'braun_saved_customers',
+        'braun_customer_profiles_master_v1'
+      ];
+
+      let masterProfilesMap = new Map();
+
+      profileKeys.forEach(k => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list.forEach(p => {
+                if (p && p.name) {
+                  const key = p.name.trim().toLowerCase();
+                  if (!masterProfilesMap.has(key)) {
+                    masterProfilesMap.set(key, p);
+                  } else {
+                    const existing = masterProfilesMap.get(key);
+                    if (new Date(p.updatedAt || 0) > new Date(existing.updatedAt || 0)) {
+                      masterProfilesMap.set(key, p);
+                    }
+                  }
+                }
+              });
+            }
+          }
+        } catch (e) {}
+      });
+
+      const mergedProfiles = Array.from(masterProfilesMap.values());
+      if (mergedProfiles.length > 0) {
+        try {
+          localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(mergedProfiles));
+        } catch (e) {}
+      }
+
+      // 3. Migrate highest quote sequence number across version keys & order records
+      const seqKeys = [
+        LOCAL_QUOTE_SEQ_KEY,
+        'braun_quote_seq_number_v1.0',
+        'braun_quote_seq_number_v1.1',
+        'braun_quote_seq_number_v1.2',
+        'braun_quote_seq_number_v1.3',
+        'braun_quote_seq_number'
+      ];
+      let maxSeq = 51001;
+      seqKeys.forEach(k => {
+        try {
+          const val = parseInt(localStorage.getItem(k) || '51001');
+          if (!isNaN(val) && val > maxSeq) maxSeq = val;
+        } catch (e) {}
+      });
+
+      mergedOrders.forEach(o => {
+        if (o.quoteNo && o.quoteNo.startsWith('S-')) {
+          const num = parseInt(o.quoteNo.replace('S-', ''));
+          if (!isNaN(num) && num >= maxSeq) {
+            maxSeq = num;
+          }
+        }
+      });
+
+      try {
+        localStorage.setItem(LOCAL_QUOTE_SEQ_KEY, maxSeq.toString());
+      } catch (e) {}
+    }
+
     // Initial Engine Bootstrap
+    migrateAndPreserveAllHistoricalData();
     initQuoteNumberSequence();
     initCustomerCrmModalEngine();
     updateSavedOrdersBadge();
