@@ -225,25 +225,22 @@
             <div class="form-group form-group-full discount-config-group">
               <div class="discount-label-row">
                 <label class="form-label" data-i18n="cust_discount">Customer Wholesale Discount / 客户手动折扣数值</label>
-                <span class="discount-badge-val" id="discount-val-badge">50% OFF (5折 / 0.50)</span>
+                <span class="discount-badge-val" id="discount-val-badge">70% OFF (3折 / 0.30)</span>
               </div>
               
               <div class="manual-discount-container">
                 <div class="manual-discount-input-wrap">
                   <span class="input-prefix">折扣率:</span>
-                  <input type="number" id="custom-discount-input" min="0" max="100" value="50" step="1" class="manual-disc-input" placeholder="输入折扣比如 50 表示5折">
+                  <input type="number" id="custom-discount-input" min="1" max="30" value="30" step="1" class="manual-disc-input" placeholder="手动录入折扣 (最高3折 / 30)">
                   <span class="input-suffix">%</span>
                 </div>
                 <div class="discount-presets-quick">
-                  <span class="quick-label">快捷选择:</span>
-                  <button type="button" class="discount-btn active" data-factor="0.50">5折 (50% OFF)</button>
-                  <button type="button" class="discount-btn" data-factor="0.12">1.2折 (88% OFF / 12%)</button>
-                  <button type="button" class="discount-btn" data-factor="0.88">8.8折 (12% OFF / 88%)</button>
-                  <button type="button" class="discount-btn" data-factor="0.40">4折 (60% OFF)</button>
-                  <button type="button" class="discount-btn" data-factor="0.35">3.5折 (65% OFF)</button>
-                  <button type="button" class="discount-btn" data-factor="0.30">3折 (70% OFF)</button>
-                  <button type="button" class="discount-btn" data-factor="0.60">6折 (40% OFF)</button>
-                  <button type="button" class="discount-btn" data-factor="1.00">原价 (100% MSRP)</button>
+                  <span class="quick-label">快捷选择 (最高3折限制):</span>
+                  <button type="button" class="discount-btn active" data-factor="0.30">3折 (70% OFF / 0.30)</button>
+                  <button type="button" class="discount-btn" data-factor="0.25">2.5折 (75% OFF / 0.25)</button>
+                  <button type="button" class="discount-btn" data-factor="0.20">2折 (80% OFF / 0.20)</button>
+                  <button type="button" class="discount-btn" data-factor="0.18">1.8折 (82% OFF / 0.18)</button>
+                  <button type="button" class="discount-btn" data-factor="0.16">1.6折 (84% OFF / 0.16)</button>
                 </div>
               </div>
             </div>
@@ -1420,7 +1417,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260817_v1.2.2"></script>
-  <script src="script.js?v=20260817_v1.2.2"></script>
+  <script src="roman_db.js?v=20260817_v1.2.3"></script>
+  <script src="script.js?v=20260817_v1.2.3"></script>
 </body>
 </html>

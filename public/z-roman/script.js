@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // State Variables
   let romanCurrentLang = 'cn';
   let romanSelectedCategory = 'roman'; // Default category 'roman' (Roman Shades)
-  let romanDiscountFactor = 0.50; // Default 50% OFF (5折)
+  let romanDiscountFactor = 0.30; // Default 30% (3折 / 0.30)
   let romanSalesTaxRate = 0.00; // Default Sales Tax Rate 0.00%
   let romanHardwareFloorFactor = 0.16; // Default 16% Hardware Minimum Floor (1.6折 / 0.16)
   let romanSelectedSysCode = 'LM0002'; // Default Square Cordless
@@ -655,9 +655,12 @@ Estimated price: ${outPriceVal.textContent}`;
           btns.forEach(b => b.classList.remove('active'));
           let valStr = e.target.value.trim();
           let perc = parseFloat(valStr);
-          if (isNaN(perc)) perc = 100;
+          if (isNaN(perc)) perc = 30;
           if (perc < 0) perc = 0;
-          if (perc > 100) perc = 100;
+          if (perc > 30) {
+            perc = 30; // Strictly cap manual discount to 3折 (30% / 0.30 max)
+            e.target.value = 30;
+          }
           let factor = perc / 100;
 
           // Highlight matching preset button if any
