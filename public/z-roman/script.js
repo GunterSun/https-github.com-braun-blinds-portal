@@ -2731,49 +2731,82 @@ Estimated price: ${outPriceVal.textContent}`;
     function initInvoiceDirectFileUploader() {
       const input = document.getElementById('invoice-file-uploader');
       const btn = document.getElementById('btn-upload-invoice-files');
+      const paper = document.getElementById('william-quote-paper');
 
-      if (!input || !btn) return;
+      if (input) {
+        input.addEventListener('change', (e) => {
+          handleInvoiceFilesArray(Array.from(e.target.files));
+          input.value = '';
+        });
+      }
 
-      btn.addEventListener('click', () => {
-        input.click();
-      });
+      if (btn && input) {
+        btn.addEventListener('click', (e) => {
+          // If label target is active, input opens natively
+          if (e.target.tagName !== 'INPUT') {
+            input.click();
+          }
+        });
+      }
 
-      input.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-
-        let processed = 0;
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            let fileKind = 'image';
-            const nameLower = file.name.toLowerCase();
-            if (nameLower.endsWith('.pdf')) {
-              fileKind = 'pdf';
-            } else if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv') || nameLower.endsWith('.txt')) {
-              fileKind = 'excel';
-            }
-
-            const att = {
-              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-              name: file.name,
-              type: fileKind,
-              size: formatFileSize(file.size),
-              dataUrl: evt.target.result
-            };
-
-            currentCustomerAttachments.push(att);
-            processed++;
-            if (processed === files.length) {
-              renderCustomerAttachments();
-              renderInvoiceEmbeddedFiles();
-              autoSaveActiveCustomerMeta();
-            }
-          };
-          reader.readAsDataURL(file);
+      // Drag & Drop Support directly on Invoice Paper
+      if (paper) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+          paper.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            paper.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.5)';
+          }, false);
         });
 
-        input.value = '';
+        ['dragleave', 'drop'].forEach(eventName => {
+          paper.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            paper.style.boxShadow = 'none';
+          }, false);
+        });
+
+        paper.addEventListener('drop', (e) => {
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleInvoiceFilesArray(Array.from(e.dataTransfer.files));
+          }
+        });
+      }
+    }
+
+    function handleInvoiceFilesArray(files) {
+      if (!files || files.length === 0) return;
+
+      let processed = 0;
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          let fileKind = 'image';
+          const nameLower = file.name.toLowerCase();
+          if (nameLower.endsWith('.pdf')) {
+            fileKind = 'pdf';
+          } else if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv') || nameLower.endsWith('.txt')) {
+            fileKind = 'excel';
+          }
+
+          const att = {
+            id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            name: file.name,
+            type: fileKind,
+            size: formatFileSize(file.size),
+            dataUrl: evt.target.result
+          };
+
+          currentCustomerAttachments.push(att);
+          processed++;
+          if (processed === files.length) {
+            renderCustomerAttachments();
+            renderInvoiceEmbeddedFiles();
+            autoSaveActiveCustomerMeta();
+          }
+        };
+        reader.readAsDataURL(file);
       });
     }
 

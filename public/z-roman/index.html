@@ -237,6 +237,8 @@
                 <div class="discount-presets-quick">
                   <span class="quick-label">快捷选择:</span>
                   <button type="button" class="discount-btn active" data-factor="0.50">5折 (50% OFF)</button>
+                  <button type="button" class="discount-btn" data-factor="0.12">1.2折 (88% OFF / 12%)</button>
+                  <button type="button" class="discount-btn" data-factor="0.88">8.8折 (12% OFF / 88%)</button>
                   <button type="button" class="discount-btn" data-factor="0.40">4折 (60% OFF)</button>
                   <button type="button" class="discount-btn" data-factor="0.35">3.5折 (65% OFF)</button>
                   <button type="button" class="discount-btn" data-factor="0.30">3折 (70% OFF)</button>
@@ -800,10 +802,10 @@
                   <span id="invoice-embedded-file-count" style="font-size: 0.68rem; background: #cbd5e1; color: #334155; padding: 1px 6px; border-radius: 8px; font-weight: 700;">0 Files</span>
                 </div>
                 <div class="no-print">
-                  <input type="file" id="invoice-file-uploader" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt" multiple style="display: none;">
-                  <button type="button" id="btn-upload-invoice-files" style="font-size: 0.72rem; padding: 3px 10px; background: #2563eb; color: #ffffff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">
-                    ➕ 导入照片/图片/文件到本报价单 (Add Files to Invoice)
-                  </button>
+                  <label for="invoice-file-uploader" id="btn-upload-invoice-files" style="font-size: 0.72rem; padding: 4px 12px; background: #2563eb; color: #ffffff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; display: inline-block;">
+                    ➕ 导入照片/图片/文件到本报价单 (Add Files & Images to Invoice)
+                    <input type="file" id="invoice-file-uploader" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt" multiple style="display: none;">
+                  </label>
                 </div>
               </div>
 
