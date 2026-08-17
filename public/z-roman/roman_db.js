@@ -43,8 +43,9 @@ const ROMAN_DB = {
 
   SMART_ACC_OPTIONS: [
     { id: 'none', name_cn: '无', name_en: 'None', price_usd: 0, rmb_price: 0 },
+    { id: 'aok_ac520_02', name_cn: '奥科 RF 接收控制器小黑盒 (AC520-02)', name_en: 'A-OK AC520-02 RF Controller Box', price_usd: 45, rmb_price: 45, manual_url: 'system_images/guides/奥科RF控制器说明书-小黑盒AC520-02(1).pdf' },
+    { id: 'smart_hub', name_cn: 'Wireless Smart Gateway (ZXZGW-04 涂鸦/谷歌/亚马逊网关)', name_en: 'Wireless Smart Gateway Hub ZXZGW-04', price_usd: 144, rmb_price: 144, manual_url: 'system_images/guides/无线网关-中英文说明书2020-7-7.pdf' },
     { id: 'solar_panel', name_cn: 'Solar Panel 太阳能充电板', name_en: 'Solar Charging Panel', price_usd: 56, rmb_price: 56 },
-    { id: 'smart_hub', name_cn: 'Smart Hub Box (涂鸦/谷歌/亚马逊网关)', name_en: 'Smart Hub Box (Tuya/Alexa/Google)', price_usd: 144, rmb_price: 144 },
     { id: 'zigbee_hub', name_cn: '英文 ZigBee 智能网关', name_en: 'English ZigBee Smart Gateway', price_usd: 133, rmb_price: 133 },
     { id: 'ext_rod', name_cn: 'Extension Rod 加长手拉杆', name_en: 'Extension Rod', price_usd: 15, rmb_price: 15 }
   ],
