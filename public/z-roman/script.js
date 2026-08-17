@@ -1727,13 +1727,13 @@ Estimated price: ${outPriceVal.textContent}`;
       if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
     }
 
-    // Auto Hash Router for Braun-Z-1.0
+    // Auto Hash Router for Braun-Z-1.1 & Braun-Z-1.0
     function checkHashRoute() {
       const hash = window.location.hash.toLowerCase();
       const href = window.location.href.toLowerCase();
-      if (hash.includes('braun-z-1.0') || hash.includes('zhenpin-roman') || hash.includes('z-roman') || href.includes('braun-z-1.0')) {
-        document.title = 'Braun-Z-1.0 | Z系列罗马帘窗饰定制报价系统';
-        const sysElem = document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
+      if (hash.includes('braun-z-1.1') || hash.includes('braun-z-1.0') || hash.includes('braun-z-1-1') || hash.includes('zhenpin-roman') || hash.includes('z-roman') || href.includes('braun-z')) {
+        document.title = 'Braun-Z-1.1 | Z系列罗马帘窗饰定制报价系统';
+        const sysElem = document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
         if (sysElem) {
           setTimeout(() => {
             sysElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
