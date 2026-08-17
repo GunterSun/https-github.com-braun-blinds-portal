@@ -298,20 +298,7 @@
               </div>
             </div>
 
-            <!-- Interactive Digital Signature Pad -->
-            <div class="form-group form-group-full signature-config-group" style="margin-top: 0.5rem;">
-              <div class="discount-label-row">
-                <label class="form-label">✍️ Customer Signature Pad / 客户手写电子签名板</label>
-                <span class="discount-badge-val" id="sig-status-badge" style="background: #f1f5f9; color: #475569;">未签名 (Click & draw signature)</span>
-              </div>
-              <div class="signature-pad-wrapper" style="border: 2px dashed #cbd5e1; border-radius: 8px; background: #ffffff; padding: 0.5rem; text-align: center; margin-top: 0.35rem;">
-                <canvas id="sig-canvas" width="460" height="120" style="border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: crosshair; touch-action: none; width: 100%; max-width: 460px; height: 120px;"></canvas>
-                <div class="sig-action-buttons" style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.4rem;">
-                  <button type="button" id="btn-clear-sig" class="btn-sig-action" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer;">🗑️ 清除签名 (Clear)</button>
-                  <button type="button" id="btn-save-sig" class="btn-sig-action" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 4px; border: none; background: #A83B24; color: #ffffff; font-weight: 700; cursor: pointer;">✅ 确认保存签名 (Save)</button>
-                </div>
-              </div>
-            </div>
+
 
             <div class="form-group form-group-full">
               <label class="form-label" data-i18n="notes">Special Craft Notes / 工艺说明与特点</label>
@@ -835,7 +822,7 @@
                     <span style="font-size: 0.72rem; font-weight: 700; color: #A83B24;">✍️ Customer Signature (手写签名板):</span>
                     <button type="button" id="btn-clear-sig-invoice" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer; color: #475569;">🗑️ 清除 Clear</button>
                   </div>
-                  <canvas id="sig-canvas" width="400" height="90" style="border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: crosshair; touch-action: none; width: 100%; height: 75px;"></canvas>
+                  <canvas id="invoice-sig-canvas" width="400" height="90" style="border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: crosshair; touch-action: none; width: 100%; height: 75px;"></canvas>
                 </div>
 
                 <!-- Rendered Signature Image (Visible in Print / PDF & Screen) -->

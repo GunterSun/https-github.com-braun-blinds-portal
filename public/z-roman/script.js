@@ -1592,11 +1592,8 @@ Estimated price: ${outPriceVal.textContent}`;
 
     // --- Interactive Digital Signature Canvas Pad inside Invoice ---
     function initSignaturePad() {
-      const canvas = document.getElementById('sig-canvas');
+      const canvas = document.getElementById('invoice-sig-canvas');
       const btnClearInvoice = document.getElementById('btn-clear-sig-invoice');
-      const btnClearTop = document.getElementById('btn-clear-sig');
-      const btnSaveTop = document.getElementById('btn-save-sig');
-      const statusBadge = document.getElementById('sig-status-badge');
       const sheetContainer = document.getElementById('sheet-sig-img-container');
 
       if (!canvas) return;
@@ -1605,7 +1602,7 @@ Estimated price: ${outPriceVal.textContent}`;
       ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#A83B24'; // Matching terracotta brand theme
+      ctx.strokeStyle = '#A83B24';
 
       let isDrawing = false;
       let hasDrawn = false;
@@ -1627,11 +1624,6 @@ Estimated price: ${outPriceVal.textContent}`;
         const sigDataUrl = canvas.toDataURL('image/png');
         if (sheetContainer) {
           sheetContainer.innerHTML = `<img src="${sigDataUrl}" alt="Customer Signature" style="max-height: 42px; max-width: 180px; object-fit: contain;">`;
-        }
-        if (statusBadge) {
-          statusBadge.textContent = '✅ 已保存签名 (Signed)';
-          statusBadge.style.background = '#dcfce7';
-          statusBadge.style.color = '#15803d';
         }
       }
 
@@ -1660,7 +1652,7 @@ Estimated price: ${outPriceVal.textContent}`;
         }
       }
 
-      // Mouse Listeners
+      // Mouse events
       canvas.addEventListener('mousedown', startDraw);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', stopDraw);
