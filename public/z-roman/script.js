@@ -2165,16 +2165,16 @@ Estimated price: ${outPriceVal.textContent}`;
       syncProposalCard();
     }
 
-    // --- Generate and Download Official Customer Window Measurement Template (.xlsx) ---
+    // --- Generate and Download Official Interactive Measurement & Order Form Template (.xlsx) ---
     function generateAndDownloadMeasurementTemplate() {
       if (typeof XLSX === 'undefined') {
         alert('Excel 引擎正在加载中，请稍候再试。');
         return;
       }
 
-      const templateData = [
-        ["Braun Blinds 窗饰定制客户测量表 & 选购下单表 (Window Measurement Form)"],
-        ["说明：请在上方填写客户与工程项目信息，下方依次填入各房间窗户测绘尺寸（单位：英寸 Inch）。填写完毕后保存文件，在网站点击【📂 导入并智能识别客户文件】即可一键生成预览与导出 PDF Invoice 报价单！"],
+      const rows = [
+        ["Braun Blinds 窗饰定制测量与自动算价表格 (Window Measurement & Interactive Order Form)"],
+        ["说明：在上方填写客户与项目信息，在下方填入窗户宽度(W)、高度(H)、选购面料及折扣率(如 0.30 表示3折，0.40 表示4折)，表格将通过内置公式自动计算出厂价、折后单价与订单总金额！填写后可保存并上传至网站自动生成 Invoice！"],
         [""],
         ["客户姓名 (Customer Name):", "张先生 (Mr. Zhang)", "", "联系电话 (Phone):", "+1 (408) 555-8899"],
         ["项目地址 (Project Address):", "1280 Willow Rd, Palo Alto, CA 94301", "", "电子邮箱 (Email):", "zhang.paloalto@gmail.com"],
@@ -2185,105 +2185,127 @@ Estimated price: ${outPriceVal.textContent}`;
           "房间/位置 (Room Location)",
           "宽度 W (Inch)",
           "高度 H (Inch)",
-          "窗框净深 Depth (Inch)",
-          "安装方式 (Mount Type)",
-          "窗饰产品大类 (Product Category)",
-          "机构系统型号 (Mechanism Model)",
-          "面料编码与颜色 (Fabric Code & Color)",
-          "控制/拉珠位置 (Control Side)",
+          "窗框深 Depth (Inch)",
+          "安装方式 (Mount)",
+          "机构型号 (System Model)",
+          "面料编码 (Fabric Code)",
+          "面料出厂裸价 (RMB ¥/㎡)",
+          "MSRP原单价 ($)",
+          "折扣率 (Discount Factor)",
+          "折后单价 ($/件)",
           "数量 (Qty)",
-          "特殊要求/制作备注 (Special Instructions & Notes)"
-        ],
-        [
-          1,
-          "Master Bedroom (主卧 #1)",
-          "36.00",
-          "60.00",
-          "2.50",
-          "Inside Mount (框内安装)",
-          "Z系列罗马帘 (Roman)",
-          "LM0002 方形无绳系统",
-          "BZM11 众麻-遮光深灰色",
-          "Cordless (无绳手提)",
-          1,
-          "默认 38管 配大方包布与内衬"
-        ],
-        [
-          2,
-          "Living Room (客厅侧窗)",
-          "48.00",
-          "72.00",
-          "3.00",
-          "Inside Mount (框内安装)",
-          "双层日夜帘 (Dual-Layer)",
-          "lM0022 魔方双层日夜帘",
-          "BZL01 天然竹编 经典原木竹帘",
-          "Right (右侧拉珠)",
-          1,
-          "日夜遮光/采光自由切换"
-        ],
-        [
-          3,
-          "Dining Room (餐厅大窗)",
-          "68.00",
-          "84.00",
-          "2.00",
-          "Outside Mount (框外安装)",
-          "精做卷帘 (Roller)",
-          "JL0024 奥科电动精做卷帘",
-          "BTW01 涂纹-遮光白色",
-          "Motorized (奥科电动控制)",
-          1,
-          "配 AC520-02 遥控器，框外左右各加外扩 2 英寸"
-        ],
-        [
-          4,
-          "Guest Bedroom (客卧)",
-          "42.00",
-          "54.00",
-          "2.00",
-          "Inside Mount (框内安装)",
-          "斑马帘 (Zebra)",
-          "BM0010 魔方帷幔斑马帘",
-          "BSL0001 斑马帘-遮光白色",
-          "Cordless (无绳手提)",
-          2,
-          "魔方包布帷幔款式"
+          "行小计金额 ($)",
+          "特殊要求/制作备注 (Notes)"
         ]
       ];
 
-      const ws = XLSX.utils.aoa_to_sheet(templateData);
+      // Sample Items
+      const sampleItems = [
+        { num: 1, room: "Master Bedroom (主卧 #1)", w: 36, h: 60, depth: 2.5, mount: "Inside Mount (框内)", sys: "LM0002 方形无绳", fab: "BZM11 众麻-遮光深灰", baseRmb: 163, msrp: 466, discount: 0.30, qty: 1, notes: "默认 38管 配大方包布" },
+        { num: 2, room: "Living Room (客厅侧窗)", w: 48, h: 72, depth: 3.0, mount: "Inside Mount (框内)", sys: "lM0022 魔方双层日夜帘", fab: "BZL01 天然竹编 原木竹帘", baseRmb: 163, msrp: 748, discount: 0.30, qty: 1, notes: "日夜遮光/采光自由切换" },
+        { num: 3, room: "Dining Room (餐厅大窗)", w: 68, h: 84, depth: 2.0, mount: "Outside Mount (框外)", sys: "JL0024 奥科电动精做卷帘", fab: "BTW01 涂纹-遮光白色", baseRmb: 175, msrp: 1577, discount: 0.30, qty: 1, notes: "配 AC520-02 遥控器，框外左右加2\"" },
+        { num: 4, room: "Guest Bedroom (客卧)", w: 42, h: 54, depth: 2.0, mount: "Inside Mount (框内)", sys: "BM0010 魔方帷幔斑马帘", fab: "BSL0001 斑马帘-遮光白", baseRmb: 175, msrp: 490, discount: 0.30, qty: 2, notes: "魔方包布帷幔款式" }
+      ];
+
+      sampleItems.forEach((item, i) => {
+        const rIdx = 9 + i; // 1-based Excel row number
+        rows.push([
+          item.num,
+          item.room,
+          item.w,
+          item.h,
+          item.depth,
+          item.mount,
+          item.sys,
+          item.fab,
+          item.baseRmb,
+          item.msrp,
+          item.discount,
+          { f: `ROUND(J${rIdx}*K${rIdx}, 2)`, v: Math.round(item.msrp * item.discount * 100) / 100 },
+          item.qty,
+          { f: `ROUND(L${rIdx}*M${rIdx}, 2)`, v: Math.round(item.msrp * item.discount * item.qty * 100) / 100 },
+          item.notes
+        ]);
+      });
+
+      // Add empty rows with live Excel formulas for customer entry (rows 13 to 23)
+      for (let i = 5; i <= 15; i++) {
+        const rIdx = 8 + i;
+        rows.push([
+          i,
+          "",
+          "",
+          "",
+          "",
+          "Inside Mount (框内)",
+          "LM0002 方形无绳",
+          "BZL01 经典原木竹帘",
+          163,
+          { f: `IF(OR(ISBLANK(C${rIdx}),ISBLANK(D${rIdx})), 0, ROUND(MAX(C${rIdx}*D${rIdx}/1550, 1.0) * I${rIdx} * 2.86, 2))`, v: 0 },
+          0.30, // Default 3折
+          { f: `ROUND(J${rIdx}*K${rIdx}, 2)`, v: 0 },
+          1,
+          { f: `ROUND(L${rIdx}*M${rIdx}, 2)`, v: 0 },
+          ""
+        ]);
+      }
+
+      // Grand Total Summary Row
+      const startRow = 9;
+      const endRow = 23;
+      rows.push([
+        "合计",
+        "订单汇总",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        { f: `SUM(J${startRow}:J${endRow})`, v: 3281 },
+        "",
+        "",
+        { f: `SUM(M${startRow}:M${endRow})`, v: 5 },
+        { f: `SUM(N${startRow}:N${endRow})`, v: 1131.30 },
+        "总出厂折扣与运费另计"
+      ]);
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
 
       ws['!cols'] = [
         { wch: 8 },  // #
         { wch: 28 }, // Room
-        { wch: 15 }, // W
-        { wch: 15 }, // H
-        { wch: 20 }, // Depth
-        { wch: 24 }, // Mount
-        { wch: 26 }, // Category
-        { wch: 30 }, // System
-        { wch: 30 }, // Fabric
-        { wch: 22 }, // Control
+        { wch: 14 }, // W
+        { wch: 14 }, // H
+        { wch: 18 }, // Depth
+        { wch: 22 }, // Mount
+        { wch: 26 }, // System
+        { wch: 26 }, // Fabric
+        { wch: 22 }, // RMB Rate
+        { wch: 18 }, // MSRP Price
+        { wch: 22 }, // Discount Factor
+        { wch: 18 }, // Final Unit Price
         { wch: 10 }, // Qty
-        { wch: 42 }  // Notes
+        { wch: 18 }, // Line Amount
+        { wch: 38 }  // Notes
       ];
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "窗户测量明细表");
+      XLSX.utils.book_append_sheet(wb, ws, "自动算价测量表");
 
-      const guideData = [
-        ["Braun Blinds Z系列窗饰测量与选购指导 (Measurement Guide)"],
-        ["1. 框内安装 (Inside Mount)：需测量窗框内侧上、中、下三处宽度，取【最小值】填入；洞深需满足：方形无绳/拉珠 ≥ 1.5\"，双层/免打孔 ≥ 2.5\"。"],
-        ["2. 框外安装 (Outside Mount)：测量窗框外缘宽度，左右建议各加 1.5\"-2\" (总加宽 3\"-4\") 以防止侧面漏光。"],
-        ["3. 电动系统 (Motorized)：所有电动电机默认按奥科静音锂电池电机 ($256) 标配，支持 RF 遥控器与智能网关 APP 远程控制。"],
-        ["4. 完成测量后在网页点击【📂 导入并智能识别客户文件】即可一键生成预览与导出 PDF Invoice 报价单！"]
+      const guideRows = [
+        ["Braun Blinds Z系列自动算价测量表使用说明 (Guide & Formulas)"],
+        ["1. 填写尺寸：输入宽度 W (Inch) 和高度 H (Inch)，表格公式将自动根据底层比率算得 MSRP 原单价 ($)。"],
+        ["2. 填写折扣：在【折扣率 (Discount Factor)】列直接输入折扣数。例如 0.30 表示 3折 (30% MSRP)，0.40 表示 4折，0.50 表示 5折，1.00 表示 原价。"],
+        ["3. 自动计算：【折后单价】与【行小计金额】及底部【订单总金额】均由 Excel 内置公式自动实时计算！"],
+        ["4. 上传网站：填完尺寸与折扣后，将 Excel 文件保存并在 Braun 网站点击【📂 导入并智能识别客户文件】，网页将自动解析并生成完美 Invoice 报价单与 PDF 文件！"]
       ];
-      const wsGuide = XLSX.utils.aoa_to_sheet(guideData);
-      wsGuide['!cols'] = [{ wch: 100 }];
-      XLSX.utils.book_append_sheet(wb, wsGuide, "测量与选型指导");
+      const wsGuide = XLSX.utils.aoa_to_sheet(guideRows);
+      wsGuide['!cols'] = [{ wch: 110 }];
+      XLSX.utils.book_append_sheet(wb, wsGuide, "算价指南与规则说明");
 
-      XLSX.writeFile(wb, "Braun_Blinds_Window_Measurement_Form.xlsx");
+      XLSX.writeFile(wb, "Braun_Blinds_Interactive_Measurement_Quotation_Form.xlsx");
     }
 
     function initCustomFileImporter() {
@@ -2431,7 +2453,7 @@ Estimated price: ${outPriceVal.textContent}`;
 
       // Smart Header Identification
       let headerIdx = -1;
-      let colRoom = 0, colW = -1, colH = -1, colQty = -1, colMount = -1, colProd = -1, colRemark = -1;
+      let colRoom = 0, colW = -1, colH = -1, colQty = -1, colMount = -1, colProd = -1, colRemark = -1, colDiscount = -1;
 
       for (let i = 0; i < Math.min(15, rawRows.length); i++) {
         const rowStr = rawRows[i].map(c => String(c).toLowerCase()).join(' ');
@@ -2445,6 +2467,7 @@ Estimated price: ${outPriceVal.textContent}`;
             else if (cStr.includes('qty') || cStr.includes('数量') || cStr.includes('数') || cStr.includes('pcs')) colQty = colI;
             else if (cStr.includes('mount') || cStr.includes('安装') || cStr.includes('im') || cStr.includes('om')) colMount = colI;
             else if (cStr.includes('product') || cStr.includes('类型') || cStr.includes('品名') || cStr.includes('描述') || cStr.includes('shade') || cStr.includes('帘') || cStr.includes('model') || cStr.includes('机构')) colProd = colI;
+            else if (cStr.includes('discount') || cStr.includes('折扣')) colDiscount = colI;
             else if (cStr.includes('remark') || cStr.includes('备注') || cStr.includes('工艺') || cStr.includes('control') || cStr.includes('note') || cStr.includes('要求')) colRemark = colI;
           });
           break;
@@ -2461,7 +2484,7 @@ Estimated price: ${outPriceVal.textContent}`;
         if (!row || row.length === 0) return;
 
         const firstCell = String(row[0] || '').trim();
-        if (firstCell.includes('说明') || firstCell.includes('Note') || firstCell.includes('序号') || firstCell.includes('#')) return;
+        if (firstCell.includes('说明') || firstCell.includes('Note') || firstCell.includes('序号') || firstCell.includes('#') || firstCell.includes('合计')) return;
 
         const roomVal = String(row[colRoom] || row[1] || row[0] || `Item #${idx+1}`).trim();
         const wRaw = String(row[colW] !== undefined ? row[colW] : (row[2] !== undefined ? row[2] : 36));
@@ -2524,8 +2547,18 @@ Estimated price: ${outPriceVal.textContent}`;
           smartId = 'solar_panel';
         }
 
+        // Custom Per-Line Discount Extraction
+        let itemDiscountFactor = romanDiscountFactor;
+        if (colDiscount !== -1 && row[colDiscount] !== undefined && row[colDiscount] !== '') {
+          let dVal = parseFloat(String(row[colDiscount]).replace(/[^\d.]/g, ''));
+          if (!isNaN(dVal) && dVal > 0) {
+            if (dVal > 1) dVal = dVal / 10;
+            itemDiscountFactor = dVal;
+          }
+        }
+
         const pricing = ROMAN_DB.calculateItemPrice(
-          matchedSys.code, defaultFab.code, wNum, hNum, motorId, remoteId, smartId, romanDiscountFactor, romanHardwareFloorFactor
+          matchedSys.code, defaultFab.code, wNum, hNum, motorId, remoteId, smartId, itemDiscountFactor, romanHardwareFloorFactor
         );
 
         parsedItems.push({
