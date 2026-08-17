@@ -19,7 +19,7 @@ const ROMAN_DB = {
 
   MOTOR_OPTIONS: [
     { id: 'none', name_cn: '无 (手动系统)', name_en: 'None (Manual System)', price_usd: 0, rmb_price: 0 },
-    { id: 'aok_motor_222', name_cn: '奥科静音电动电机', name_en: 'A-OK Smart Motor', price_usd: 222, rmb_price: 222, desc_cn: '适用蝴蝶帘/卷帘/香格里拉', desc_en: 'For Butterfly & Sheer' },
+    { id: 'aok_motor_222', name_cn: '奥科静音电动电机', name_en: 'A-OK Smart Motor', price_usd: 256, rmb_price: 256, desc_cn: '适用蝴蝶帘/卷帘/香格里拉', desc_en: 'For Butterfly & Sheer' },
     { id: 'single_motor', name_cn: 'Single Motor (单电机)', name_en: 'Single Smart Motor', price_usd: 167, rmb_price: 167, desc_cn: 'Cellular/Venetian/Roman 适用', desc_en: 'Cellular / Venetian / Roman' },
     { id: 'dual_motor', name_cn: 'Dual Motor (双电机)', name_en: 'Dual Smart Motors', price_usd: 233, rmb_price: 233, desc_cn: 'TDBU/Double Layer 双层/上下合', desc_en: 'For TDBU / Double Layer' },
     { id: 'tubular_20_04n', name_cn: 'Tubular 20 Motor 0.4N (静音电机)', name_en: 'Tubular 20 Motor (0.4N)', price_usd: 144, rmb_price: 144, desc_cn: 'Fits 28mm tube, max 2m x 2m', desc_en: 'Fits 28mm tube' },
@@ -6684,6 +6684,11 @@ const ROMAN_DB = {
       ratePerSqm = fab.prices[sysCode];
     } else if (fab && fab.rmb_base && fab.rmb_base > 0) {
       ratePerSqm = fab.rmb_base;
+    }
+
+    // Version 1.2 Rule: Zebra (斑马帘) and Butterfly (蝴蝶帘) base cost increased by +80% (* 1.80)
+    if (sys && (sys.category === 'zebra' || sys.category === 'butterfly' || sys.code.startsWith('BM') || sys.code.startsWith('BSB') || (sys.name_cn && (sys.name_cn.includes('蝴蝶') || sys.name_cn.includes('斑马'))) || (sys.sys_type && (sys.sys_type.includes('斑马') || sys.sys_type.includes('蝴蝶') || sys.sys_type.includes('Zebra') || sys.sys_type.includes('Butterfly'))))) {
+      ratePerSqm = ratePerSqm * 1.80;
     }
 
     // 3. Base Shade RMB Cost = Rate per SQM * SQM
