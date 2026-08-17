@@ -792,6 +792,28 @@
               </table>
             </div>
 
+            <!-- Embedded Project Files & Window Photos Section inside Proforma Invoice -->
+            <div class="proforma-embedded-files-box" style="margin-top: 0.75rem; border: 1.5px dashed #94a3b8; border-radius: 6px; padding: 0.6rem; background: #f8fafc;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem;">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="font-weight: 700; font-size: 0.78rem; color: #1e293b;">📷 Attached Window Photos & Project Files / 窗户实拍与测绘项目附件:</span>
+                  <span id="invoice-embedded-file-count" style="font-size: 0.68rem; background: #cbd5e1; color: #334155; padding: 1px 6px; border-radius: 8px; font-weight: 700;">0 Files</span>
+                </div>
+                <div class="no-print">
+                  <input type="file" id="invoice-file-uploader" accept="image/*,.pdf,.xlsx,.xls,.csv,.txt" multiple style="display: none;">
+                  <button type="button" id="btn-upload-invoice-files" style="font-size: 0.72rem; padding: 3px 10px; background: #2563eb; color: #ffffff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">
+                    ➕ 导入照片/图片/文件到本报价单 (Add Files to Invoice)
+                  </button>
+                </div>
+              </div>
+
+              <div id="invoice-embedded-files-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem;">
+                <div class="invoice-empty-files-tip" style="grid-column: 1 / -1; text-align: center; color: #94a3b8; font-size: 0.72rem; padding: 0.5rem 0;">
+                  🖼️ 暂无嵌入照片或附件。点击上方按钮可导入窗户实拍照片(.jpg/.png)、PDF图纸(.pdf) 或 尺寸Excel表(.xlsx)，导入后将随报价单一同打印保存。
+                </div>
+              </div>
+            </div>
+
             <!-- Terms & Conditions Footer -->
             <div class="proforma-terms-box">
               <h4 class="terms-title" contenteditable="true">Terms and Conditions (Braun International LLC Pricing System):</h4>

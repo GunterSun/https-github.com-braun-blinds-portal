@@ -2563,6 +2563,7 @@ Estimated price: ${outPriceVal.textContent}`;
 
       renderSavedCustomerDropdown();
       initCustomerAttachmentEngine();
+      initInvoiceDirectFileUploader();
       autoRestoreActiveCustomerMeta();
 
       const custInputs = [
@@ -2719,6 +2720,118 @@ Estimated price: ${outPriceVal.textContent}`;
           const attId = btn.getAttribute('data-id');
           currentCustomerAttachments = currentCustomerAttachments.filter(a => a.id !== attId);
           renderCustomerAttachments();
+          renderInvoiceEmbeddedFiles();
+          autoSaveActiveCustomerMeta();
+        });
+      });
+
+      renderInvoiceEmbeddedFiles();
+    }
+
+    function initInvoiceDirectFileUploader() {
+      const input = document.getElementById('invoice-file-uploader');
+      const btn = document.getElementById('btn-upload-invoice-files');
+
+      if (!input || !btn) return;
+
+      btn.addEventListener('click', () => {
+        input.click();
+      });
+
+      input.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        let processed = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            let fileKind = 'image';
+            const nameLower = file.name.toLowerCase();
+            if (nameLower.endsWith('.pdf')) {
+              fileKind = 'pdf';
+            } else if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv') || nameLower.endsWith('.txt')) {
+              fileKind = 'excel';
+            }
+
+            const att = {
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              name: file.name,
+              type: fileKind,
+              size: formatFileSize(file.size),
+              dataUrl: evt.target.result
+            };
+
+            currentCustomerAttachments.push(att);
+            processed++;
+            if (processed === files.length) {
+              renderCustomerAttachments();
+              renderInvoiceEmbeddedFiles();
+              autoSaveActiveCustomerMeta();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+        input.value = '';
+      });
+    }
+
+    function renderInvoiceEmbeddedFiles() {
+      const grid = document.getElementById('invoice-embedded-files-grid');
+      const badge = document.getElementById('invoice-embedded-file-count');
+      if (!grid) return;
+
+      if (badge) {
+        badge.textContent = `${currentCustomerAttachments.length} Files`;
+      }
+
+      if (currentCustomerAttachments.length === 0) {
+        grid.innerHTML = `
+          <div class="invoice-empty-files-tip" style="grid-column: 1 / -1; text-align: center; color: #94a3b8; font-size: 0.72rem; padding: 0.5rem 0;">
+            🖼️ 暂无嵌入照片或附件。点击上方按钮可导入窗户实拍照片(.jpg/.png)、PDF图纸(.pdf) 或 尺寸Excel表(.xlsx)，导入后将随报价单一同打印保存。
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = currentCustomerAttachments.map(att => {
+        if (att.type === 'image') {
+          return `
+            <div class="invoice-embedded-file-card" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 3px; text-align: center; position: relative;">
+              <button type="button" class="btn-delete-invoice-file no-print" data-id="${att.id}" style="position: absolute; top: 1px; right: 1px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <img src="${att.dataUrl}" alt="${att.name}" class="lightbox-trigger" style="width: 100%; height: 60px; object-fit: cover; border-radius: 3px; cursor: pointer;">
+              <div style="font-size: 0.65rem; font-weight: 700; color: #1e293b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+            </div>
+          `;
+        } else if (att.type === 'pdf') {
+          return `
+            <div class="invoice-embedded-file-card" style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 4px; padding: 4px; text-align: center; position: relative;">
+              <button type="button" class="btn-delete-invoice-file no-print" data-id="${att.id}" style="position: absolute; top: 1px; right: 1px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <div style="font-size: 1.4rem; line-height: 1;">📄</div>
+              <div style="font-size: 0.65rem; font-weight: 700; color: #9f1239; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+              <div style="font-size: 0.6rem; color: #be123c;">${att.size}</div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="invoice-embedded-file-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 4px; text-align: center; position: relative;">
+              <button type="button" class="btn-delete-invoice-file no-print" data-id="${att.id}" style="position: absolute; top: 1px; right: 1px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <div style="font-size: 1.4rem; line-height: 1;">📊</div>
+              <div style="font-size: 0.65rem; font-weight: 700; color: #166534; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+              <div style="font-size: 0.6rem; color: #15803d;">${att.size}</div>
+            </div>
+          `;
+        }
+      }).join('');
+
+      grid.querySelectorAll('.btn-delete-invoice-file').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const attId = btn.getAttribute('data-id');
+          currentCustomerAttachments = currentCustomerAttachments.filter(a => a.id !== attId);
+          renderCustomerAttachments();
+          renderInvoiceEmbeddedFiles();
           autoSaveActiveCustomerMeta();
         });
       });
