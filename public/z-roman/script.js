@@ -325,8 +325,6 @@ Estimated price: ${outPriceVal.textContent}`;
     const btnAddItem = document.getElementById('btn-add-roman-item');
 
     // Live Item Price Breakdown
-    const elLiveRmbBase = document.getElementById('live-rmb-base');
-    const elLiveUsdBase = document.getElementById('live-usd-base');
     const elLiveMsrp = document.getElementById('live-msrp');
     const elLiveFinalRate = document.getElementById('live-final-rate');
 
@@ -339,16 +337,9 @@ Estimated price: ${outPriceVal.textContent}`;
     const sheetClientPhone = document.getElementById('sheet-client-phone');
     const sheetClientEmail = document.getElementById('sheet-client-email');
     const sheetSpecialNotes = document.getElementById('sheet-special-notes');
-    const sheetClientDiscount = document.getElementById('sheet-client-discount');
 
     const quoteItemsBody = document.getElementById('quote-items-body');
     const itemCountBadge = document.getElementById('item-count-badge');
-    const sheetSubtotalMsrp = document.getElementById('sheet-subtotal-msrp');
-    const sheetDiscountAmount = document.getElementById('sheet-discount-amount');
-    const sheetSubtotalFinal = document.getElementById('sheet-subtotal-final');
-    const sheetGrandTotal = document.getElementById('sheet-grand-total');
-
-    const btnExportExcel = document.getElementById('btn-export-excel');
     const btnPrintPdf = document.getElementById('btn-print-pdf');
 
     // Set default date
@@ -1262,6 +1253,11 @@ Estimated price: ${outPriceVal.textContent}`;
       const shippingFee = shippingInput ? (parseFloat(shippingInput.value) || 0) : 0;
       const taxAmount = totalFinal * (romanSalesTaxRate / 100);
       const grandTotal = totalFinal + taxAmount + shippingFee;
+
+      const sheetSubtotalMsrp = document.getElementById('sheet-subtotal-msrp');
+      const sheetDiscountAmount = document.getElementById('sheet-discount-amount');
+      const sheetSubtotalFinal = document.getElementById('sheet-subtotal-final');
+      const sheetGrandTotal = document.getElementById('sheet-grand-total');
 
       if (sheetSubtotalMsrp) sheetSubtotalMsrp.textContent = `$${totalMsrp.toFixed(2)}`;
       if (sheetDiscountAmount) sheetDiscountAmount.textContent = `-$${discountVal.toFixed(2)}`;
@@ -2469,11 +2465,6 @@ Estimated price: ${outPriceVal.textContent}`;
       });
 
       renderQuoteItemsTable();
-    }
-
-    const btnImportCust = document.getElementById('btn-import-customer-table');
-    if (btnImportCust) {
-      btnImportCust.addEventListener('click', loadCustomerPresetOrder);
     }
 
     const btnSplitHardware = document.getElementById('btn-split-hardware-lines');
