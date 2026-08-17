@@ -1215,6 +1215,7 @@ Estimated price: ${outPriceVal.textContent}`;
 
       updateTotals(totalMsrp, totalFinal);
       autoSaveActiveCustomerMeta();
+      autoSaveCurrentOrderToHistory();
       if (typeof window.populateProposalItemPicker === 'function') {
         window.populateProposalItemPicker();
       }
@@ -3332,7 +3333,417 @@ Estimated price: ${outPriceVal.textContent}`;
       }
     }
 
+    // ==========================================
+    // S-51001 Sequential Quote Number & Customer CRM / Orders Engine
+    // ==========================================
+    const LOCAL_QUOTE_SEQ_KEY = 'braun_quote_seq_number_v1';
+    const LOCAL_ORDERS_HISTORY_KEY = 'braun_z_orders_history_v1';
+
+    function initQuoteNumberSequence() {
+      const elQuoteNo = document.getElementById('roman-quote-no');
+      const btnNext = document.getElementById('btn-next-quote-no');
+      const sheetMetaNo = document.getElementById('sheet-meta-no');
+
+      let currentSeq = parseInt(localStorage.getItem(LOCAL_QUOTE_SEQ_KEY) || '51001');
+      if (isNaN(currentSeq) || currentSeq < 51001) currentSeq = 51001;
+
+      const formattedNo = `S-${currentSeq}`;
+      if (elQuoteNo) elQuoteNo.value = formattedNo;
+      if (sheetMetaNo) sheetMetaNo.textContent = formattedNo;
+
+      if (btnNext) {
+        btnNext.addEventListener('click', () => {
+          let seq = parseInt(localStorage.getItem(LOCAL_QUOTE_SEQ_KEY) || '51001');
+          if (isNaN(seq) || seq < 51001) seq = 51001;
+          seq++;
+          localStorage.setItem(LOCAL_QUOTE_SEQ_KEY, seq.toString());
+
+          const nextNo = `S-${seq}`;
+          if (elQuoteNo) elQuoteNo.value = nextNo;
+          if (sheetMetaNo) sheetMetaNo.textContent = nextNo;
+
+          // Clear table for new quote order
+          romanQuoteItems = [];
+          renderQuoteItemsTable();
+
+          alert(`🆕 已为您自动生成递增下一单号：【${nextNo}】，报价表格已就绪！`);
+        });
+      }
+    }
+
+    function autoSaveCurrentOrderToHistory(triggerType = 'auto') {
+      const elQuoteNo = document.getElementById('roman-quote-no');
+      const quoteNo = elQuoteNo ? elQuoteNo.value.trim() : 'S-51001';
+      const custName = elCustName ? elCustName.value.trim() : '通用客户';
+
+      if (!romanQuoteItems || romanQuoteItems.length === 0) return;
+
+      let totalFinal = 0;
+      romanQuoteItems.forEach(item => {
+        totalFinal += (item.amount || 0);
+      });
+      const taxVal = totalFinal * ((romanSalesTaxRate || 0) / 100);
+      const grandTotalVal = Math.round((totalFinal + taxVal) * 100) / 100;
+
+      let orders = [];
+      try {
+        orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      } catch (e) {}
+
+      const existingIdx = orders.findIndex(o => o.quoteNo === quoteNo);
+
+      const orderData = {
+        orderId: existingIdx >= 0 ? orders[existingIdx].orderId : 'ord_' + Date.now(),
+        quoteNo: quoteNo,
+        customerName: custName,
+        phone: elCustPhone ? elCustPhone.value.trim() : '',
+        email: elCustEmail ? elCustEmail.value.trim() : '',
+        address: elCustAddress ? elCustAddress.value.trim() : '',
+        projType: elProjType ? elProjType.value.trim() : '',
+        date: elQuoteDate ? elQuoteDate.value : new Date().toLocaleDateString(),
+        itemsCount: romanQuoteItems.length,
+        items: JSON.parse(JSON.stringify(romanQuoteItems)),
+        discountFactor: romanDiscountFactor,
+        taxRate: romanSalesTaxRate,
+        grandTotal: grandTotalVal,
+        updatedAt: new Date().toLocaleString()
+      };
+
+      if (existingIdx >= 0) {
+        orders[existingIdx] = orderData;
+      } else {
+        orders.unshift(orderData);
+      }
+
+      try {
+        localStorage.setItem(LOCAL_ORDERS_HISTORY_KEY, JSON.stringify(orders));
+        updateSavedOrdersBadge();
+        saveCustomerProfileSilent(); // Automatically upsert customer into CRM
+      } catch (err) {}
+    }
+
+    function saveCustomerProfileSilent() {
+      const name = elCustName ? elCustName.value.trim() : '';
+      if (!name) return;
+
+      const profiles = getSavedCustomerProfiles();
+      const existingIdx = profiles.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+
+      const profile = {
+        id: existingIdx >= 0 ? profiles[existingIdx].id : 'cust_' + Date.now(),
+        name: name,
+        proj: elProjType ? elProjType.value.trim() : '',
+        address: elCustAddress ? elCustAddress.value.trim() : '',
+        phone: elCustPhone ? elCustPhone.value.trim() : '',
+        email: elCustEmail ? elCustEmail.value.trim() : '',
+        notes: elSpecialNotes ? elSpecialNotes.value.trim() : '',
+        discountFactor: romanDiscountFactor,
+        hardwareFloorFactor: romanHardwareFloorFactor,
+        quoteItems: romanQuoteItems,
+        attachments: currentCustomerAttachments,
+        savedAt: new Date().toLocaleDateString()
+      };
+
+      if (existingIdx >= 0) {
+        profiles[existingIdx] = profile;
+      } else {
+        profiles.push(profile);
+      }
+
+      try {
+        localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(profiles));
+        renderSavedCustomerDropdown();
+      } catch (err) {}
+    }
+
+    function updateSavedOrdersBadge() {
+      const badge = document.getElementById('saved-orders-count-badge');
+      if (!badge) return;
+      try {
+        const orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+        badge.textContent = orders.length;
+      } catch (e) {
+        badge.textContent = '0';
+      }
+    }
+
+    function initCustomerCrmModalEngine() {
+      const modal = document.getElementById('customer-crm-modal');
+      const btnOpen = document.getElementById('btn-open-customer-crm');
+      const btnClose = document.getElementById('crm-modal-close-btn');
+      const btnBottomClose = document.getElementById('crm-modal-bottom-close');
+
+      const tabOrders = document.getElementById('crm-tab-orders');
+      const tabCustomers = document.getElementById('crm-tab-customers');
+      const viewOrders = document.getElementById('crm-view-orders');
+      const viewCustomers = document.getElementById('crm-view-customers');
+
+      const searchInput = document.getElementById('crm-search-input');
+      const btnExport = document.getElementById('btn-export-crm-json');
+      const btnImport = document.getElementById('btn-import-crm-json');
+      const fileInput = document.getElementById('crm-import-file-input');
+
+      if (btnOpen && modal) {
+        btnOpen.addEventListener('click', () => {
+          modal.style.display = 'flex';
+          renderCrmOrdersTable();
+          renderCrmCustomersTable();
+        });
+      }
+
+      [btnClose, btnBottomClose].forEach(btn => {
+        if (btn && modal) {
+          btn.addEventListener('click', () => modal.style.display = 'none');
+        }
+      });
+
+      if (tabOrders && tabCustomers) {
+        tabOrders.addEventListener('click', () => {
+          tabOrders.classList.add('active');
+          tabOrders.style.background = '#2563eb';
+          tabOrders.style.color = '#fff';
+          tabCustomers.classList.remove('active');
+          tabCustomers.style.background = 'transparent';
+          tabCustomers.style.color = '#475569';
+
+          viewOrders.style.display = 'block';
+          viewCustomers.style.display = 'none';
+        });
+
+        tabCustomers.addEventListener('click', () => {
+          tabCustomers.classList.add('active');
+          tabCustomers.style.background = '#2563eb';
+          tabCustomers.style.color = '#fff';
+          tabOrders.classList.remove('active');
+          tabOrders.style.background = 'transparent';
+          tabOrders.style.color = '#475569';
+
+          viewCustomers.style.display = 'block';
+          viewOrders.style.display = 'none';
+        });
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+          renderCrmOrdersTable(searchInput.value.trim());
+          renderCrmCustomersTable(searchInput.value.trim());
+        });
+      }
+
+      if (btnExport) {
+        btnExport.addEventListener('click', exportCrmBackupJSON);
+      }
+
+      if (btnImport && fileInput) {
+        btnImport.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', importCrmBackupJSON);
+      }
+    }
+
+    function renderCrmOrdersTable(query = '') {
+      const tbody = document.getElementById('crm-orders-tbody');
+      if (!tbody) return;
+
+      let orders = [];
+      try {
+        orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      } catch (e) {}
+
+      if (query) {
+        const q = query.toLowerCase();
+        orders = orders.filter(o => 
+          (o.quoteNo && o.quoteNo.toLowerCase().includes(q)) ||
+          (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+          (o.phone && o.phone.toLowerCase().includes(q))
+        );
+      }
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">暂无符合条件的历史自动保存订单</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr style="border-bottom: 1px solid #e2e8f0; hover: background: #f8fafc;">
+          <td style="padding: 8px 10px; font-weight: 700; color: #1e40af;">${o.quoteNo}</td>
+          <td style="padding: 8px 10px; font-weight: 600;">${o.customerName}</td>
+          <td style="padding: 8px 10px;">${o.phone || o.projType || '标准项目'}</td>
+          <td style="padding: 8px 10px; color: #64748b;">${o.date || o.updatedAt}</td>
+          <td style="padding: 8px 10px;">${o.itemsCount} 窗</td>
+          <td style="padding: 8px 10px; font-weight: 700; color: #059669;">$${parseFloat(o.grandTotal || 0).toFixed(2)}</td>
+          <td style="padding: 8px 10px; text-align: center;">
+            <button type="button" class="btn-crm-load" data-id="${o.orderId}" style="font-size: 0.72rem; padding: 2px 8px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; margin-right: 4px;">⚡ 加载订单</button>
+            <button type="button" class="btn-crm-delete" data-id="${o.orderId}" style="font-size: 0.72rem; padding: 2px 6px; background: #dc2626; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">🗑️ 删除</button>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('.btn-crm-load').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          loadOrderFromCrm(id);
+        });
+      });
+
+      tbody.querySelectorAll('.btn-crm-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          deleteOrderFromCrm(id);
+        });
+      });
+    }
+
+    function loadOrderFromCrm(orderId) {
+      let orders = [];
+      try {
+        orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      } catch (e) {}
+
+      const found = orders.find(o => o.orderId === orderId);
+      if (!found) {
+        alert('未找到选中的订单数据！');
+        return;
+      }
+
+      if (elCustName) elCustName.value = found.customerName || '';
+      if (elCustPhone) elCustPhone.value = found.phone || '';
+      if (elCustEmail) elCustEmail.value = found.email || '';
+      if (elCustAddress) elCustAddress.value = found.address || '';
+      if (elProjType) elProjType.value = found.projType || '';
+      const elQuoteNo = document.getElementById('roman-quote-no');
+      if (elQuoteNo) elQuoteNo.value = found.quoteNo || '';
+
+      if (found.discountFactor) setDiscountFactor(found.discountFactor);
+      if (found.taxRate !== undefined) setSalesTaxRate(found.taxRate);
+
+      if (found.items && Array.isArray(found.items)) {
+        romanQuoteItems = JSON.parse(JSON.stringify(found.items));
+        renderQuoteItemsTable();
+      }
+
+      const modal = document.getElementById('customer-crm-modal');
+      if (modal) modal.style.display = 'none';
+
+      alert(`✅ 已成功将报价单【${found.quoteNo} - ${found.customerName}】全套窗数明细与客户信息加载至编辑器！`);
+    }
+
+    function deleteOrderFromCrm(orderId) {
+      let orders = [];
+      try {
+        orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      } catch (e) {}
+
+      const found = orders.find(o => o.orderId === orderId);
+      if (!found) return;
+
+      if (confirm(`确定要彻底删除报价单【${found.quoteNo} - ${found.customerName}】的记录吗？`)) {
+        orders = orders.filter(o => o.orderId !== orderId);
+        localStorage.setItem(LOCAL_ORDERS_HISTORY_KEY, JSON.stringify(orders));
+        updateSavedOrdersBadge();
+        renderCrmOrdersTable();
+      }
+    }
+
+    function renderCrmCustomersTable(query = '') {
+      const tbody = document.getElementById('crm-customers-tbody');
+      if (!tbody) return;
+
+      const profiles = getSavedCustomerProfiles();
+      let filtered = profiles;
+
+      if (query) {
+        const q = query.toLowerCase();
+        filtered = profiles.filter(p =>
+          (p.name && p.name.toLowerCase().includes(q)) ||
+          (p.phone && p.phone.toLowerCase().includes(q)) ||
+          (p.email && p.email.toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #94a3b8;">暂无已保存的客户档案目录</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 8px 10px; font-weight: 700; color: #1e3a8a;">${p.name}</td>
+          <td style="padding: 8px 10px;">${p.phone || '无'} <br><span style="font-size: 0.72rem; color: #64748b;">${p.email || ''}</span></td>
+          <td style="padding: 8px 10px;">${p.proj || '标准窗饰工程'} <br><span style="font-size: 0.72rem; color: #64748b;">${p.address || ''}</span></td>
+          <td style="padding: 8px 10px; font-weight: 600;">${(p.quoteItems || []).length} 行明细</td>
+          <td style="padding: 8px 10px; font-weight: 700; color: #059669;">VIP档案</td>
+          <td style="padding: 8px 10px; color: #64748b;">${p.savedAt || '近期'}</td>
+          <td style="padding: 8px 10px; text-align: center;">
+            <button type="button" class="btn-crm-cust-load" data-id="${p.id}" style="font-size: 0.72rem; padding: 2px 8px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">读取档案</button>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('.btn-crm-cust-load').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          loadCustomerProfile(id);
+          const modal = document.getElementById('customer-crm-modal');
+          if (modal) modal.style.display = 'none';
+        });
+      });
+    }
+
+    function exportCrmBackupJSON() {
+      const orders = JSON.parse(localStorage.getItem(LOCAL_ORDERS_HISTORY_KEY) || '[]');
+      const profiles = getSavedCustomerProfiles();
+      const seq = localStorage.getItem(LOCAL_QUOTE_SEQ_KEY) || '51001';
+
+      const data = {
+        app: 'Braun-Z-1.2 Customer CRM Backup',
+        version: '1.2',
+        exportDate: new Date().toISOString(),
+        quoteSeq: seq,
+        orders: orders,
+        profiles: profiles
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Braun_Z_CRM_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function importCrmBackupJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const data = JSON.parse(evt.target.result);
+          if (data.orders && Array.isArray(data.orders)) {
+            localStorage.setItem(LOCAL_ORDERS_HISTORY_KEY, JSON.stringify(data.orders));
+          }
+          if (data.profiles && Array.isArray(data.profiles)) {
+            localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(data.profiles));
+          }
+          if (data.quoteSeq) {
+            localStorage.setItem(LOCAL_QUOTE_SEQ_KEY, data.quoteSeq);
+          }
+          initQuoteNumberSequence();
+          updateSavedOrdersBadge();
+          renderSavedCustomerDropdown();
+          renderCrmOrdersTable();
+          renderCrmCustomersTable();
+          alert('✅ 已成功恢复客户档案库与历史订单数据！');
+        } catch (err) {
+          alert('导入失败，JSON格式无效: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
     // Initial Engine Bootstrap
+    initQuoteNumberSequence();
+    initCustomerCrmModalEngine();
+    updateSavedOrdersBadge();
     bindCategoryTabs();
     initAddonSelects();
     renderSystemCards();
