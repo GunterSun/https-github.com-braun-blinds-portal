@@ -6686,9 +6686,9 @@ const ROMAN_DB = {
       ratePerSqm = fab.rmb_base;
     }
 
-    // Version 1.2 Rule: Zebra (斑马帘) and Butterfly (蝴蝶帘) base cost increased by +80% (* 1.80)
+    // Version 1.2 Rule: Zebra (斑马帘) and Butterfly (蝴蝶帘) base cost increased by +50% (* 1.50) over Version 1.1 baseline
     if (sys && (sys.category === 'zebra' || sys.category === 'butterfly' || sys.code.startsWith('BM') || sys.code.startsWith('BSB') || (sys.name_cn && (sys.name_cn.includes('蝴蝶') || sys.name_cn.includes('斑马'))) || (sys.sys_type && (sys.sys_type.includes('斑马') || sys.sys_type.includes('蝴蝶') || sys.sys_type.includes('Zebra') || sys.sys_type.includes('Butterfly'))))) {
-      ratePerSqm = ratePerSqm * 1.80;
+      ratePerSqm = ratePerSqm * 1.50;
     }
 
     // 3. Base Shade RMB Cost = Rate per SQM * SQM
