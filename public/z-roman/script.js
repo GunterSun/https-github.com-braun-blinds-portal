@@ -284,8 +284,8 @@ Estimated price: ${outPriceVal.textContent}`;
           romanSelectedCategory = btn.getAttribute('data-cat');
 
           // Reset default system & fabric selection for category
-          const availSystems = ROMAN_DB.SYSTEMS.filter(s => s.category === romanSelectedCategory || (!s.category && romanSelectedCategory === 'roman'));
-          const availFabrics = ROMAN_DB.FABRICS.filter(f => f.category === romanSelectedCategory || (!f.category && romanSelectedCategory === 'roman'));
+          const availSystems = ROMAN_DB.SYSTEMS.filter(s => s.category === romanSelectedCategory || (romanSelectedCategory === 'bamboo' && (s.category === 'bamboo' || s.category === 'roman')) || (!s.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
+          const availFabrics = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
 
           if (availSystems.length > 0) romanSelectedSysCode = availSystems[0].code;
           if (availFabrics.length > 0) romanSelectedFabCode = availFabrics[0].code;
@@ -382,7 +382,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const sysSelect = document.getElementById('roman-sys-select');
       if (!grid) return;
 
-      const categorySystems = ROMAN_DB.SYSTEMS.filter(sys => sys.category === romanSelectedCategory || (!sys.category && romanSelectedCategory === 'roman'));
+      const categorySystems = ROMAN_DB.SYSTEMS.filter(sys => sys.category === romanSelectedCategory || (romanSelectedCategory === 'bamboo' && (sys.category === 'bamboo' || sys.category === 'roman')) || (!sys.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
 
       if (categorySystems.length > 0) {
         const found = categorySystems.find(s => s.code === romanSelectedSysCode);
@@ -436,7 +436,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const tabsBox = document.getElementById('fabric-filter-tabs');
       if (!tabsBox) return;
 
-      const categoryFabrics = ROMAN_DB.FABRICS.filter(f => f.category === romanSelectedCategory || (!f.category && romanSelectedCategory === 'roman'));
+      const categoryFabrics = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
       const seriesSet = new Set(categoryFabrics.map(f => f.series_cn));
       const categories = ['ALL', ...Array.from(seriesSet)];
 
@@ -461,7 +461,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const fabSelect = document.getElementById('roman-fab-select');
       if (!grid) return;
 
-      let list = ROMAN_DB.FABRICS.filter(f => f.category === romanSelectedCategory || (!f.category && romanSelectedCategory === 'roman'));
+      let list = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
 
       if (list.length > 0) {
         const found = list.find(f => f.code === romanSelectedFabCode);
@@ -1733,7 +1733,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const hash = window.location.hash.toLowerCase();
       const href = window.location.href.toLowerCase();
       if (hash.includes('braun-z') || hash.includes('zhenpin-roman') || hash.includes('z-roman')) {
-        document.title = 'Braun-Z-1.2 | Z系列罗马帘窗饰定制报价系统';
+        document.title = 'Braun-Z-1.3 | Z系列罗马帘与竹帘窗饰定制报价系统';
         const sysElem = document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
         if (sysElem) {
           setTimeout(() => {

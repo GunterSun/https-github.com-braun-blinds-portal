@@ -11,6 +11,7 @@ const ROMAN_DB = {
 
   PRODUCT_CATEGORIES: [
     { id: 'roman', name_cn: 'Z系列罗马帘', name_en: 'Z Series Roman Shades', icon: '🏮' },
+    { id: 'bamboo', name_cn: '竹帘系列', name_en: 'Bamboo / Woven Wood', icon: '🎋' },
     { id: 'roller', name_cn: '精做卷帘', name_en: 'Roller Shades', icon: '📜' },
     { id: 'zebra', name_cn: '斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
     { id: 'sheer', name_cn: '香格里拉柔纱帘', name_en: 'Shangri-La Sheer Shades', icon: '🪟' },
@@ -6642,6 +6643,66 @@ const ROMAN_DB = {
     "hex": "#FFFFFF",
     "rmb_base": 168.0,
     "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "BZL01",
+    "series_cn": "天然竹编",
+    "series_en": "Natural Woven Bamboo",
+    "name_cn": "经典原木竹帘",
+    "name_en": "Classic Natural Wood",
+    "cat": "bamboo",
+    "rmb_base": 163.0,
+    "image_url": "system_images/z_image1.jpeg"
+  },
+  {
+    "code": "BZL02",
+    "series_cn": "天然竹编",
+    "series_en": "Natural Woven Bamboo",
+    "name_cn": "浅木色编织竹帘",
+    "name_en": "Light Wood Woven Bamboo",
+    "cat": "bamboo",
+    "rmb_base": 163.0,
+    "image_url": "system_images/z_image2.png"
+  },
+  {
+    "code": "BZL03",
+    "series_cn": "麻绳竹编",
+    "series_en": "Hemp & Bamboo Blend",
+    "name_cn": "麻质纹理竹帘",
+    "name_en": "Hemp Textured Bamboo",
+    "cat": "bamboo",
+    "rmb_base": 175.0,
+    "image_url": "system_images/z_image3.jpeg"
+  },
+  {
+    "code": "BZL04",
+    "series_cn": "麻绳竹编",
+    "series_en": "Hemp & Bamboo Blend",
+    "name_cn": "栗木色编织竹帘",
+    "name_en": "Chestnut Woven Wood",
+    "cat": "bamboo",
+    "rmb_base": 175.0,
+    "image_url": "system_images/z_image4.png"
+  },
+  {
+    "code": "BZL05",
+    "series_cn": "透光竹织",
+    "series_en": "Filtering Woven Wood",
+    "name_cn": "Montauk 采光竹帘",
+    "name_en": "Montauk Raw Cotton Woven",
+    "cat": "bamboo",
+    "rmb_base": 195.0,
+    "image_url": "system_images/z_image5.png"
+  },
+  {
+    "code": "BZL06",
+    "series_cn": "遮光覆衬",
+    "series_en": "Room Darkening Woven",
+    "name_cn": "遮光内衬竹帘",
+    "name_en": "Blackout Lined Bamboo Woven",
+    "cat": "bamboo",
+    "rmb_base": 210.0,
+    "image_url": "system_images/z_image6.png"
   }
 ],
 
