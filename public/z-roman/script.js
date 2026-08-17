@@ -612,7 +612,7 @@ Estimated price: ${outPriceVal.textContent}`;
       if (!modal || !modalImg) return;
 
       document.body.addEventListener('click', (e) => {
-        if (e.target && (e.target.classList.contains('sys-card-img') || e.target.classList.contains('lightbox-trigger') || (e.target.tagName === 'IMG' && e.target.closest('.guide-card')))) {
+        if (e.target && e.target.classList.contains('lightbox-trigger')) {
           modalImg.src = e.target.src;
           modalCaption.textContent = e.target.alt || 'Visual Guide Image / 款式实拍图';
           modal.classList.add('show');
@@ -2644,6 +2644,15 @@ Estimated price: ${outPriceVal.textContent}`;
         btnSave.addEventListener('click', saveCustomerProfile);
       }
 
+      if (selectSaved) {
+        selectSaved.addEventListener('change', () => {
+          const selectedId = selectSaved.value;
+          if (selectedId) {
+            loadCustomerProfile(selectedId);
+          }
+        });
+      }
+
       if (btnLoad && selectSaved) {
         btnLoad.addEventListener('click', () => {
           const selectedId = selectSaved.value;
@@ -3179,12 +3188,29 @@ Estimated price: ${outPriceVal.textContent}`;
     }
 
     function getSavedCustomerProfiles() {
-      try {
-        const raw = localStorage.getItem(LOCAL_SAVED_PROFILES_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (err) {
-        return [];
-      }
+      let profiles = [];
+      const keys = [
+        LOCAL_SAVED_PROFILES_KEY,
+        'braun_saved_customer_profiles_v1',
+        'braun_saved_customers',
+        'braun_customer_profiles_master_v1'
+      ];
+      keys.forEach(k => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr)) {
+              arr.forEach(p => {
+                if (p && p.name && !profiles.some(existing => existing.id === p.id || existing.name.toLowerCase() === p.name.toLowerCase())) {
+                  profiles.push(p);
+                }
+              });
+            }
+          }
+        } catch (err) {}
+      });
+      return profiles;
     }
 
     function renderSavedCustomerDropdown() {
