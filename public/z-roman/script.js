@@ -3042,42 +3042,50 @@ Estimated price: ${outPriceVal.textContent}`;
       });
     }
 
-    function initHardwareFloorEngine() {
+    function updateHardwareFloorUI(floorFactor) {
+      romanHardwareFloorFactor = Math.max(0.16, parseFloat(floorFactor) || 0.16);
       const hwInput = document.getElementById('custom-hardware-floor-input');
       const hwBadge = document.getElementById('hardware-floor-badge');
+      const hwBtns = document.querySelectorAll('#hardware-floor-presets .hw-floor-btn');
+
+      const floorPct = Math.round(romanHardwareFloorFactor * 100);
+
+      if (hwInput) {
+        hwInput.value = floorPct;
+      }
+      if (hwBadge) {
+        hwBadge.textContent = `保底 ${floorPct}% (${(floorPct / 10).toFixed(1)}折 / ${romanHardwareFloorFactor.toFixed(2)})`;
+      }
+      if (hwBtns) {
+        hwBtns.forEach(b => {
+          b.classList.remove('active');
+          if (Math.abs(parseFloat(b.getAttribute('data-floor')) - romanHardwareFloorFactor) < 0.001) {
+            b.classList.add('active');
+          }
+        });
+      }
+    }
+
+    function initHardwareFloorEngine() {
+      const hwInput = document.getElementById('custom-hardware-floor-input');
       const hwBtns = document.querySelectorAll('#hardware-floor-presets .hw-floor-btn');
 
       if (hwInput) {
         hwInput.addEventListener('input', (e) => {
           let val = parseFloat(e.target.value);
           if (isNaN(val)) val = 16;
-          if (val < 16) val = 16; // Minimum 16% Floor Rule Enforced!
+          if (val < 16) val = 16;
           if (val > 100) val = 100;
 
-          romanHardwareFloorFactor = val / 100;
-          if (hwBadge) {
-            hwBadge.textContent = `保底 ${val}% (${(val/10).toFixed(1)}折 / ${romanHardwareFloorFactor.toFixed(2)})`;
-          }
-
-          hwBtns.forEach(b => {
-            b.classList.remove('active');
-            if (parseFloat(b.getAttribute('data-floor')) === romanHardwareFloorFactor) {
-              b.classList.add('active');
-            }
-          });
-
+          updateHardwareFloorUI(val / 100);
           calculateLiveItemPrice();
           recalculateQuoteItems();
+          autoSaveActiveCustomerMeta();
         });
 
         hwInput.addEventListener('blur', (e) => {
           let val = parseFloat(e.target.value);
           if (isNaN(val) || val < 16) {
-            e.target.value = 16;
-            romanHardwareFloorFactor = 0.16;
-            if (hwBadge) hwBadge.textContent = '保底 16% (1.6折 / 0.16)';
-            calculateLiveItemPrice();
-            recalculateQuoteItems();
           }
         });
       }
