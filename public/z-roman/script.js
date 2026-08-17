@@ -1617,6 +1617,7 @@ Estimated price: ${outPriceVal.textContent}`;
       if (elSigDate) elSigDate.addEventListener('input', () => { elSigDate.dataset.manual = 'true'; });
       if (elApprovalDate) elApprovalDate.addEventListener('input', () => { elApprovalDate.dataset.manual = 'true'; });
 
+      if (!elQuoteDate) return;
       syncDates(elQuoteDate.value);
 
       const datePresetBtns = document.querySelectorAll('#date-presets-quick .date-btn');
@@ -1630,14 +1631,16 @@ Estimated price: ${outPriceVal.textContent}`;
           targetDate.setDate(targetDate.getDate() + addDays);
 
           const formatted = targetDate.toISOString().split('T')[0];
-          elQuoteDate.value = formatted;
+          if (elQuoteDate) elQuoteDate.value = formatted;
           syncDates(formatted);
         });
       });
 
-      elQuoteDate.addEventListener('change', () => {
-        syncDates(elQuoteDate.value);
-      });
+      if (elQuoteDate) {
+        elQuoteDate.addEventListener('change', () => {
+          syncDates(elQuoteDate.value);
+        });
+      }
     }
 
     // --- Interactive Digital Signature Canvas Pad inside Invoice ---
@@ -3166,7 +3169,18 @@ Estimated price: ${outPriceVal.textContent}`;
           if (data.date && elQuoteDate) elQuoteDate.value = data.date;
           if (data.no && elQuoteNo) elQuoteNo.value = data.no;
           if (data.notes && elSpecialNotes) elSpecialNotes.value = data.notes;
-          if (data.discountFactor !== undefined) romanDiscountFactor = data.discountFactor;
+          if (data.discountFactor !== undefined) {
+            romanDiscountFactor = data.discountFactor;
+            const elCustomDiscountInput = document.getElementById('custom-discount-input');
+            if (elCustomDiscountInput) {
+              elCustomDiscountInput.value = Math.round(romanDiscountFactor * 100);
+            }
+            const elDiscountBadge = document.getElementById('discount-val-badge');
+            if (elDiscountBadge) {
+              const offPct = Math.round((1 - romanDiscountFactor) * 100);
+              elDiscountBadge.textContent = romanDiscountFactor === 1.0 ? '100% MSRP (原价)' : `${offPct}% OFF (${(romanDiscountFactor*10).toFixed(1)}折 / ${romanDiscountFactor.toFixed(2)})`;
+            }
+          }
           if (data.hardwareFloorFactor !== undefined) romanHardwareFloorFactor = data.hardwareFloorFactor;
           if (Array.isArray(data.quoteItems)) romanQuoteItems = data.quoteItems;
 
