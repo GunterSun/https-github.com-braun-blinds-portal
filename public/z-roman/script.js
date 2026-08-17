@@ -1218,6 +1218,7 @@ Estimated price: ${outPriceVal.textContent}`;
       });
 
       updateTotals(totalMsrp, totalFinal);
+      autoSaveActiveCustomerMeta();
       if (typeof window.populateProposalItemPicker === 'function') {
         window.populateProposalItemPicker();
       }
@@ -3111,6 +3112,9 @@ Estimated price: ${outPriceVal.textContent}`;
         date: elQuoteDate ? elQuoteDate.value : '',
         no: elQuoteNo ? elQuoteNo.value : '',
         notes: elSpecialNotes ? elSpecialNotes.value : '',
+        discountFactor: romanDiscountFactor,
+        hardwareFloorFactor: romanHardwareFloorFactor,
+        quoteItems: romanQuoteItems,
         attachments: currentCustomerAttachments
       };
       try {
@@ -3133,13 +3137,44 @@ Estimated price: ${outPriceVal.textContent}`;
           if (data.date && elQuoteDate) elQuoteDate.value = data.date;
           if (data.no && elQuoteNo) elQuoteNo.value = data.no;
           if (data.notes && elSpecialNotes) elSpecialNotes.value = data.notes;
+          if (data.discountFactor !== undefined) romanDiscountFactor = data.discountFactor;
+          if (data.hardwareFloorFactor !== undefined) romanHardwareFloorFactor = data.hardwareFloorFactor;
+          if (Array.isArray(data.quoteItems)) romanQuoteItems = data.quoteItems;
+
           currentCustomerAttachments = data.attachments || [];
           renderCustomerAttachments();
+          renderInvoiceEmbeddedFiles();
+          renderQuoteItemsTable();
           syncCustomerMeta();
         }
       } catch (err) {
         console.error('Failed to auto-restore active customer meta:', err);
       }
+    }
+
+    function getSavedCustomerProfiles() {
+      try {
+        const raw = localStorage.getItem(LOCAL_SAVED_PROFILES_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function renderSavedCustomerDropdown() {
+      const selectSaved = document.getElementById('saved-customer-select');
+      if (!selectSaved) return;
+
+      const profiles = getSavedCustomerProfiles();
+      if (profiles.length === 0) {
+        selectSaved.innerHTML = '<option value="">-- 暂无已保存的客户档案 (No Saved Profiles) --</option>';
+        return;
+      }
+
+      selectSaved.innerHTML = '<option value="">-- 请选择要读取/管理的客户档案 --</option>' +
+        profiles.map(p => `
+          <option value="${p.id}">👤 ${p.name} | ${p.proj || '项目'} | ${(p.quoteItems || []).length}行明细 | ${p.savedAt || '保存'}</option>
+        `).join('');
     }
 
     function saveCustomerProfile() {
@@ -3160,6 +3195,9 @@ Estimated price: ${outPriceVal.textContent}`;
         phone: elCustPhone ? elCustPhone.value.trim() : '',
         email: elCustEmail ? elCustEmail.value.trim() : '',
         notes: elSpecialNotes ? elSpecialNotes.value.trim() : '',
+        discountFactor: romanDiscountFactor,
+        hardwareFloorFactor: romanHardwareFloorFactor,
+        quoteItems: romanQuoteItems,
         attachments: currentCustomerAttachments,
         savedAt: new Date().toLocaleDateString()
       };
@@ -3175,61 +3213,56 @@ Estimated price: ${outPriceVal.textContent}`;
         renderSavedCustomerDropdown();
         const selectSaved = document.getElementById('saved-customer-select');
         if (selectSaved) selectSaved.value = profile.id;
-        alert(`✅ 已成功保存客户【${name}】的档案及 ${currentCustomerAttachments.length} 个附件(图片/PDF/Excel)！`);
+        alert(`✅ 已成功保存客户【${name}】的档案 (包含 ${romanQuoteItems.length} 行报价明细、折扣配置与 ${currentCustomerAttachments.length} 个附件照片/文件)！`);
       } catch (err) {
         alert('保存出错: ' + err.message);
       }
     }
 
-    function loadCustomerProfile(profileId) {
+    function loadCustomerProfile(id) {
       const profiles = getSavedCustomerProfiles();
-      const target = profiles.find(p => p.id === profileId);
-      if (!target) return;
+      const found = profiles.find(p => p.id === id);
+      if (!found) {
+        alert('未找到指定的客户档案！');
+        return;
+      }
 
-      if (elCustName) elCustName.value = target.name || '';
-      if (elProjType) elProjType.value = target.proj || '';
-      if (elCustAddress) elCustAddress.value = target.address || '';
-      if (elCustPhone) elCustPhone.value = target.phone || '';
-      if (elCustEmail) elCustEmail.value = target.email || '';
-      if (elSpecialNotes) elSpecialNotes.value = target.notes || '';
+      if (elCustName) elCustName.value = found.name || '';
+      if (elProjType) elProjType.value = found.proj || 'Custom Window Treatments';
+      if (elCustAddress) elCustAddress.value = found.address || '';
+      if (elCustPhone) elCustPhone.value = found.phone || '';
+      if (elCustEmail) elCustEmail.value = found.email || '';
+      if (elSpecialNotes) elSpecialNotes.value = found.notes || '';
+      if (found.discountFactor !== undefined) romanDiscountFactor = found.discountFactor;
+      if (found.hardwareFloorFactor !== undefined) romanHardwareFloorFactor = found.hardwareFloorFactor;
 
-      currentCustomerAttachments = target.attachments || [];
+      romanQuoteItems = Array.isArray(found.quoteItems) ? found.quoteItems : [];
+      currentCustomerAttachments = Array.isArray(found.attachments) ? found.attachments : [];
+
       renderCustomerAttachments();
-
+      renderInvoiceEmbeddedFiles();
+      renderQuoteItemsTable();
       syncCustomerMeta();
       autoSaveActiveCustomerMeta();
-      alert(`⚡ 已成功加载客户【${target.name}】的完整档案及 ${currentCustomerAttachments.length} 个附件！`);
+
+      alert(`📂 已成功加载客户【${found.name}】的完整档案！已恢复其 ${romanQuoteItems.length} 行报价明细与 ${currentCustomerAttachments.length} 个附件文件。`);
     }
 
-    function deleteCustomerProfile(profileId) {
+    function deleteCustomerProfile(id) {
       let profiles = getSavedCustomerProfiles();
-      const target = profiles.find(p => p.id === profileId);
+      const target = profiles.find(p => p.id === id);
       if (!target) return;
 
-      if (confirm(`确定要删除客户【${target.name}】的保存档案吗？`)) {
-        profiles = profiles.filter(p => p.id !== profileId);
-        localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(profiles));
-        renderSavedCustomerDropdown();
-        alert(`🗑️ 已成功删除客户【${target.name}】的档案！`);
+      if (confirm(`确定要删除已保存的客户档案【${target.name}】吗？`)) {
+        profiles = profiles.filter(p => p.id !== id);
+        try {
+          localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(profiles));
+          renderSavedCustomerDropdown();
+          alert(`🗑️ 已成功删除客户【${target.name}】的档案！`);
+        } catch (err) {
+          alert('删除出错: ' + err.message);
+        }
       }
-    }
-
-    function getSavedCustomerProfiles() {
-      try {
-        const raw = localStorage.getItem(LOCAL_SAVED_PROFILES_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (err) {
-        return [];
-      }
-    }
-
-    function renderSavedCustomerDropdown() {
-      const select = document.getElementById('saved-customer-select');
-      if (!select) return;
-
-      const profiles = getSavedCustomerProfiles();
-      select.innerHTML = '<option value="">-- 选择已保存客户档案 --</option>' +
-        profiles.map(p => `<option value="${p.id}">${p.name} (${p.phone || p.savedAt})</option>`).join('');
     }
 
     // Initial Engine Bootstrap
