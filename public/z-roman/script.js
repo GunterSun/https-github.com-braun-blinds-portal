@@ -3181,6 +3181,9 @@ Estimated price: ${outPriceVal.textContent}`;
           renderInvoiceEmbeddedFiles();
           renderQuoteItemsTable();
           syncCustomerMeta();
+        } else {
+          // First visit fallback
+          loadCustomerPresetOrder();
         }
       } catch (err) {
         console.error('Failed to auto-restore active customer meta:', err);
@@ -3335,7 +3338,6 @@ Estimated price: ${outPriceVal.textContent}`;
     validateDimensions();
     calculateLiveItemPrice();
     syncCustomerMeta();
-    loadCustomerPresetOrder();
     checkHashRoute();
     window.addEventListener('hashchange', checkHashRoute);
   }
