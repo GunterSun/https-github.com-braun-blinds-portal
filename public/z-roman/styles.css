@@ -2239,12 +2239,32 @@ footer {
   margin-top: 0.15rem;
 }
 
-/* Print CSS Rules */
+/* Print CSS Rules - Strict Single-Page Layout (取消空白、单页打满) */
+@page {
+  size: letter portrait;
+  margin: 0.25in;
+}
+
 @media print {
+  html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+  }
+
   body * {
     visibility: hidden;
   }
 
+  /* Hide all non-printable UI elements */
+  header, footer, nav, .hero-section, .builder-step, .customer-settings-panel,
+  .sheet-action-bar, .calculator-card, .lightbox-modal, .no-print {
+    display: none !important;
+  }
+
+  /* Force Quotation Paper to fit 100% on Single Page */
   #william-quote-paper, #william-quote-paper * {
     visibility: visible;
   }
@@ -2253,15 +2273,253 @@ footer {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    box-shadow: none;
-    border: none;
-    padding: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.5rem !important;
+    box-shadow: none !important;
+    border: 1px solid #1e293b !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
   }
 
-  .no-print {
-    display: none !important;
+  /* Compact Spacing for Single Page Fitting */
+  .quote-sheet-header {
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #1e293b !important;
   }
+
+  .company-name-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .company-sub-title {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .company-address-line {
+    font-size: 0.7rem !important;
+  }
+
+  .sheet-doc-title h2 {
+    font-size: 1.1rem !important;
+  }
+
+  .quote-client-info-box {
+    margin-bottom: 0.5rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+
+  .info-label {
+    font-size: 0.7rem !important;
+  }
+
+  .info-value {
+    font-size: 0.75rem !important;
+  }
+
+  /* Compact Table Layout */
+  .quote-items-table {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .quote-items-table th {
+    padding: 4px 6px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .quote-items-table td {
+    padding: 4px 6px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .table-sys-img {
+    width: 45px !important;
+    height: 35px !important;
+  }
+
+  /* Compact Footer Summary & Signature Block */
+  .quote-summary-row {
+    margin-top: 0.5rem !important;
+    padding-top: 0.4rem !important;
+  }
+
+  .summary-col-terms {
+    font-size: 0.68rem !important;
+  }
+
+  .totals-table td {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .totals-table .grand-total-row td {
+    font-size: 0.9rem !important;
+  }
+
+  .quote-signature-block {
+    margin-top: 0.5rem !important;
+    padding-top: 0.4rem !important;
+  }
+
+  .sig-title {
+    font-size: 0.7rem !important;
+  }
+
+  .sig-line {
+    margin-top: 1rem !important;
+  }
+}
+
+/* Proforma Invoice Form Layout (Matches JIN PARK DESIGN LLC Template) */
+.proforma-invoice-paper {
+  background: #ffffff;
+  color: #1e293b;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-color);
+}
+
+.proforma-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.35rem;
+}
+
+.proforma-company-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #A83B24; /* Terracotta Red from Reference Image */
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.proforma-form-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.proforma-divider-line {
+  height: 3px;
+  background-color: #A83B24;
+  margin-bottom: 1rem;
+}
+
+.proforma-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.proforma-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+}
+
+.proforma-table th {
+  background-color: #A83B24; /* Terracotta Red Header */
+  color: #ffffff;
+  font-weight: 700;
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid #A83B24;
+}
+
+.proforma-table td {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.proforma-summary-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.proforma-totals-table {
+  width: 320px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.proforma-totals-table td {
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+}
+
+.proforma-totals-table .tot-label {
+  font-weight: 600;
+  background-color: #f8fafc;
+}
+
+.proforma-totals-table .tot-val {
+  text-align: right;
+  font-weight: 700;
+}
+
+.proforma-totals-table .grand-total-row td {
+  background-color: #A83B24;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.proforma-terms-box {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #334155;
+  line-height: 1.5;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.75rem;
+}
+
+.proforma-terms-box .terms-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.proforma-terms-box .terms-list {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.proforma-signature-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+}
+
+.proforma-signature-grid .sig-col {
+  width: 45%;
+}
+
+.proforma-signature-grid .sig-line {
+  border-bottom: 1px solid #475569;
+  margin-bottom: 0.35rem;
+}
+
+.proforma-signature-grid .sig-label {
+  font-size: 0.75rem;
+  color: #475569;
 }
 
 /* Image Lightbox Fullscreen Modal */
@@ -2352,5 +2610,309 @@ footer {
 .table-sys-img:hover {
   transform: scale(1.1);
   border-color: var(--accent-gold);
+}
+
+/* --- Window Measurement & Design Proposal Card Styles --- */
+.proposal-card-paper {
+  width: 100%;
+  max-width: 600px;
+  background: #FAF6F0;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  border: 1px solid #EAE2D8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1E293B;
+}
+
+.proposal-top-header {
+  border-bottom: 2px solid #E5DCD0;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.proposal-top-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.proposal-diagram-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.25rem;
+  padding: 1.25rem 0.5rem;
+  background: #FAF6F0;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.window-diagram-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.dim-top-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.window-frame-graphic {
+  position: relative;
+  width: 110px;
+  height: 160px;
+  border: 4px solid #1E293B;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #dbeafe, #eff6ff);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.window-shade-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 65%;
+  background: linear-gradient(135deg, #f5f5f4, #e7e5e4);
+  border-bottom: 3px solid #d6d3d1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.dim-side-label {
+  position: absolute;
+  right: -36px;
+  top: 24px;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+.dim-v-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background-color: #0F172A;
+  transform: translateX(-50%);
+}
+
+.dim-v-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 7.5px;
+  height: 1.5px;
+  background-color: #0F172A;
+}
+
+.dim-v-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -3px;
+  width: 7.5px;
+  height: 1.5px;
+  background-color: #0F172A;
+}
+
+.dim-v-text {
+  position: relative;
+  background: #FAF6F0;
+  padding: 1px 3px;
+  border-radius: 3px;
+  z-index: 2;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.proposal-scheme-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+  border: 1px solid #EAE2D8;
+}
+
+.scheme-card-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 0.4rem 0;
+}
+
+.scheme-card-subtitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.75rem;
+}
+
+.scheme-bullets-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.scheme-bullet-item {
+  font-size: 0.82rem;
+  color: #334155;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.scheme-images-flex {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.scheme-swatch-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scheme-swatch-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+}
+
+.scheme-swatch-desc {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Proposal Template Theme Variations */
+.proposal-card-paper.theme-cream {
+  background: #FAF6F0;
+  border-color: #EAE2D8;
+  color: #1E293B;
+}
+
+.proposal-card-paper.theme-terracotta {
+  background: #FFFDF9;
+  border: 2px solid #A83B24;
+  color: #0F172A;
+}
+
+.proposal-card-paper.theme-terracotta .proposal-top-header {
+  background: #A83B24;
+  color: #FFFFFF;
+  padding: 0.75rem 1rem;
+  border-radius: 12px 12px 0 0;
+  margin: -1.25rem -1.5rem 1rem -1.5rem;
+}
+
+.proposal-card-paper.theme-terracotta .proposal-top-title {
+  color: #FFFFFF;
+}
+
+.proposal-card-paper.theme-dark {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+.proposal-card-paper.theme-dark .proposal-top-title,
+.proposal-card-paper.theme-dark .scheme-card-title,
+.proposal-card-paper.theme-dark .dim-top-label,
+.proposal-card-paper.theme-dark .dim-side-label {
+  color: #F8FAFC;
+}
+
+.proposal-card-paper.theme-dark .proposal-diagram-area {
+  background: #0F172A;
+}
+
+.proposal-card-paper.theme-dark .proposal-scheme-card {
+  background: #0F172A;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+.proposal-card-paper.theme-dark .scheme-card-subtitle,
+.proposal-card-paper.theme-dark .scheme-bullet-item {
+  color: #CBD5E1;
+}
+
+.proposal-card-paper.theme-wood {
+  background: #FDFBF7;
+  border: 2px solid #D7C4B7;
+  color: #2D241E;
+}
+
+.proposal-card-paper.theme-wood .proposal-top-header {
+  border-bottom: 2px solid #8C6D58;
+}
+
+.proposal-card-paper.theme-wood .proposal-top-title {
+  color: #5C4033;
+}
+
+/* ==========================================================================
+   Interactive Hand-Editable Proforma Invoice Paper Styles
+   ========================================================================== */
+.proforma-invoice-paper [contenteditable="true"] {
+  border-bottom: 1.5px dashed #3B82F6;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(59, 130, 246, 0.04);
+  transition: all 0.2s ease;
+  cursor: text;
+  display: inline-block;
+  min-width: 30px;
+}
+
+.proforma-invoice-paper [contenteditable="true"]:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-bottom-color: #1D4ED8;
+}
+
+.proforma-invoice-paper [contenteditable="true"]:focus {
+  background: #FFFFFF;
+  border-bottom: 2px solid #2563EB;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.25);
+  outline: none;
+}
+
+@media print {
+  .proforma-invoice-paper [contenteditable="true"] {
+    border-bottom: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .no-print-edit-badge {
+    display: none !important;
+  }
 }
 

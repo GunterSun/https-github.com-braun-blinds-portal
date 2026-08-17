@@ -12,7 +12,8 @@ const ROMAN_DB = {
   PRODUCT_CATEGORIES: [
     { id: 'roman', name_cn: 'Z系列罗马帘', name_en: 'Z Series Roman Shades', icon: '🏮' },
     { id: 'roller', name_cn: '精做卷帘', name_en: 'Roller Shades', icon: '📜' },
-    { id: 'zebra', name_cn: '双层斑马帘', name_en: 'Zebra Blinds', icon: '🦓' }
+    { id: 'zebra', name_cn: '双层斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
+    { id: 'sheer', name_cn: '香格里拉柔纱帘', name_en: 'Shangri-La Sheer Shades', icon: '🪟' }
   ],
 
   MOTOR_OPTIONS: [
@@ -46,6 +47,70 @@ const ROMAN_DB = {
   ],
 
   SYSTEMS: [
+  {
+    "code": "BSL0001",
+    "category": "sheer",
+    "image_url": "system_images/our_collections/collection_roller_2026_thumb.jpg",
+    "name_cn": "香格里拉 55mm 经典拉珠柔纱帘",
+    "name_en": "Shangri-La 55mm Classic Chain Sheer Shade",
+    "sys_type": "香格里拉 Sheer Shade",
+    "series": "香格里拉系列",
+    "style": "55mm 经典拉珠",
+    "craft": "精做包边柔纱",
+    "min_w": 14,
+    "max_w": 118,
+    "min_h": 20,
+    "max_h": 120,
+    "min_depth": 2.0
+  },
+  {
+    "code": "BSL0002",
+    "category": "sheer",
+    "image_url": "system_images/our_collections/collection_roller_2026_thumb.jpg",
+    "name_cn": "香格里拉 55mm 方形无绳柔纱帘",
+    "name_en": "Shangri-La 55mm Square Cordless Sheer Shade",
+    "sys_type": "香格里拉 Sheer Shade",
+    "series": "香格里拉系列",
+    "style": "55mm 方形无绳",
+    "craft": "精做包边柔纱",
+    "min_w": 14,
+    "max_w": 118,
+    "min_h": 20,
+    "max_h": 120,
+    "min_depth": 2.2
+  },
+  {
+    "code": "BSL0003",
+    "category": "sheer",
+    "image_url": "system_images/our_collections/collection_roller_2026_thumb.jpg",
+    "name_cn": "香格里拉 75mm 奢华大叶片柔纱帘",
+    "name_en": "Shangri-La 75mm Luxury Cordless Sheer Shade",
+    "sys_type": "香格里拉 Sheer Shade",
+    "series": "香格里拉系列",
+    "style": "75mm 奢华大叶片",
+    "craft": "精做包边柔纱",
+    "min_w": 16,
+    "max_w": 138,
+    "min_h": 20,
+    "max_h": 140,
+    "min_depth": 2.5
+  },
+  {
+    "code": "BSL0004",
+    "category": "sheer",
+    "image_url": "system_images/our_collections/collection_roller_2026_thumb.jpg",
+    "name_cn": "香格里拉 100% 遮光双层柔纱帘",
+    "name_en": "Shangri-La 100% Blackout Sheer Shade",
+    "sys_type": "香格里拉 Sheer Shade",
+    "series": "香格里拉系列",
+    "style": "双层全遮光",
+    "craft": "精做包边柔纱",
+    "min_w": 16,
+    "max_w": 138,
+    "min_h": 20,
+    "max_h": 140,
+    "min_depth": 2.5
+  },
   {
     "code": "LM0002",
     "category": "roman",
@@ -6377,6 +6442,66 @@ const ROMAN_DB = {
       "BM0027": 194.0
     },
     "image_url": "system_images/z_image4.png"
+  },
+  {
+    "code": "BSL-F01",
+    "category": "sheer",
+    "series_cn": "香格里拉柔纱",
+    "series_en": "Shangri-La Sheer",
+    "color_cn": "珍珠白",
+    "color_en": "Pearl White",
+    "type": "滤光 Light Filtering",
+    "hex": "#FAFAFA",
+    "rmb_base": 120.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "BSL-F02",
+    "category": "sheer",
+    "series_cn": "香格里拉柔纱",
+    "series_en": "Shangri-La Sheer",
+    "color_cn": "亚麻暖白",
+    "color_en": "Warm Linen White",
+    "type": "滤光 Light Filtering",
+    "hex": "#F5F2EB",
+    "rmb_base": 120.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "BSL-F03",
+    "category": "sheer",
+    "series_cn": "香格里拉柔纱",
+    "series_en": "Shangri-La Sheer",
+    "color_cn": "银月浅灰",
+    "color_en": "Silver Moon Grey",
+    "type": "滤光 Light Filtering",
+    "hex": "#E2E8F0",
+    "rmb_base": 130.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "BSL-F04",
+    "category": "sheer",
+    "series_cn": "香格里拉柔纱",
+    "series_en": "Shangri-La Sheer",
+    "color_cn": "燕麦奶油色",
+    "color_en": "Oatmeal Cream",
+    "type": "滤光 Light Filtering",
+    "hex": "#EFEBE4",
+    "rmb_base": 130.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "BSL-F05",
+    "category": "sheer",
+    "series_cn": "香格里拉遮光",
+    "series_en": "Shangri-La Blackout",
+    "color_cn": "遮光深灰",
+    "color_en": "Blackout Charcoal",
+    "type": "遮光 Blackout",
+    "hex": "#475569",
+    "rmb_base": 150.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
   }
 ],
 
@@ -6397,12 +6522,15 @@ const ROMAN_DB = {
     }
   ],
 
-  calculateItemPrice: function(sysCode, fabricCode, widthInches, heightInches, motorId, remoteId, smartAccId, discountFactor) {
+  calculateItemPrice: function(sysCode, fabricCode, widthInches, heightInches, motorId, remoteId, smartAccId, discountFactor, hardwareFloorFactor = 0.16) {
     const sys = this.SYSTEMS.find(s => s.code === sysCode) || this.SYSTEMS[0];
     const fab = this.FABRICS.find(f => f.code === fabricCode) || this.FABRICS[0];
     const motor = this.MOTOR_OPTIONS.find(m => m.id === motorId) || this.MOTOR_OPTIONS[0];
     const remote = this.REMOTE_OPTIONS.find(r => r.id === remoteId) || this.REMOTE_OPTIONS[0];
     const smart = this.SMART_ACC_OPTIONS.find(s => s.id === smartAccId) || this.SMART_ACC_OPTIONS[0];
+
+    // Hardware Floor Factor: Default 16% (0.16), minimum limit = 0.16, can be adjusted higher (0.20, 0.30, 0.50, 1.0)
+    let hwFloor = Math.max(0.16, parseFloat(hardwareFloorFactor) || 0.16);
 
     // 1. Calculate Area in SQM (㎡) with Note 1 Minimum 1.0 ㎡ Rule
     const w = parseFloat(widthInches) || 36;
@@ -6421,7 +6549,7 @@ const ROMAN_DB = {
     // 3. Base Shade RMB Cost = Rate per SQM * SQM
     let baseShadeRmb = ratePerSqm * sqm;
 
-    // 4. Add-ons Direct USD Base Price = Motor + Remote + Smart (电机/遥控器/网关/太阳能不乘1.6/1.7/2.65运费倍数，也不乘10倍MSRP倍数)
+    // 4. Add-ons Direct USD Base Price = Motor + Remote + Smart (电机/遥控器/网关/太阳能)
     let usdAddons = (motor ? motor.price_usd : 0) + (remote ? remote.price_usd : 0) + (smart ? smart.price_usd : 0);
     let motorRmb = (motor ? motor.rmb_price : 0) + (remote ? remote.rmb_price : 0) + (smart ? smart.rmb_price : 0);
 
@@ -6443,11 +6571,16 @@ const ROMAN_DB = {
     // 8. Shade MSRP ($) = 帘体含运费美金成本 * 10
     let shadeMsrp = usdShadeLanded * this.RETAIL_MULTIPLIER;
 
-    // 9. Total MSRP Price ($) = 帘体 MSRP + 电机配件直取标价 ($167/$33/等，不上倍数)
+    // 9. Total MSRP Price ($) = 帘体 MSRP + 电机配件直取标价 ($167/$33/等)
     let msrpPrice = shadeMsrp + usdAddons;
 
-    // 10. Customer Discounted Price ($) (帘体与电机配件统一跟着折扣率计算)
-    let finalUnitPrice = msrpPrice * discountFactor;
+    // 10. Hardware Effective Discount: Minimum Floor cannot drop below 16% (0.16), default 0.16
+    let effectiveHwDiscount = Math.max(hwFloor, discountFactor);
+    let shadeFinal = shadeMsrp * discountFactor;
+    let hardwareFinal = usdAddons * effectiveHwDiscount;
+
+    // 11. Customer Final Unit Price ($)
+    let finalUnitPrice = shadeFinal + hardwareFinal;
 
     return {
       sys: sys || { code: sysCode, name_cn: '自定义系统', name_en: 'Custom System' },

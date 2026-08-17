@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Braun Blinds | Custom Window Blinds, Shades & Price Calculator</title>
+  <title>Braun-Z-1.0 | Z系列罗马帘窗饰定制报价系统 (Braun Blinds)</title>
   <meta name="description" content="Custom window treatments designed for your home. Estimate costs instantly with the Braun Blinds Price Calculator. Professional installation & smart home integration.">
   
   <!-- SEO & Open Graph Metadata -->
-  <meta property="og:title" content="Braun Blinds | Premium Custom Window Treatments">
+  <meta property="og:title" content="Braun-Z-1.0 | Premium Custom Window Treatments">
   <meta property="og:description" content="Design and estimate custom window blinds instantly. Custom sizing, premium fabrics, and motorized smart controls available.">
   <meta property="og:type" content="website">
   
@@ -27,7 +27,7 @@
       <nav class="nav-links" id="nav-menu">
         <a href="#hero" class="active">Home</a>
         <a href="#products">Products</a>
-        <a href="#zhenpin-roman" class="text-gold-highlight">Z系列罗马帘报价单 (Z Roman Quote)</a>
+        <a href="#Braun-Z-1.0" class="text-gold-highlight">Braun-Z-1.0 报价系统</a>
         <a href="#calculator">Price Calculator</a>
         <a href="#why-us">Why Us</a>
         <a href="#contact">Contact</a>
@@ -78,10 +78,10 @@
       </div>
       
       <div class="product-grid">
-        <!-- Roller Shades -->
+        <!-- Minimalist Roller Shades -->
         <div class="product-card">
           <div class="product-img-wrapper">
-            <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80" alt="Premium Roller Shades" class="product-img">
+            <img src="system_images/our_collections/collection_roller_2026_thumb.jpg" alt="Minimalist Roller Shades (2026 Catalogue)" class="product-img lightbox-trigger">
           </div>
           <div class="product-info">
             <span class="product-price-tag">From $12.00 / sq ft</span>
@@ -96,10 +96,10 @@
           </div>
         </div>
 
-        <!-- Zebra Blinds -->
+        <!-- Luxury Zebra Blinds -->
         <div class="product-card">
           <div class="product-img-wrapper">
-            <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80" alt="Zebra Blinds" class="product-img">
+            <img src="system_images/our_collections/collection_zebra_2026_thumb.jpg" alt="Luxury Zebra Blinds (2026 Catalogue)" class="product-img lightbox-trigger">
           </div>
           <div class="product-info">
             <span class="product-price-tag">From $16.00 / sq ft</span>
@@ -114,21 +114,21 @@
           </div>
         </div>
 
-        <!-- Real Wood Blinds -->
+        <!-- Z-Series Premium Roman Shades -->
         <div class="product-card">
           <div class="product-img-wrapper">
-            <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80" alt="Real Wood Blinds" class="product-img">
+            <img src="system_images/our_collections/collection_roman_2026_thumb.jpg" alt="Z-Series Roman Shades (2026 Catalogue)" class="product-img lightbox-trigger">
           </div>
           <div class="product-info">
-            <span class="product-price-tag">From $22.00 / sq ft</span>
-            <h3 class="product-name">Craftsman Wood Blinds</h3>
-            <p class="product-desc">Natural warmth and classic craftsmanship. Built from 100% sustainable basswood for rich wood grain textures.</p>
+            <span class="product-price-tag">From $18.00 / sq ft</span>
+            <h3 class="product-name">Z-Series Roman Shades</h3>
+            <p class="product-desc">Patent assist-bar cordless operation with seam-locked edge craft. Timeless elegance and soft cascading folds.</p>
             <div class="product-features-list">
-              <span class="product-feature-badge">100% Basswood</span>
-              <span class="product-feature-badge">Natural Grain</span>
-              <span class="product-feature-badge">Heavy Duty</span>
+              <span class="product-feature-badge">Patent Cordless</span>
+              <span class="product-feature-badge">Lockstitch Craft</span>
+              <span class="product-feature-badge">5-Yr Warranty</span>
             </div>
-            <a href="#calculator" class="product-btn" id="prod-link-wood">Select & Estimate</a>
+            <a href="#Braun-Z-1.0" class="product-btn" id="prod-link-wood">Select & Estimate</a>
           </div>
         </div>
       </div>
@@ -165,6 +165,20 @@
             </div>
           </div>
 
+          <div class="customer-record-manager-bar" style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="font-weight: 700; font-size: 0.82rem; color: #2563eb;">📂 客户档案库:</span>
+              <select id="saved-customer-select" class="form-control" style="font-size: 0.78rem; padding: 4px 8px; width: 190px; font-weight: 600; border-color: #93c5fd;">
+                <option value="">-- 选择已保存客户档案 --</option>
+              </select>
+              <button type="button" id="btn-load-saved-cust" style="font-size: 0.76rem; padding: 4px 10px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">⚡ 加载所选客户</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+              <button type="button" id="btn-save-cust-profile" style="font-size: 0.76rem; padding: 4px 10px; background: #16a34a; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">💾 保存当前客户信息</button>
+              <button type="button" id="btn-delete-saved-cust" style="font-size: 0.76rem; padding: 4px 8px; background: #dc2626; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">🗑️ 删除档案</button>
+            </div>
+          </div>
+
           <div class="customer-form-grid">
             <div class="form-group">
               <label class="form-label" data-i18n="cust_name">Customer Name / 客户姓名</label>
@@ -192,8 +206,14 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" data-i18n="quote_date">Date / 报价日期</label>
+              <label class="form-label" data-i18n="quote_date">Date / 报价日期 (自动/手动调整)</label>
               <input type="date" id="roman-quote-date" class="form-control">
+              <div class="date-presets-quick" id="date-presets-quick" style="display: flex; gap: 0.35rem; margin-top: 0.35rem;">
+                <button type="button" class="date-btn active" data-days="0" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer;">Today (今天)</button>
+                <button type="button" class="date-btn" data-days="1" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer;">Tomorrow (明天)</button>
+                <button type="button" class="date-btn" data-days="3" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer;">+3 Days</button>
+                <button type="button" class="date-btn" data-days="7" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer;">+7 Days</button>
+              </div>
             </div>
 
             <div class="form-group">
@@ -249,9 +269,75 @@
               </div>
             </div>
 
+            <!-- Hardware Minimum Discount Floor Setting (电机/遥控器/智能保底折扣率设置) -->
+            <div class="form-group form-group-full discount-config-group" style="margin-top: 0.5rem; background: rgba(234, 88, 12, 0.04); border-color: rgba(234, 88, 12, 0.2);">
+              <div class="discount-label-row">
+                <label class="form-label" style="color: #c2410c;">⚙️ 电机/遥控器/智能硬件保底折扣率 (Hardware Minimum Floor)</label>
+                <span class="discount-badge-val" id="hardware-floor-badge" style="background: #fff7ed; color: #c2410c; border-color: #ffedd5;">保底 16% (1.6折 / 0.16)</span>
+              </div>
+              
+              <div class="manual-discount-container">
+                <div class="manual-discount-input-wrap">
+                  <span class="input-prefix" style="color: #c2410c;">硬件保底:</span>
+                  <input type="number" id="custom-hardware-floor-input" min="16" max="100" value="16" step="1" class="manual-disc-input" style="border-color: #fdba74; color: #c2410c;" placeholder="最低16%">
+                  <span class="input-suffix" style="color: #c2410c;">%</span>
+                </div>
+                <div class="discount-presets-quick" id="hardware-floor-presets">
+                  <span class="quick-label" style="color: #c2410c;">快捷设置:</span>
+                  <button type="button" class="hw-floor-btn active" data-floor="0.16" style="border-color: #ea580c; color: #ea580c;">16% 保底 (默认下限)</button>
+                  <button type="button" class="hw-floor-btn" data-floor="0.20">20% 保底</button>
+                  <button type="button" class="hw-floor-btn" data-floor="0.30">30% 保底</button>
+                  <button type="button" class="hw-floor-btn" data-floor="0.50">50% 保底</button>
+                  <button type="button" class="hw-floor-btn" data-floor="1.00">100% 不打折</button>
+                </div>
+              </div>
+              <div style="font-size: 0.72rem; color: #9a3412; margin-top: 4px; font-weight: 500;">
+                🛡️ 规则提示：电机、遥控器与智能网关等的实际折后单价受保底率保护。系统默认保底下限为 <strong>16% (1.6折)</strong>，可调高，输入低于 16% 会自动恢复为 16%。
+              </div>
+            </div>
+
+            <!-- Interactive Digital Signature Pad -->
+            <div class="form-group form-group-full signature-config-group" style="margin-top: 0.5rem;">
+              <div class="discount-label-row">
+                <label class="form-label">✍️ Customer Signature Pad / 客户手写电子签名板</label>
+                <span class="discount-badge-val" id="sig-status-badge" style="background: #f1f5f9; color: #475569;">未签名 (Click & draw signature)</span>
+              </div>
+              <div class="signature-pad-wrapper" style="border: 2px dashed #cbd5e1; border-radius: 8px; background: #ffffff; padding: 0.5rem; text-align: center; margin-top: 0.35rem;">
+                <canvas id="sig-canvas" width="460" height="120" style="border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: crosshair; touch-action: none; width: 100%; max-width: 460px; height: 120px;"></canvas>
+                <div class="sig-action-buttons" style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.4rem;">
+                  <button type="button" id="btn-clear-sig" class="btn-sig-action" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer;">🗑️ 清除签名 (Clear)</button>
+                  <button type="button" id="btn-save-sig" class="btn-sig-action" style="padding: 4px 12px; font-size: 0.8rem; border-radius: 4px; border: none; background: #A83B24; color: #ffffff; font-weight: 700; cursor: pointer;">✅ 确认保存签名 (Save)</button>
+                </div>
+              </div>
+            </div>
+
             <div class="form-group form-group-full">
               <label class="form-label" data-i18n="notes">Special Craft Notes / 工艺说明与特点</label>
               <input type="text" id="roman-special-notes" class="form-control" value="Square Headrail Cordless & Stitched Batts (方形无绳包中梁工艺)" placeholder="e.g. Special notes or installation details">
+            </div>
+
+            <!-- Customer Multi-Media Attachments Center (图片 / PDF / Excel 附件库) -->
+            <div class="form-group form-group-full" style="margin-top: 0.85rem;">
+              <div class="customer-attachments-card" style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 8px; padding: 0.75rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">📎 客户档案多媒体附件库 (Image, PDF & Excel Center)</span>
+                    <span id="cust-attachment-count-badge" style="font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 1px 6px; border-radius: 10px; font-weight: 700;">0 个附件</span>
+                  </div>
+                  <div>
+                    <input type="file" id="cust-attachment-input" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" style="display: none;">
+                    <button type="button" id="btn-upload-cust-attachment" style="font-size: 0.76rem; padding: 4px 10px; background: #0284c7; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">
+                      ➕ 上传现场照片 / PDF合同 / Excel表格
+                    </button>
+                  </div>
+                </div>
+                
+                <div id="cust-attachment-gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.6rem; min-height: 50px;">
+                  <div class="empty-attachment-tip" style="grid-column: 1 / -1; text-align: center; color: #94a3b8; font-size: 0.78rem; padding: 0.8rem 0;">
+                    📷 暂无关联文件附件。点击右上方按钮可选择上传实拍照片(.jpg/.png)、PDF合同图纸(.pdf) 或 测量Excel表格(.xlsx/.csv)。
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -283,6 +369,10 @@
                 <button type="button" class="category-tab-btn" data-cat="zebra">
                   <span class="cat-icon">🦓</span>
                   <span class="cat-title">双层斑马帘 <br><span class="sub">Zebra Blinds</span></span>
+                </button>
+                <button type="button" class="category-tab-btn" data-cat="sheer">
+                  <span class="cat-icon">🪟</span>
+                  <span class="cat-title">香格里拉柔纱帘 <br><span class="sub">Shangri-La Sheer</span></span>
                 </button>
               </div>
             </div>
@@ -411,6 +501,12 @@
                     <!-- Populated by JS -->
                   </select>
                 </div>
+              </div>
+              <div style="margin-top: 0.6rem; font-size: 0.78rem; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem;">
+                <input type="checkbox" id="chk-separate-hardware-lines" style="accent-color: #2563eb; width: 16px; height: 16px; cursor: pointer;">
+                <label for="chk-separate-hardware-lines" style="font-weight: 700; cursor: pointer; color: #1d4ed8;">
+                  ⚡ 生成报价单时将选配的电机/遥控器/网关作为独立明细行生成到 Invoice 中 (Itemize Motor & Accessories into Separate Lines)
+                </label>
               </div>
             </div>
 
@@ -585,141 +681,365 @@
               <span class="badge-item-count" id="item-count-badge">0 Items</span>
             </div>
             <div class="sheet-actions">
-              <button type="button" class="btn-export-excel" id="btn-export-excel">
-                📊 导出 Excel 报价单 (.xlsx)
+              <!-- Universal Multi-Format File Input (Excel/CSV/PDF/Images) -->
+              <input type="file" id="custom-excel-file-input" accept=".xlsx, .xls, .csv, .txt, .pdf, image/*" multiple style="display: none;">
+
+              <button type="button" class="btn-import-table" id="btn-upload-customer-excel" style="background: #2563EB; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 6px; margin-right: 6px;">
+                📂 导入并智能识别客户文件 (支持 Excel / CSV / PDF / 现场测绘照片)
+              </button>
+              <button type="button" class="btn-import-table" id="btn-split-hardware-lines" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-right: 6px;">
+                ⚡ 拆分电机/配件为独立报价行 (Itemize Accessories)
               </button>
               <button type="button" class="btn-print-pdf" id="btn-print-pdf">
-                🖨️ 打印 / 导出 PDF (Print)
+                🖨️ 打印 / 导出 PDF 报价单 (Print / PDF)
               </button>
             </div>
           </div>
 
-          <!-- Official Printable Sheet (Matches William窗帘报价单 layout) -->
-          <div class="william-quote-sheet" id="william-quote-paper">
+          <!-- Official Printable Sheet (Matches Braun International PROFORMA INVOICE FORM) -->
+          <div class="william-quote-sheet proforma-invoice-paper" id="william-quote-paper">
             
-            <!-- Company Letterhead Header -->
-            <div class="quote-sheet-header">
-              <div class="company-brand">
-                <h1 class="company-name-title">BRAUN INTERNATIONAL LLC</h1>
-                <h2 class="company-sub-title">SUN SHADES & SUN BLINDS - CUSTOM WINDOW TREATMENTS</h2>
-                <p class="company-address-line">Ontario, CA 91761, USA | Email: sundagang91709@gmail.com | Phone: (818) 266-9988</p>
+            <!-- Proforma Invoice Header (Braun International LLC) -->
+            <div class="proforma-header" style="flex-direction: column; align-items: flex-start;">
+              <div class="no-print-edit-badge" style="font-size: 0.72rem; color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 4px; font-weight: 700; margin-bottom: 6px; width: 100%; text-align: center;">
+                ✍️ 提示：Invoice 纸面上的所有蓝色虚线文本均支持鼠标/手指直接点击手填修改 (Direct Hand-Editable)
               </div>
-              <div class="sheet-doc-title">
-                <h2>QUOTATION / 窗帘定制报价单</h2>
-                <div class="doc-meta-row">
-                  <span><strong>Date / 日期:</strong> <span id="sheet-meta-date">2026-08-06</span></span>
-                  <span><strong>Quote No / 报价单号:</strong> <span id="sheet-meta-no">QT-20260806-01</span></span>
+              <div style="display: flex; justify-content: space-between; width: 100%; align-items: flex-end;">
+                <div class="proforma-title-left">
+                  <h1 class="proforma-company-name" contenteditable="true">BRAUN INTERNATIONAL LLC</h1>
+                  <h2 style="font-size: 0.78rem; color: #475569; margin: 0.15rem 0 0 0; font-weight: 600;" contenteditable="true">SUN SHADES & SUN BLINDS - CUSTOM WINDOW TREATMENTS</h2>
+                  <p style="font-size: 0.72rem; color: #64748b; margin: 0.15rem 0 0 0;" contenteditable="true">2115 S Hellman Ave # E, Ontario, CA 91761 | Email: sales@braunblinds.com | Phone: (818) 266-9988</p>
                 </div>
-              </div>
-            </div>
-
-            <!-- Customer & Project Info Box -->
-            <div class="quote-client-info-box">
-              <div class="client-info-row">
-                <div class="info-cell flex-1">
-                  <span class="info-label">Customer Name / 客户姓名:</span>
-                  <span class="info-val" id="sheet-client-name">--</span>
-                </div>
-                <div class="info-cell flex-1">
-                  <span class="info-label">Project Type / 项目类型:</span>
-                  <span class="info-val" id="sheet-project-type">Custom Window Treatments / 全屋窗饰定制</span>
-                </div>
-              </div>
-              <div class="client-info-row">
-                <div class="info-cell flex-1">
-                  <span class="info-label">Address / 客户地址:</span>
-                  <span class="info-val" id="sheet-client-address">--</span>
-                </div>
-                <div class="info-cell flex-1">
-                  <span class="info-label">Phone / 联系电话:</span>
-                  <span class="info-val" id="sheet-client-phone">--</span>
-                </div>
-              </div>
-              <div class="client-info-row">
-                <div class="info-cell flex-1">
-                  <span class="info-label">Email / 电子邮箱:</span>
-                  <span class="info-val" id="sheet-client-email">--</span>
-                </div>
-                <div class="info-cell flex-1">
-                  <span class="info-label">Customer Tier / 客户折扣:</span>
-                  <span class="info-val text-gold" id="sheet-client-discount">50% OFF (5折 / Wholesale Rate)</span>
-                </div>
-              </div>
-              <div class="client-info-row">
-                <div class="info-cell flex-1">
-                  <span class="info-label">Special Notes / 工艺特征:</span>
-                  <span class="info-val" id="sheet-special-notes">Square Headrail Cordless (方形无绳手提系统)</span>
+                <div class="proforma-title-right" style="text-align: right;">
+                  <h2 class="proforma-form-title" contenteditable="true">PROFORMA INVOICE FORM</h2>
+                  <p style="font-size: 0.78rem; color: #64748b; margin: 0.15rem 0 0 0; font-weight: 700;" contenteditable="true">QUOTATION / 定制窗帘报价单</p>
                 </div>
               </div>
             </div>
+            <div class="proforma-divider-line"></div>
 
-            <!-- Itemized Products Table -->
-            <div class="quote-table-wrapper">
-              <table class="william-table" id="quote-items-table">
+            <!-- Dynamic Customer & Invoice Meta Grid -->
+            <div class="proforma-meta-grid">
+              <div class="meta-col">
+                <div class="meta-row"><strong>Customer (Dealer) / 客户姓名:</strong> <span id="sheet-client-name" contenteditable="true">--</span></div>
+                <div class="meta-row"><strong>Sidemark / Project / 项目类型:</strong> <span id="sheet-project-type" contenteditable="true">Custom Window Treatments</span></div>
+                <div class="meta-row"><strong>Phone Number / 联系电话:</strong> <span id="sheet-client-phone" contenteditable="true">--</span></div>
+                <div class="meta-row"><strong>Email Address / 电子邮箱:</strong> <span id="sheet-client-email" contenteditable="true">--</span></div>
+              </div>
+              <div class="meta-col">
+                <div class="meta-row"><strong>Invoice / PO# / 报价单号:</strong> <span id="sheet-meta-no" contenteditable="true">QT-20260806-01</span></div>
+                <div class="meta-row"><strong>Order Date / 日期:</strong> <span id="sheet-meta-date" contenteditable="true">2026/8/6</span></div>
+                <div class="meta-row"><strong>Shipping Address / 客户地址:</strong> <span id="sheet-client-address" contenteditable="true">--</span></div>
+                <div class="meta-row"><strong>Special Notes / 工艺说明:</strong> <span id="sheet-special-notes" contenteditable="true">Square Headrail Cordless</span></div>
+              </div>
+            </div>
+
+            <!-- Itemized Products Table with Product Image Column -->
+            <div class="quote-table-wrapper" style="margin-top: 0.5rem;">
+              <table class="proforma-table" id="quote-items-table">
                 <thead>
                   <tr>
-                    <th style="width: 4%;">Item #</th>
-                    <th style="width: 9%;">Style Image / 款式图片</th>
-                    <th style="width: 14%;">Room / Location / 房间位置</th>
-                    <th style="width: 24%;">Item Description / 项目与规格说明</th>
-                    <th style="width: 20%;">Specs & Dimensions / 尺寸参数</th>
-                    <th style="width: 5%;">Qty / 数量</th>
-                    <th style="width: 9%;">MSRP ($) / 零售单价</th>
-                    <th style="width: 9%;">Rate ($) / 折后单价</th>
-                    <th style="width: 10%;">Amount ($) / 金额</th>
-                    <th class="no-print" style="width: 4%;">操作</th>
+                    <th style="width: 3%;">NO</th>
+                    <th style="width: 6%;">Style Image / 图片</th>
+                    <th style="width: 7%;">Room / 房间</th>
+                    <th style="width: 3%;">Qty</th>
+                    <th style="width: 7%;">Type / 类别</th>
+                    <th style="width: 9%;">Size (W×H)</th>
+                    <th style="width: 10%;">Control / 操作系统</th>
+                    <th style="width: 10%;">Product / 面料</th>
+                    <th style="width: 15%;">Description & Specs / 规格描述</th>
+                    <th style="width: 8%;">Rate (MSRP) / 官方原价</th>
+                    <th style="width: 6%;">Discount / 折扣</th>
+                    <th style="width: 8%;">Final Rate / 折后单价</th>
+                    <th style="width: 8%;">Amount / 折后总额</th>
+                    <th style="width: 4%;">Mount</th>
+                    <th class="no-print" style="width: 3%;">操作</th>
                   </tr>
                 </thead>
                 <tbody id="quote-items-body">
                   <!-- Product Rows Populated Dynamically by JS -->
                   <tr class="empty-table-row">
-                    <td colspan="10" class="text-center py-4">暂无报价明细，请在上方配置器中选择系统与面料后点击“添加到报价单”。</td>
+                    <td colspan="15" class="text-center py-4" style="text-align: center; color: #64748b; padding: 1.5rem 0;">暂无报价明细，请在上方配置器中选择系统与面料后点击“添加到报价单”。</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <!-- Notes & Summary Total Section -->
-            <div class="quote-sheet-footer">
-              <div class="fab-notes-col">
-                <h4 class="notes-head">TECHNICAL & FABRICATION NOTES / 工艺与制作说明:</h4>
-                <ol class="notes-list" id="sheet-tech-notes">
-                  <li><strong>Fabric & Specs / 面料与系统规格:</strong> 所有罗马帘均按原厂《Z系列罗马帘》标准制作，包含双层包边、防散边缝纫与C管导绳扣；无绳弹簧及自动下降机构均提供 5 年质保。<br><span class="text-muted-en">All Roman shades are manufactured to exact Z-Series factory specs with double-edge hem, fray-preventing lockstitch, and C-tube cord guides. Cordless springs and soft-drop systems include a 5-year warranty.</span></li>
-                  <li><strong>Depth & Mounting / 深度与安装要求:</strong> 框内安装需保证窗框进深符合相应要求（方形无绳/拉珠 ≥ 1.5"；免打孔 ≥ 1.8"；魔方双层 ≥ 2.5"）。框外安装建议宽度增加 3"-4" 以防侧面漏光。<br><span class="text-muted-en">Inside mount requires minimum frame depth according to system specs (Square/Chain ≥ 1.5"; No-Drill ≥ 1.8"; Double Layer ≥ 2.5"). Outside mount recommended width +3"-4" to block light gaps.</span></li>
-                  <li><strong>Smart Motorization / 电动及智能联控:</strong> 选配智能电机的项目内置静音电机，支持无线遥控器、涂鸦智能 App 及 Alexa/Google Home 语音联动。<br><span class="text-muted-en">Motorized options feature silent motors supporting multi-channel remote, Tuya Smart App control, and Alexa/Google Home voice automation.</span></li>
-                </ol>
+            <!-- Summary Totals Section (Right Aligned Table) -->
+            <div class="proforma-summary-wrap">
+              <table class="proforma-totals-table">
+                <tr>
+                  <td class="tot-label">Products Subtotal / 折后小计</td>
+                  <td class="tot-val" id="sheet-subtotal-final">$0.00</td>
+                </tr>
+                <tr>
+                  <td class="tot-label">Sales Tax (<span id="sheet-tax-rate-label">0.00%</span>) / 销售税</td>
+                  <td class="tot-val" id="sheet-tax-amount">$0.00</td>
+                </tr>
+                <tr>
+                  <td class="tot-label">Shipping & Delivery / 运费</td>
+                  <td class="tot-val">
+                    <span class="no-print" style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 2px;">$
+                      <input type="number" id="sheet-shipping-fee-input" value="0.00" step="1.00" min="0" style="width: 65px; text-align: right; font-weight: 700; border: 1px dashed #2563eb; border-radius: 4px; padding: 2px 4px; font-size: 0.85rem; color: #2563eb;">
+                    </span>
+                    <span class="print-only" id="sheet-shipping-fee-val" style="display: none;">$0.00</span>
+                  </td>
+                </tr>
+                <tr class="grand-total-row">
+                  <td class="tot-label">GRAND TOTAL / 预估总计</td>
+                  <td class="tot-val" id="sheet-grand-total">$0.00</td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Terms & Conditions Footer -->
+            <div class="proforma-terms-box">
+              <h4 class="terms-title" contenteditable="true">Terms and Conditions (Braun International LLC Pricing System):</h4>
+              <ol class="terms-list">
+                <li contenteditable="true">All custom-made window treatments are fabricated strictly to the dimensions and specs provided above.</li>
+                <li contenteditable="true">Roman Shade prices are calculated on square footage with Note 1 minimum 1.0 ㎡ (10 sqft) per shade rule.</li>
+                <li contenteditable="true">Motorized systems, remote controls, smart gateways, and solar panels follow hardware net prices directly with customer discount.</li>
+                <li contenteditable="true">Inside mount requires minimum frame depth according to system limits (Square/Chain ≥ 1.5"; No-Drill ≥ 1.8"; Double Layer ≥ 2.5").</li>
+              </ol>
+            </div>
+
+            <!-- Bottom Signature Block with Interactive Signature Pad & Editable Dates -->
+            <div class="proforma-signature-grid">
+              <div class="sig-col" style="flex: 1; margin-right: 1.5rem;">
+                <div class="invoice-sig-pad-box no-print" style="margin-bottom: 6px; border: 1px dashed #A83B24; border-radius: 6px; padding: 4px; background: #fffdfa;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding: 0 4px;">
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #A83B24;">✍️ Customer Signature (手写签名板):</span>
+                    <button type="button" id="btn-clear-sig-invoice" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer; color: #475569;">🗑️ 清除 Clear</button>
+                  </div>
+                  <canvas id="sig-canvas" width="400" height="90" style="border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; cursor: crosshair; touch-action: none; width: 100%; height: 75px;"></canvas>
+                </div>
+
+                <!-- Rendered Signature Image (Visible in Print / PDF & Screen) -->
+                <div id="sheet-sig-img-container" style="min-height: 45px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">
+                  <!-- Rendered signature image -->
+                </div>
+                <div class="sig-line"></div>
+                <div class="sig-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.75rem; color: #475569;">
+                  <span class="sig-label" style="font-weight: 600;">Customer Signature / 客户签名</span>
+                  <div class="sig-date-wrap" style="display: flex; align-items: center; gap: 4px;">
+                    <span style="font-weight: 600; color: #475569;">Date / 日期:</span>
+                    <input type="text" id="sheet-sig-date-input" class="sig-date-input" value="" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; width: 110px; font-weight: 600; color: #1e293b; text-align: center;" placeholder="YYYY-MM-DD">
+                  </div>
+                </div>
               </div>
 
-              <div class="summary-total-col">
-                <div class="total-row">
-                  <span class="t-label">Subtotal MSRP / 零售小计:</span>
-                  <span class="t-val" id="sheet-subtotal-msrp">$0.00</span>
+              <div class="sig-col" style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+                <div style="height: 45px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">
+                  <span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">BRAUN INTERNATIONAL LLC</span>
                 </div>
-                <div class="total-row">
-                  <span class="t-label">Customer Discount / 专属优惠:</span>
-                  <span class="t-val text-gold" id="sheet-discount-amount">-$0.00</span>
-                </div>
-                <div class="total-row main-subtotal">
-                  <span class="t-label">Products Subtotal / 折后小计:</span>
-                  <span class="t-val" id="sheet-subtotal-final">$0.00</span>
-                </div>
-                <div class="total-row">
-                  <span class="t-label">Shipping & Freight / 运费:</span>
-                  <span class="t-val">$0.00</span>
-                </div>
-                <div class="total-row">
-                  <span class="t-label">Sales Tax (<span id="sheet-tax-rate-label">0.00%</span>) / 销售税:</span>
-                  <span class="t-val" id="sheet-tax-amount">$0.00</span>
-                </div>
-                <div class="total-row grand-total-row">
-                  <span class="t-label">Grand Total / 预估总计:</span>
-                  <span class="t-val" id="sheet-grand-total">$0.00</span>
+                <div class="sig-line"></div>
+                <div class="sig-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.75rem; color: #475569;">
+                  <span class="sig-label" style="font-weight: 600;">Factory Approval / 工厂审核</span>
+                  <div class="sig-date-wrap" style="display: flex; align-items: center; gap: 4px;">
+                    <span style="font-weight: 600; color: #475569;">Date / 日期:</span>
+                    <input type="text" id="sheet-approval-date-input" class="sig-date-input" value="" style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; width: 110px; font-weight: 600; color: #1e293b; text-align: center;" placeholder="YYYY-MM-DD">
+                  </div>
                 </div>
               </div>
             </div>
 
           </div>
 
+        </div>
+
+        <!-- Section: Window Measurement & Design Proposal System (窗户尺寸测量与窗饰设计方案) -->
+        <div class="panel-card proposal-builder-card" style="margin-top: 1.5rem;" id="design-proposal-section">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <span class="icon">📐</span>
+              <span>窗户尺寸测量与窗饰设计方案图卡生成器 / Measurement & Design Proposal</span>
+            </h3>
+            <div class="preset-action-bar">
+              <button type="button" class="btn-preset-clear" id="btn-export-proposal-pdf" style="background: #A83B24; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 6px;">🖨️ 打印 / 导出设计方案图卡 PDF</button>
+            </div>
+          </div>
+
+          <div class="proposal-config-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; padding: 1.25rem;">
+            <!-- Left Controls: Manual Inputs -->
+            <div class="prop-inputs-column">
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem;">1. 设计方案风格与窗户形态选择 (Multi-Style Presets)</h4>
+              
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">🎨 选择图卡视觉风格模板 (Design Template Style):</label>
+                <select id="prop-template-select" class="form-select" style="font-weight: 700; color: #A83B24; background: #fffdfa; border: 1px solid #A83B24;">
+                  <option value="cream" selected>✨ 模板 A: 极简奶油微水泥风格 (Warm Cream)</option>
+                  <option value="terracotta">👑 模板 B: 典雅红棕高奢牌面风格 (Luxury Terracotta Brand)</option>
+                  <option value="dark">🖤 模板 C: 现代深色极客暗黑风格 (Obsidian Dark Suite)</option>
+                  <option value="wood">🌿 模板 D: 清新自然全景木质风格 (Eco Natural Wood)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-weight: 700; color: #A83B24;">📦 联动选择成品报价明细项 (Select Product Item):</label>
+                <select id="prop-item-picker" class="form-select" style="font-weight: 700; color: #0f172a; border: 1.5px solid #A83B24; background: #fffdfa;">
+                  <option value="live" selected>✨ 当前实时配置产品 (Current Live Configurator Product)</option>
+                  <!-- Dynamically populated from romanQuoteItems -->
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">窗户区域标题 (Window Group Title):</label>
+                <input type="text" id="prop-input-title" class="form-control" value="三个窗户尺寸（下层窗户）" placeholder="例如: 三个窗户尺寸（下层窗户）">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">窗户组合数量与排布 (Window Layout):</label>
+                <select id="prop-input-count" class="form-select" style="font-weight: 600; color: #0f172a;">
+                  <option value="3" selected>3个窗户组合 (Triple Windows)</option>
+                  <option value="2">2个窗户组合 (Dual Windows)</option>
+                  <option value="1">1个窗户 (Single Window)</option>
+                  <option value="4">4个窗户组合 (Quad Windows)</option>
+                  <option value="stacked">上下分层窗户 (Stacked Top/Bottom Windows)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">窗框材质/色彩风格 (Window Frame Theme):</label>
+                <select id="prop-frame-theme" class="form-select" style="font-weight: 600; color: #0f172a;">
+                  <option value="black" selected>⬛ 极简黑框 (Modern Black Frame)</option>
+                  <option value="gold">🥇 香槟金框 (Champagne Gold Frame)</option>
+                  <option value="white">⬜ 白色隐形框 (Clean White Frame)</option>
+                  <option value="wood">🪵 原木质感框 (Natural Wood Frame)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">窗饰方案名称 (Scheme Title):</label>
+                <input type="text" id="prop-input-scheme-title" class="form-control" value="窗饰方案（简洁省钱版）" placeholder="例如: 窗饰方案（简洁省钱版）">
+              </div>
+
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 1rem 0 0.5rem 0;">2. 各窗户测量尺寸独立调整 (Window Widths & Heights Inches)</h4>
+              
+              <!-- Row 1: Widths W1, W2, W3, W4 -->
+              <div class="prop-dims-inputs-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <div class="prop-dim-item" style="flex: 1;">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗1 宽 W1:</label>
+                  <input type="text" id="prop-w1" class="form-control" value="30.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-w2-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗2 宽 W2:</label>
+                  <input type="text" id="prop-w2" class="form-control" value="40.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-w3-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗3 宽 W3:</label>
+                  <input type="text" id="prop-w3" class="form-control" value="34.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-w4-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗4 宽 W4:</label>
+                  <input type="text" id="prop-w4" class="form-control" value="32.0&quot;">
+                </div>
+              </div>
+
+              <!-- Row 2: Heights H1, H2, H3, H4 -->
+              <div class="prop-dims-inputs-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <div class="prop-dim-item" style="flex: 1;">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗1 高 H1:</label>
+                  <input type="text" id="prop-h1" class="form-control" value="70.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-h2-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗2 高 H2:</label>
+                  <input type="text" id="prop-h2" class="form-control" value="70.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-h3-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗3 高 H3:</label>
+                  <input type="text" id="prop-h3" class="form-control" value="70.5&quot;">
+                </div>
+                <div class="prop-dim-item" style="flex: 1;" id="prop-h4-group">
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #475569;">窗4 高 H4:</label>
+                  <input type="text" id="prop-h4" class="form-control" value="70.5&quot;">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-weight: 700; color: #0f172a;">选定产品与型号下拉选择 (Select Product & Model):</label>
+                <select id="prop-input-model" class="form-select" style="font-weight: 700; color: #0f172a; border: 1.5px solid #0f172a;">
+                  <option value="Roller Shade（卷帘）" selected>Roller Shade（卷帘）</option>
+                  <option value="Zebra Blind（双层斑马帘）">Zebra Blind（双层斑马帘）</option>
+                  <option value="Roman Shade（Z系列罗马帘）">Roman Shade（Z系列罗马帘）</option>
+                  <option value="LM0002 方形无绳系统 (Square Cordless)">LM0002 方形无绳系统 (Square Cordless)</option>
+                  <option value="lM0018 方形无绳缝边包中梁 (Square Cordless Lockstitch)">lM0018 方形无绳缝边包中梁 (Square Cordless Lockstitch)</option>
+                  <option value="LM0001 方形无绳上下合 (Square Cordless TDBU)">LM0001 方形无绳上下合 (Square Cordless TDBU)</option>
+                  <option value="LM0003 经典拉珠款式 (Classic Chain)">LM0003 经典拉珠款式 (Classic Chain)</option>
+                  <option value="lM0022 魔方双层日夜帘 (MF Series Double Layer)">lM0022 魔方双层日夜帘 (MF Series Double Layer)</option>
+                  <option value="LM0024 轨交专利MX款 (MX Series Track)">LM0024 轨交专利MX款 (MX Series Track)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-weight: 700; color: #0f172a;">面料颜色与纹理下拉选择 (Select Fabric & Color):</label>
+                <select id="prop-input-color" class="form-select" style="font-weight: 700; color: #0f172a; border: 1.5px solid #0f172a;">
+                  <option value="颜色：亚麻纹 / 米白 / 燕麦色" selected>颜色：亚麻纹 / 米白 / 燕麦色</option>
+                  <option value="颜色：众麻 BZM11 / 遮光深灰">颜色：众麻 BZM11 / 遮光深灰</option>
+                  <option value="颜色：众麻 BZM01 / 米白色">颜色：众麻 BZM01 / 米白色</option>
+                  <option value="颜色：莫梵 BMF09 / 雅致麻灰">颜色：莫梵 BMF09 / 雅致麻灰</option>
+                  <option value="颜色：图卡 BTK03 / 极简暖白">颜色：图卡 BTK03 / 极简暖白</option>
+                  <option value="颜色：梵音 BFY05 / 阳光沙滩">颜色：梵音 BFY05 / 阳光沙滩</option>
+                  <option value="颜色：香奈尔 BXN02 / 高级云灰">颜色：香奈尔 BXN02 / 高级云灰</option>
+                </select>
+              </div>
+
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 1rem 0 0.5rem 0;">3. 设计卖点与优势复选勾选 (Feature Checkboxes)</h4>
+              <div class="feature-checkboxes-grid" id="prop-feature-checkboxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; font-size: 0.8rem; color: #334155;">
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="每个窗户独立安装" checked> 每个窗户独立安装</label>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="透光不透人，保护隐私" checked> 透光不透人，保护隐私</label>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="简约干净，节省预算" checked> 简约干净，节省预算</label>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="100% 遮光 / 卧室静音睡眠"> 100% 遮光/卧室静音</label>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="专利无绳助推拉手 (Cordless Assist)"> 专利无绳助推拉手</label>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;"><input type="checkbox" class="prop-feat-chk" value="缝边包中梁防散边高级工艺"> 缝边包中梁高级工艺</label>
+              </div>
+            </div>
+
+            <!-- Right Preview: Live Rendering Design Proposal Card -->
+            <div class="prop-card-preview-column" style="display: flex; justify-content: center;">
+              
+              <!-- Proposal Card Paper Element -->
+              <div class="proposal-card-paper" id="proposal-card-paper">
+                
+                <!-- Section 1: Top Title -->
+                <div class="proposal-top-header">
+                  <h3 class="proposal-top-title" id="card-render-title">三个窗户尺寸（下层窗户）</h3>
+                </div>
+
+                <!-- Section 2: Window Measurement Graphics Diagram -->
+                <div class="proposal-diagram-area" id="card-diagram-container">
+                  <!-- Dynamically rendered 1, 2, or 3 windows -->
+                </div>
+
+                <!-- Section 3: Design Scheme Card Box -->
+                <div class="proposal-scheme-card">
+                  <h4 class="scheme-card-title" id="card-render-scheme-title">窗饰方案（简洁省钱版）</h4>
+                  <div class="scheme-card-subtitle" id="card-render-model">下层窗户: Roller Shade（卷帘）</div>
+
+                  <div class="scheme-bullets-grid" id="card-render-bullets">
+                    <div class="scheme-bullet-item">✓ 每个窗户独立安装</div>
+                    <div class="scheme-bullet-item">✓ 透光不透人，保护隐私</div>
+                    <div class="scheme-bullet-item">✓ 简约干净，节省预算</div>
+                    <div class="scheme-bullet-item" id="card-render-color">✓ 颜色：亚麻纹 / 米白 / 燕麦色</div>
+                  </div>
+
+                  <!-- Product & Swatch Real Images -->
+                  <div class="scheme-images-flex">
+                    <div class="scheme-swatch-box" style="flex: 1.2;">
+                      <img id="card-render-swatch-img" class="scheme-swatch-img lightbox-trigger" src="system_images/guides/fabric_swatches_card_p1.png" alt="Fabric Swatch">
+                      <div class="scheme-swatch-desc" id="card-render-swatch-desc">亚麻纹理（米白/燕麦色）</div>
+                    </div>
+                    <div class="scheme-swatch-box" style="flex: 1.5;">
+                      <img id="card-render-prod-img" class="scheme-swatch-img lightbox-trigger" src="system_images/our_collections/collection_roller_2026_thumb.jpg" alt="Installed Window View">
+                      <div class="scheme-swatch-desc" id="card-render-prod-desc">实景窗饰安装效果</div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
         </div>
 
       </div>
@@ -937,7 +1257,7 @@
               <div class="contact-item-icon">✉️</div>
               <div>
                 <div class="contact-item-title">Direct Email</div>
-                <a href="mailto:dagangsun@gmail.com" class="contact-item-value" id="body-email-link">dagangsun@gmail.com</a>
+                <a href="mailto:sales@braunblinds.com" class="contact-item-value" id="body-email-link">sales@braunblinds.com</a>
               </div>
             </div>
 
@@ -945,8 +1265,8 @@
             <div class="contact-item">
               <div class="contact-item-icon">📍</div>
               <div>
-                <div class="contact-item-title">Service Area</div>
-                <div class="contact-item-value" style="color: var(--text-primary);">Los Angeles County & Surrounding Areas</div>
+                <div class="contact-item-title">Company Address</div>
+                <div class="contact-item-value" style="color: var(--text-primary);">2115 S Hellman Ave # E, Ontario, CA 91761</div>
               </div>
             </div>
           </div>
@@ -1014,7 +1334,7 @@
           <h4 class="footer-links-title">Contact</h4>
           <ul class="footer-links-list">
             <li>Phone: <a href="tel:8182669988">(818) 266-9988</a></li>
-            <li>Email: <a href="mailto:dagangsun@gmail.com">dagangsun@gmail.com</a></li>
+            <li>Email: <a href="mailto:sales@braunblinds.com">sales@braunblinds.com</a></li>
             <li>Hours: Mon - Sat: 8:00 AM - 6:00 PM</li>
           </ul>
         </div>
@@ -1037,6 +1357,7 @@
   </div>
 
   <!-- Javascript Libraries & Modules -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
   <script src="roman_db.js"></script>
   <script src="script.js"></script>

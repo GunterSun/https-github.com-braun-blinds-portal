@@ -265,6 +265,7 @@ Estimated price: ${outPriceVal.textContent}`;
     let romanSelectedCategory = 'roman'; // Default category 'roman' (Roman Shades)
     let romanDiscountFactor = 0.50; // Default 50% OFF (5折)
     let romanSalesTaxRate = 0.00; // Default Sales Tax Rate 0.00%
+    let romanHardwareFloorFactor = 0.16; // Default 16% Hardware Minimum Floor (1.6折 / 0.16)
     let romanSelectedSysCode = 'LM0002'; // Default Square Cordless
     let romanSelectedFabCode = 'BZM11'; // Default Zhong Linen Blackout Dark Grey
     let romanSelectedFabCategory = 'ALL';
@@ -475,8 +476,7 @@ Estimated price: ${outPriceVal.textContent}`;
 
       if (fabSelect) {
         fabSelect.innerHTML = list.map(fab => {
-          const rmbRate = fab.rmb_base || (fab.prices ? Object.values(fab.prices)[0] : 160) || 160;
-          return `<option value="${fab.code}" ${fab.code === romanSelectedFabCode ? 'selected' : ''}>${fab.code} - ${fab.series_cn} (${fab.color_cn}) [${fab.type}] - ¥${rmbRate}/㎡</option>`;
+          return `<option value="${fab.code}" ${fab.code === romanSelectedFabCode ? 'selected' : ''}>${fab.code} - ${fab.series_cn} (${fab.color_cn}) [${fab.type}]</option>`;
         }).join('');
       }
 
@@ -502,13 +502,11 @@ Estimated price: ${outPriceVal.textContent}`;
         const isSelected = fab.code === romanSelectedFabCode ? 'selected' : '';
         const isBlackout = fab.type && fab.type.toLowerCase().includes('blackout');
         const colorStyle = getFabricColorStyle(fab);
-        const rmbRate = fab.rmb_base || (fab.prices ? Object.values(fab.prices)[0] : 160) || 160;
 
         return `
           <div class="fab-card ${isSelected}" data-code="${fab.code}">
             <div class="fab-swatch-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
               <span class="fab-swatch-circle" style="${colorStyle} display: inline-block; width: 1.25rem; height: 1.25rem; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.15);"></span>
-              <span class="fab-price-badge" style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700;">¥${rmbRate}/㎡</span>
             </div>
             <div class="fab-card-code">${fab.code} • ${fab.series_cn}</div>
             <div class="fab-card-name">${romanCurrentLang === 'cn' ? fab.color_cn : fab.color_en}</div>
@@ -571,7 +569,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const res = ROMAN_DB.calculateItemPrice(
         romanSelectedSysCode,
         romanSelectedFabCode,
-        w, h, motorId, remoteId, smartId, romanDiscountFactor
+        w, h, motorId, remoteId, smartId, romanDiscountFactor, romanHardwareFloorFactor
       );
 
       if (elLiveRmbBase) elLiveRmbBase.textContent = `¥${res.rmb_total}`;
@@ -815,33 +813,154 @@ Estimated price: ${outPriceVal.textContent}`;
           const smartObj = ROMAN_DB.SMART_ACC_OPTIONS.find(s => s.id === smartId);
 
           let addonTexts = [];
-          if (motorId !== 'none' && motorObj) addonTexts.push(motorObj.name_cn);
-          if (remoteId !== 'none' && remoteObj) addonTexts.push(remoteObj.name_cn);
-          if (smartId !== 'none' && smartObj) addonTexts.push(smartObj.name_cn);
+          let hardwareDetails = [];
+          if (motorId !== 'none' && motorObj) {
+            addonTexts.push(motorObj.name_cn);
+            hardwareDetails.push(`电机: ${motorObj.name_cn} ($${motorObj.price_usd})`);
+          }
+          if (remoteId !== 'none' && remoteObj) {
+            addonTexts.push(remoteObj.name_cn);
+            hardwareDetails.push(`遥控: ${remoteObj.name_cn} ($${remoteObj.price_usd})`);
+          }
+          if (smartId !== 'none' && smartObj) {
+            addonTexts.push(smartObj.name_cn);
+            hardwareDetails.push(`智能: ${smartObj.name_cn} ($${smartObj.price_usd})`);
+          }
 
-          const pricing = ROMAN_DB.calculateItemPrice(
-            sys.code, fab.code, w, h, motorId, remoteId, smartId, romanDiscountFactor
-          );
+          const chkSeparate = document.getElementById('chk-separate-hardware-lines');
+          const isSeparate = chkSeparate ? chkSeparate.checked : false;
 
-          const newItem = {
-            id: Date.now(),
-            room: room,
-            remark: remark,
-            sys: sys,
-            fab: fab,
-            width: w,
-            height: h,
-            sqm: pricing.sqm,
-            qty: qty,
-            mount: mount,
-            control: control,
-            addons: addonTexts.join(', '),
-            msrp_unit: pricing.msrp_price,
-            final_unit: pricing.final_unit_price,
-            amount: Math.round(pricing.final_unit_price * qty * 100) / 100
-          };
+          let finalRemark = remark;
+          if (hardwareDetails.length > 0) {
+            finalRemark = remark ? `${remark} 【${hardwareDetails.join(' | ')}】` : `【${hardwareDetails.join(' | ')}】`;
+          }
 
-          romanQuoteItems.push(newItem);
+          if (isSeparate && hardwareDetails.length > 0) {
+            // 1. Add Shade Line Item (仅帘体)
+            const shadePricing = ROMAN_DB.calculateItemPrice(
+              sys.code, fab.code, w, h, 'none', 'none', 'none', romanDiscountFactor, romanHardwareFloorFactor
+            );
+
+            romanQuoteItems.push({
+              id: Date.now(),
+              room: room,
+              remark: remark ? `${remark} (仅帘体)` : '(仅帘体)',
+              sys: sys,
+              fab: fab,
+              width: w,
+              height: h,
+              sqm: shadePricing.sqm,
+              qty: qty,
+              mount: mount,
+              control: control,
+              addons: '',
+              msrp_unit: shadePricing.shade_msrp || shadePricing.msrp_price,
+              final_unit: shadePricing.final_unit_price,
+              amount: Math.round(shadePricing.final_unit_price * qty * 100) / 100
+            });
+
+            // 2. Add Motor Line Item
+            const hwDiscount = Math.max(0.16, Math.max(romanHardwareFloorFactor, romanDiscountFactor));
+            if (motorId !== 'none' && motorObj) {
+              const motorMsrp = motorObj.price_usd || 167;
+              const motorFinal = Math.round(motorMsrp * hwDiscount * 100) / 100;
+              romanQuoteItems.push({
+                id: Date.now() + 1,
+                room: room,
+                remark: `${motorObj.name_cn} (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_MOTOR', sys_type: '配件 Hardware', name_cn: motorObj.name_cn, image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'MOTOR', series_cn: '智能电机', color_cn: motorObj.name_cn },
+                width: w,
+                height: h,
+                sqm: 0,
+                qty: qty,
+                mount: mount,
+                control: 'Motor (电动驱动)',
+                sys_type_custom: '配件 Motor',
+                prod_text_custom: motorObj.name_cn,
+                discount_factor: hwDiscount,
+                msrp_unit: motorMsrp,
+                final_unit: motorFinal,
+                amount: Math.round(motorFinal * qty * 100) / 100
+              });
+            }
+
+            // 3. Add Remote Line Item
+            if (remoteId !== 'none' && remoteObj) {
+              const remoteMsrp = remoteObj.price_usd || 33;
+              const remoteFinal = Math.round(remoteMsrp * hwDiscount * 100) / 100;
+              romanQuoteItems.push({
+                id: Date.now() + 2,
+                room: room,
+                remark: `${remoteObj.name_cn} (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_REMOTE', sys_type: '配件 Hardware', name_cn: remoteObj.name_cn, image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'REMOTE', series_cn: '遥控器', color_cn: remoteObj.name_cn },
+                width: w,
+                height: h,
+                sqm: 0,
+                qty: 1,
+                mount: mount,
+                control: 'Remote Control',
+                sys_type_custom: '配件 Remote',
+                prod_text_custom: remoteObj.name_cn,
+                discount_factor: hwDiscount,
+                msrp_unit: remoteMsrp,
+                final_unit: remoteFinal,
+                amount: Math.round(remoteFinal * 100) / 100
+              });
+            }
+
+            // 4. Add Smart Hub Line Item
+            if (smartId !== 'none' && smartObj) {
+              const smartMsrp = smartObj.price_usd || 35;
+              const smartFinal = Math.round(smartMsrp * hwDiscount * 100) / 100;
+              romanQuoteItems.push({
+                id: Date.now() + 3,
+                room: room,
+                remark: `${smartObj.name_cn} (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_SMART', sys_type: '配件 Hardware', name_cn: smartObj.name_cn, image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'SMART', series_cn: '智能网关', color_cn: smartObj.name_cn },
+                width: w,
+                height: h,
+                sqm: 0,
+                qty: 1,
+                mount: mount,
+                control: 'Smart Hub',
+                sys_type_custom: '配件 Smart',
+                prod_text_custom: smartObj.name_cn,
+                discount_factor: hwDiscount,
+                msrp_unit: smartMsrp,
+                final_unit: smartFinal,
+                amount: Math.round(smartFinal * 100) / 100
+              });
+            }
+          } else {
+            // Standard Combined Line Item
+            const pricing = ROMAN_DB.calculateItemPrice(
+              sys.code, fab.code, w, h, motorId, remoteId, smartId, romanDiscountFactor, romanHardwareFloorFactor
+            );
+
+            const newItem = {
+              id: Date.now(),
+              room: room,
+              remark: finalRemark,
+              sys: sys,
+              fab: fab,
+              width: w,
+              height: h,
+              sqm: pricing.sqm,
+              qty: qty,
+              mount: mount,
+              control: control,
+              addons: addonTexts.join(', '),
+              msrp_unit: pricing.msrp_price,
+              final_unit: pricing.final_unit_price,
+              amount: Math.round(pricing.final_unit_price * qty * 100) / 100
+            };
+
+            romanQuoteItems.push(newItem);
+          }
+
           renderQuoteItemsTable();
           
           // Reset room & remark inputs
@@ -884,32 +1003,66 @@ Estimated price: ${outPriceVal.textContent}`;
         totalMsrp += lineMsrp;
         totalFinal += item.amount;
 
-        const sysName = `${item.sys.name_cn} (${item.sys.name_en})`;
-        const fabDesc = `Fabric / 面料: ${item.fab.code} (${item.fab.series_cn} ${item.fab.color_cn} / ${item.fab.series_en} ${item.fab.color_en})`;
-        const sqmVal = item.sqm || Math.max(1.0, Math.round((item.width * item.height / 1550.0031) * 100) / 100);
-        const specsText = `Size / 尺寸: ${item.width}" W x ${item.height}" H (${sqmVal} ㎡)\n${item.mount} | ${item.control}${item.addons ? '\nAdd-ons / 选配: ' + item.addons : ''}`;
-        const remarkTag = item.remark ? `<br><span class="badge-remark" style="color: var(--accent-gold); font-size: 0.78rem;">📝 备注: ${item.remark}</span>` : '';
+        const sqftVal = (item.sqm * 10.7639).toFixed(2);
+        const mountCode = (item.mount && item.mount.includes('Inside')) ? '[IM]' : '[OM]';
+        const typeText = item.sys.sys_type || 'Roman Shade';
+        const prodText = `${item.fab.series_cn} (${item.fab.code})`;
+        const currentDiscount = item.discount_factor !== undefined ? item.discount_factor : romanDiscountFactor;
 
         return `
           <tr>
-            <td><strong>${index + 1}</strong></td>
-            <td>
-              <img src="${item.sys.image_url}" class="table-sys-img lightbox-trigger" alt="${item.sys.name_cn}" onerror="this.parentElement.innerHTML='🖼️'">
+            <td style="text-align: center;"><strong>${index + 1}</strong></td>
+            <td style="text-align: center;">
+              <img src="${item.sys.image_url}" class="table-sys-img lightbox-trigger" alt="${item.sys.name_cn}" style="width: 44px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" onerror="this.parentElement.innerHTML='🖼️'">
             </td>
             <td>
-              <strong>${item.room}</strong>
+              <input type="text" class="table-inline-input inline-room" data-idx="${index}" value="${item.room}" style="width: 80px; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 4px; font-size: 0.8rem;">
+            </td>
+            <td style="text-align: center;">
+              <input type="number" class="table-inline-input inline-qty" data-idx="${index}" value="${item.qty}" min="1" max="100" style="width: 44px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.8rem;">
+            </td>
+            <td style="font-size: 0.8rem;">
+              <input type="text" class="table-inline-input inline-type" data-idx="${index}" value="${item.sys_type_custom || typeText}" style="width: 75px; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">
+            </td>
+            <td style="white-space: nowrap;">
+              <input type="number" class="table-inline-input inline-w" data-idx="${index}" value="${item.width}" step="0.125" style="width: 46px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">" ×
+              <input type="number" class="table-inline-input inline-h" data-idx="${index}" value="${item.height}" step="0.125" style="width: 46px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">"
+            </td>
+            <td style="font-size: 0.78rem;">
+              <select class="table-inline-select inline-control" data-idx="${index}" style="font-size: 0.72rem; border: 1px dashed #2563eb; border-radius: 4px; padding: 2px 2px; color: #1e40af; font-weight: 700; width: 100%;">
+                <option value="Cordless (无绳手提)" ${(item.control && (item.control.includes('Cordless') || item.control.includes('无绳'))) ? 'selected' : ''}>无绳手提 Cordless</option>
+                <option value="Motorized Remote (电动静音)" ${(item.control && (item.control.includes('Motorized') || item.control.includes('电动'))) ? 'selected' : ''}>电动静音 Motorized</option>
+                <option value="Steel Chain (钢拉珠系统)" ${(item.control && (item.control.includes('Steel') || item.control.includes('钢拉珠'))) ? 'selected' : ''}>钢拉珠 Chain</option>
+                <option value="Right Chain (右侧拉珠)" ${(item.control && item.control.includes('Right')) ? 'selected' : ''}>右侧拉珠 Right</option>
+                <option value="Left Chain (左侧拉珠)" ${(item.control && item.control.includes('Left')) ? 'selected' : ''}>左侧拉珠 Left</option>
+                <option value="No-Drill Tension (免打孔系统)" ${(item.control && (item.control.includes('No-Drill') || item.control.includes('免打孔'))) ? 'selected' : ''}>免打孔 No-Drill</option>
+                <option value="Top-Down Bottom-Up (上下合)" ${(item.control && (item.control.includes('TDBU') || item.control.includes('上下合'))) ? 'selected' : ''}>上下合 TDBU</option>
+                <option value="Double Layer (双层日夜帘)" ${(item.control && (item.control.includes('Double') || item.control.includes('双层'))) ? 'selected' : ''}>双层帘 Double</option>
+                <option value="Spring Soft-Drop (弹簧下降)" ${(item.control && (item.control.includes('Spring') || item.control.includes('弹簧'))) ? 'selected' : ''}>弹簧下降 Spring</option>
+              </select>
             </td>
             <td>
-              <strong>${sysName}</strong>${remarkTag}<br>
-              <span class="text-muted" style="font-size: 0.78rem;">${fabDesc}</span>
+              <input type="text" class="table-inline-input inline-prod" data-idx="${index}" value="${item.prod_text_custom || prodText}" style="width: 95px; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 4px; font-size: 0.78rem;">
             </td>
-            <td style="white-space: pre-line; font-size: 0.8rem;">${specsText}</td>
-            <td class="text-center">${item.qty}</td>
-            <td>$${item.msrp_unit.toFixed(2)}</td>
-            <td><strong class="text-gold">$${item.final_unit.toFixed(2)}</strong></td>
-            <td><strong>$${item.amount.toFixed(2)}</strong></td>
-            <td class="no-print text-center">
-              <button type="button" class="btn-row-delete" data-id="${item.id}">❌</button>
+            <td style="font-size: 0.76rem;">
+              <input type="text" class="table-inline-input inline-remark" data-idx="${index}" value="${item.remark || ''}" placeholder="${item.sys.name_cn}" style="width: 100%; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 4px; font-size: 0.75rem;">
+            </td>
+            <td style="text-align: right;">
+              $<input type="number" class="table-inline-input inline-msrp" data-idx="${index}" value="${item.msrp_unit.toFixed(2)}" step="0.01" style="width: 56px; text-align: right; font-weight: 700; border: 1px dashed #64748b; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem; color: #475569;" title="打折前原始零售单价 MSRP">
+            </td>
+            <td style="text-align: center; white-space: nowrap;">
+              <input type="number" class="table-inline-input inline-discount-input" data-idx="${index}" value="${(currentDiscount * 10).toFixed(1)}" step="0.1" min="0.1" max="10" placeholder="例如 5" style="width: 44px; text-align: center; font-weight: 700; color: #2563eb; border: 1px dashed #2563eb; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; color: #2563eb;">折</span>
+            </td>
+            <td style="text-align: right;">
+              $<input type="number" class="table-inline-input inline-final-unit" data-idx="${index}" value="${item.final_unit.toFixed(2)}" step="0.01" style="width: 56px; text-align: right; font-weight: 700; border: 1px dashed #A83B24; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem; color: #A83B24;" title="打折后最终单价">
+            </td>
+            <td style="text-align: right;"><strong>$${item.amount.toFixed(2)}</strong></td>
+            <td style="text-align: center;">
+              <input type="text" class="table-inline-input inline-mount" data-idx="${index}" value="${item.mount_code_custom || mountCode}" style="width: 42px; text-align: center; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">
+            </td>
+            <td class="no-print text-center" style="text-align: center;">
+              <button type="button" class="btn-row-delete" data-id="${item.id}" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;">❌</button>
             </td>
           </tr>
         `;
@@ -924,7 +1077,149 @@ Estimated price: ${outPriceVal.textContent}`;
         });
       });
 
+      // Inline Control / 操作系统 Event Handler
+      quoteItemsBody.querySelectorAll('.inline-control').forEach(select => {
+        select.addEventListener('change', () => {
+          const idx = parseInt(select.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].control = select.value;
+          }
+        });
+      });
+
+      // Inline Editing Event Handlers
+      quoteItemsBody.querySelectorAll('.inline-room').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].room = input.value;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-qty').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].qty = Math.max(1, parseInt(input.value, 10) || 1);
+            romanQuoteItems[idx].amount = Math.round(romanQuoteItems[idx].final_unit * romanQuoteItems[idx].qty * 100) / 100;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-type').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].sys_type_custom = input.value;
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-prod').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].prod_text_custom = input.value;
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-mount').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].mount_code_custom = input.value;
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-w, .inline-h').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            const row = input.closest('tr');
+            const wVal = parseFloat(row.querySelector('.inline-w').value) || romanQuoteItems[idx].width;
+            const hVal = parseFloat(row.querySelector('.inline-h').value) || romanQuoteItems[idx].height;
+            romanQuoteItems[idx].width = wVal;
+            romanQuoteItems[idx].height = hVal;
+
+            const disc = romanQuoteItems[idx].discount_factor !== undefined ? romanQuoteItems[idx].discount_factor : romanDiscountFactor;
+            const pricing = ROMAN_DB.calculateItemPrice(
+              romanQuoteItems[idx].sys.code, romanQuoteItems[idx].fab.code, wVal, hVal, 'none', 'none', 'none', disc
+            );
+            romanQuoteItems[idx].sqm = pricing.sqm;
+            romanQuoteItems[idx].msrp_unit = pricing.msrp_price;
+            romanQuoteItems[idx].final_unit = pricing.final_unit_price;
+            romanQuoteItems[idx].amount = Math.round(pricing.final_unit_price * romanQuoteItems[idx].qty * 100) / 100;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-discount-input').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            let typedVal = parseFloat(input.value);
+            if (isNaN(typedVal) || typedVal <= 0) typedVal = 5;
+            if (typedVal > 10) typedVal = typedVal / 10;
+            
+            const newDiscFactor = typedVal / 10;
+            romanQuoteItems[idx].discount_factor = newDiscFactor;
+
+            const pricing = ROMAN_DB.calculateItemPrice(
+              romanQuoteItems[idx].sys.code, romanQuoteItems[idx].fab.code, romanQuoteItems[idx].width, romanQuoteItems[idx].height, 'none', 'none', 'none', newDiscFactor
+            );
+            romanQuoteItems[idx].msrp_unit = pricing.msrp_price;
+            romanQuoteItems[idx].final_unit = pricing.final_unit_price;
+            romanQuoteItems[idx].amount = Math.round(pricing.final_unit_price * romanQuoteItems[idx].qty * 100) / 100;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-msrp').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            const newMsrp = parseFloat(input.value) || romanQuoteItems[idx].msrp_unit;
+            const currentDiscount = romanQuoteItems[idx].discount_factor !== undefined ? romanQuoteItems[idx].discount_factor : romanDiscountFactor;
+            romanQuoteItems[idx].msrp_unit = newMsrp;
+            romanQuoteItems[idx].final_unit = newMsrp * currentDiscount;
+            romanQuoteItems[idx].amount = Math.round(romanQuoteItems[idx].final_unit * romanQuoteItems[idx].qty * 100) / 100;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-final-unit').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            const newFinal = parseFloat(input.value) || romanQuoteItems[idx].final_unit;
+            romanQuoteItems[idx].final_unit = newFinal;
+            romanQuoteItems[idx].amount = Math.round(newFinal * romanQuoteItems[idx].qty * 100) / 100;
+            renderQuoteItemsTable();
+          }
+        });
+      });
+
+      quoteItemsBody.querySelectorAll('.inline-remark').forEach(input => {
+        input.addEventListener('change', () => {
+          const idx = parseInt(input.getAttribute('data-idx'), 10);
+          if (romanQuoteItems[idx]) {
+            romanQuoteItems[idx].remark = input.value;
+          }
+        });
+      });
+
       updateTotals(totalMsrp, totalFinal);
+      if (typeof window.populateProposalItemPicker === 'function') {
+        window.populateProposalItemPicker();
+      }
     }
 
     function recalculateQuoteItems() {
@@ -933,8 +1228,10 @@ Estimated price: ${outPriceVal.textContent}`;
         const remoteId = elRemoteSelect ? elRemoteSelect.value : 'none';
         const smartId = elSmartSelect ? elSmartSelect.value : 'none';
 
+        const disc = item.discount_factor !== undefined ? item.discount_factor : romanDiscountFactor;
+
         const pricing = ROMAN_DB.calculateItemPrice(
-          item.sys.code, item.fab.code, item.width, item.height, motorId, remoteId, smartId, romanDiscountFactor
+          item.sys.code, item.fab.code, item.width, item.height, motorId, remoteId, smartId, disc, romanHardwareFloorFactor
         );
         item.msrp_unit = pricing.msrp_price;
         item.final_unit = pricing.final_unit_price;
@@ -947,36 +1244,109 @@ Estimated price: ${outPriceVal.textContent}`;
       const discountVal = totalMsrp - totalFinal;
       const taxRateLabel = document.getElementById('sheet-tax-rate-label');
       const taxAmountVal = document.getElementById('sheet-tax-amount');
+      const shippingInput = document.getElementById('sheet-shipping-fee-input');
+      const shippingValDisplay = document.getElementById('sheet-shipping-fee-val');
 
+      const shippingFee = shippingInput ? (parseFloat(shippingInput.value) || 0) : 0;
       const taxAmount = totalFinal * (romanSalesTaxRate / 100);
-      const grandTotal = totalFinal + taxAmount;
+      const grandTotal = totalFinal + taxAmount + shippingFee;
 
       if (sheetSubtotalMsrp) sheetSubtotalMsrp.textContent = `$${totalMsrp.toFixed(2)}`;
       if (sheetDiscountAmount) sheetDiscountAmount.textContent = `-$${discountVal.toFixed(2)}`;
       if (sheetSubtotalFinal) sheetSubtotalFinal.textContent = `$${totalFinal.toFixed(2)}`;
       if (taxRateLabel) taxRateLabel.textContent = `${romanSalesTaxRate.toFixed(2)}%`;
       if (taxAmountVal) taxAmountVal.textContent = `$${taxAmount.toFixed(2)}`;
+      if (shippingValDisplay) shippingValDisplay.textContent = `$${shippingFee.toFixed(2)}`;
       if (sheetGrandTotal) sheetGrandTotal.textContent = `$${grandTotal.toFixed(2)}`;
+    }
+
+    // Bilingual i18n Dictionary
+    const i18nDict = {
+      cn: {
+        cust_header: "客户信息与全局折扣设置 / Customer & Project Settings",
+        clear_table: "🗑️ 清空表格 / Clear Table",
+        cust_name: "Customer Name / 客户姓名",
+        proj_type: "Project Type / 项目类型",
+        cust_address: "Address / 客户地址",
+        cust_phone: "Phone / 联系电话",
+        cust_email: "Email / 电子邮箱",
+        quote_date: "Date / 报价日期 (自动/手动调整)",
+        quote_no: "Quote No / 报价单号",
+        cust_discount: "Customer Wholesale Discount / 客户手动折扣数值",
+        notes: "Special Craft Notes / 工艺说明与特点",
+        item_builder: "罗马帘定制配置器 / Item Configurator",
+        step1_title: "系统控制类型 / System & Mechanism Selection",
+        step2_title: "面料系列与颜色 / Fabric Series & Color Options",
+        step3_title: "窗户尺寸与极限校验 / Dimensions (Inches)",
+        step4_title: "安装方式与控制方向 / Mount & Control Side",
+        step5_title: "选配智能电机与配件 / Motor & Accessories Add-ons",
+        step6_title: "房间名称、数量与算价 / Item Details & Add",
+        add_item_btn: "➕ 添加到报价单 / Add Item to Quote",
+        preview_title: "📄 报价单预览 (Quotation Preview)",
+        btn_export_excel: "📊 导出 Excel 报价单 (.xlsx)",
+        btn_print_pdf: "🖨️ 打印 / 导出单页 PDF"
+      },
+      en: {
+        cust_header: "Customer & Project Settings",
+        clear_table: "🗑️ Clear Table",
+        cust_name: "Customer Name",
+        proj_type: "Project Type / Sidemark",
+        cust_address: "Shipping Address",
+        cust_phone: "Phone Number",
+        cust_email: "Email Address",
+        quote_date: "Quote Date",
+        quote_no: "Quote Number",
+        cust_discount: "Customer Wholesale Discount",
+        notes: "Special Craft & Technical Notes",
+        item_builder: "Roman Shade Configurator",
+        step1_title: "1. System & Mechanism Selection",
+        step2_title: "2. Fabric Series & Color Options",
+        step3_title: "3. Dimensions & Constraint Validation (Inches)",
+        step4_title: "4. Mount & Control Mechanism Options",
+        step5_title: "5. Motor & Smart Accessories Upgrade",
+        step6_title: "6. Room Location & Quantity",
+        add_item_btn: "➕ Add Item to Quote",
+        preview_title: "📄 Quotation Sheet Preview",
+        btn_export_excel: "📊 Export Excel Quote (.xlsx)",
+        btn_print_pdf: "🖨️ Print / Export Single-Page PDF"
+      }
+    };
+
+    function applyLanguage(lang) {
+      romanCurrentLang = lang;
+      const btnCn = document.getElementById('lang-cn-btn');
+      const btnEn = document.getElementById('lang-en-btn');
+      if (btnCn && btnEn) {
+        if (lang === 'cn') {
+          btnCn.classList.add('active');
+          btnEn.classList.remove('active');
+        } else {
+          btnEn.classList.add('active');
+          btnCn.classList.remove('active');
+        }
+      }
+
+      // Update all data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18nDict[lang] && i18nDict[lang][key]) {
+          el.textContent = i18nDict[lang][key];
+        }
+      });
+
+      renderSystemCards();
+      renderFabricCategoryTabs();
+      renderFabricCards();
+      calculateLiveItemPrice();
+      renderQuoteItemsTable();
     }
 
     // Language Switcher Toggle
     const btnCn = document.getElementById('lang-cn-btn');
     const btnEn = document.getElementById('lang-en-btn');
     if (btnCn && btnEn) {
-      btnCn.addEventListener('click', () => {
-        btnCn.classList.add('active');
-        btnEn.classList.remove('active');
-        romanCurrentLang = 'cn';
-        renderSystemCards();
-        renderFabricCards();
-      });
-      btnEn.addEventListener('click', () => {
-        btnEn.classList.add('active');
-        btnCn.classList.remove('active');
-        romanCurrentLang = 'en';
-        renderSystemCards();
-        renderFabricCards();
-      });
+      btnCn.addEventListener('click', () => applyLanguage('cn'));
+      btnEn.addEventListener('click', () => applyLanguage('en'));
     }
 
     // Visual Guide Tabs
@@ -1036,7 +1406,7 @@ Estimated price: ${outPriceVal.textContent}`;
         let data = [
           ['BRAUN INTERNATIONAL LLC', '', '', '', 'QUOTATION / 窗帘定制报价单'],
           ['SUN SHADES & SUN BLINDS - CUSTOM WINDOW TREATMENTS', '', '', '', 'Date / 日期: ' + dateStr],
-          ['Ontario, CA 91761, USA | Email: sundagang91709@gmail.com', '', '', '', 'Quote No / 报价单号: ' + quoteNo],
+          ['2115 S Hellman Ave # E, Ontario, CA 91761 | Email: sales@braunblinds.com', '', '', '', 'Quote No / 报价单号: ' + quoteNo],
           [],
           ['CLIENT & PROJECT DETAILS / 客户与项目信息'],
           ['Customer Name / 客户姓名:', custName, '', 'Project Type / 项目类型:', projType],
@@ -1089,11 +1459,78 @@ Estimated price: ${outPriceVal.textContent}`;
       });
     }
 
-    // --- Export / Print PDF Handler ---
+    // --- Export / Print PDF Handler (100% Non-Blank Single Page PDF Exporter) ---
+    function exportProformaPdf() {
+      const paper = document.getElementById('william-quote-paper');
+      if (!paper) return;
+
+      // Create or reuse clean printing iframe
+      let iframe = document.getElementById('pdf-print-iframe');
+      if (iframe) iframe.remove();
+
+      iframe = document.createElement('iframe');
+      iframe.id = 'pdf-print-iframe';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>PROFORMA INVOICE FORM</title>
+          <style>
+            @page { size: letter portrait; margin: 0.3in; }
+            * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; }
+            body { margin: 0; padding: 0; background: #ffffff; color: #1e293b; }
+            .no-print { display: none !important; }
+            .proforma-invoice-paper { width: 100%; background: #ffffff; padding: 0; border: none; box-shadow: none; }
+            .proforma-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; }
+            .proforma-company-name { font-size: 20px; font-weight: 800; color: #A83B24; margin: 0; }
+            .proforma-form-title { font-size: 15px; font-weight: 800; color: #0f172a; margin: 0; }
+            .proforma-divider-line { height: 3px; background-color: #A83B24; margin-bottom: 10px; }
+            .proforma-meta-grid { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; line-height: 1.6; }
+            .meta-col { width: 48%; }
+            .proforma-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; }
+            .proforma-table th { background-color: #A83B24; color: #ffffff; font-weight: 700; padding: 6px 8px; text-align: left; border: 1px solid #A83B24; }
+            .proforma-table td { padding: 6px 8px; border: 1px solid #cbd5e1; color: #0f172a; }
+            .table-sys-img { width: 45px; height: 35px; object-fit: cover; border-radius: 3px; border: 1px solid #cbd5e1; }
+            .proforma-summary-wrap { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+            .proforma-totals-table { width: 280px; border-collapse: collapse; font-size: 12px; }
+            .proforma-totals-table td { padding: 5px 10px; border: 1px solid #cbd5e1; }
+            .proforma-totals-table .tot-label { font-weight: 600; background-color: #f8fafc; }
+            .proforma-totals-table .tot-val { text-align: right; font-weight: 700; }
+            .proforma-totals-table .grand-total-row td { background-color: #A83B24; color: #ffffff; font-weight: 800; font-size: 13px; }
+            .proforma-terms-box { margin-top: 8px; font-size: 10px; color: #334155; line-height: 1.4; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+            .terms-title { font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+            .terms-list { padding-left: 16px; margin: 0; }
+            .proforma-signature-grid { display: flex; justify-content: space-between; margin-top: 20px; }
+            .sig-col { width: 45%; }
+            .sig-line { border-bottom: 1px solid #475569; margin-bottom: 4px; }
+            .sig-label { font-size: 10px; color: #475569; }
+          </style>
+        </head>
+        <body>
+          ${paper.outerHTML}
+        </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }, 300);
+    }
+
     if (btnPrintPdf) {
-      btnPrintPdf.addEventListener('click', () => {
-        window.print();
-      });
+      btnPrintPdf.addEventListener('click', exportProformaPdf);
     }
 
     // --- Clear Handler ---
@@ -1108,6 +1545,1376 @@ Estimated price: ${outPriceVal.textContent}`;
       });
     }
 
+    // --- Interactive Date Manager (Auto & Manual Adjustment) ---
+    function initDateManager() {
+      if (!elQuoteDate) return;
+
+      const elSigDate = document.getElementById('sheet-sig-date-input');
+      const elApprovalDate = document.getElementById('sheet-approval-date-input');
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Auto-set today's date if empty
+      if (!elQuoteDate.value) elQuoteDate.value = todayStr;
+      if (elSigDate && !elSigDate.value) elSigDate.value = todayStr;
+      if (elApprovalDate && !elApprovalDate.value) elApprovalDate.value = todayStr;
+
+      function syncDates(dateVal) {
+        syncCustomerMeta();
+        if (elSigDate && elSigDate.dataset.manual !== 'true') elSigDate.value = dateVal;
+        if (elApprovalDate && elApprovalDate.dataset.manual !== 'true') elApprovalDate.value = dateVal;
+      }
+
+      if (elSigDate) elSigDate.addEventListener('input', () => { elSigDate.dataset.manual = 'true'; });
+      if (elApprovalDate) elApprovalDate.addEventListener('input', () => { elApprovalDate.dataset.manual = 'true'; });
+
+      syncDates(elQuoteDate.value);
+
+      const datePresetBtns = document.querySelectorAll('#date-presets-quick .date-btn');
+      datePresetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          datePresetBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const addDays = parseInt(btn.getAttribute('data-days'), 10) || 0;
+          const targetDate = new Date();
+          targetDate.setDate(targetDate.getDate() + addDays);
+
+          const formatted = targetDate.toISOString().split('T')[0];
+          elQuoteDate.value = formatted;
+          syncDates(formatted);
+        });
+      });
+
+      elQuoteDate.addEventListener('change', () => {
+        syncDates(elQuoteDate.value);
+      });
+    }
+
+    // --- Interactive Digital Signature Canvas Pad inside Invoice ---
+    function initSignaturePad() {
+      const canvas = document.getElementById('sig-canvas');
+      const btnClearInvoice = document.getElementById('btn-clear-sig-invoice');
+      const btnClearTop = document.getElementById('btn-clear-sig');
+      const btnSaveTop = document.getElementById('btn-save-sig');
+      const statusBadge = document.getElementById('sig-status-badge');
+      const sheetContainer = document.getElementById('sheet-sig-img-container');
+
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#A83B24'; // Matching terracotta brand theme
+
+      let isDrawing = false;
+      let hasDrawn = false;
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      }
+
+      function updateRenderedSig() {
+        if (!hasDrawn) return;
+        const sigDataUrl = canvas.toDataURL('image/png');
+        if (sheetContainer) {
+          sheetContainer.innerHTML = `<img src="${sigDataUrl}" alt="Customer Signature" style="max-height: 42px; max-width: 180px; object-fit: contain;">`;
+        }
+        if (statusBadge) {
+          statusBadge.textContent = '✅ 已保存签名 (Signed)';
+          statusBadge.style.background = '#dcfce7';
+          statusBadge.style.color = '#15803d';
+        }
+      }
+
+      function startDraw(e) {
+        isDrawing = true;
+        hasDrawn = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
+      }
+
+      function stopDraw(e) {
+        if (isDrawing) {
+          ctx.closePath();
+          isDrawing = false;
+          updateRenderedSig();
+        }
+      }
+
+      // Mouse Listeners
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseleave', stopDraw);
+
+      // Touch Listeners (Mobile & iPad)
+      canvas.addEventListener('touchstart', startDraw);
+      canvas.addEventListener('touchmove', draw);
+      canvas.addEventListener('touchend', stopDraw);
+
+      // Clear Handler
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+        if (sheetContainer) sheetContainer.innerHTML = '';
+        if (statusBadge) {
+          statusBadge.textContent = '未签名 (Click & draw signature)';
+          statusBadge.style.background = '#f1f5f9';
+          statusBadge.style.color = '#475569';
+        }
+      }
+
+      if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
+      if (btnClearTop) btnClearTop.addEventListener('click', clearCanvas);
+      if (btnSaveTop) btnSaveTop.addEventListener('click', updateRenderedSig);
+    }
+
+    // Auto Hash Router for Braun-Z-1.0
+    function checkHashRoute() {
+      const hash = window.location.hash.toLowerCase();
+      const href = window.location.href.toLowerCase();
+      if (hash.includes('braun-z-1.0') || hash.includes('zhenpin-roman') || hash.includes('z-roman') || href.includes('braun-z-1.0')) {
+        document.title = 'Braun-Z-1.0 | Z系列罗马帘窗饰定制报价系统';
+        const calcElem = document.getElementById('calculator');
+        if (calcElem) {
+          setTimeout(() => {
+            calcElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 300);
+        }
+      }
+    }
+
+    // --- Window Measurement & Design Proposal System (窗户测量与设计方案生成器) ---
+    function initDesignProposalSystem() {
+      const inputItemPicker = document.getElementById('prop-item-picker');
+      const inputTemplate = document.getElementById('prop-template-select');
+      const inputFrameTheme = document.getElementById('prop-frame-theme');
+      const inputTitle = document.getElementById('prop-input-title');
+      const inputCount = document.getElementById('prop-input-count');
+      const inputSchemeTitle = document.getElementById('prop-input-scheme-title');
+
+      const inputW1 = document.getElementById('prop-w1');
+      const inputW2 = document.getElementById('prop-w2');
+      const inputW3 = document.getElementById('prop-w3');
+      const inputW4 = document.getElementById('prop-w4');
+
+      const inputH1 = document.getElementById('prop-h1');
+      const inputH2 = document.getElementById('prop-h2');
+      const inputH3 = document.getElementById('prop-h3');
+      const inputH4 = document.getElementById('prop-h4');
+
+      const groupW2 = document.getElementById('prop-w2-group');
+      const groupW3 = document.getElementById('prop-w3-group');
+      const groupW4 = document.getElementById('prop-w4-group');
+      const groupH2 = document.getElementById('prop-h2-group');
+      const groupH3 = document.getElementById('prop-h3-group');
+      const groupH4 = document.getElementById('prop-h4-group');
+
+      const inputModel = document.getElementById('prop-input-model');
+      const inputColor = document.getElementById('prop-input-color');
+      const cardPaper = document.getElementById('proposal-card-paper');
+
+      const renderTitle = document.getElementById('card-render-title');
+      const renderSchemeTitle = document.getElementById('card-render-scheme-title');
+      const renderModel = document.getElementById('card-render-model');
+      const renderBulletsContainer = document.getElementById('card-render-bullets');
+      const renderDiagramContainer = document.getElementById('card-diagram-container');
+      const renderSwatchImg = document.getElementById('card-render-swatch-img');
+      const renderSwatchDesc = document.getElementById('card-render-swatch-desc');
+      const renderProdImg = document.getElementById('card-render-prod-img');
+      const btnExportProposalPdf = document.getElementById('btn-export-proposal-pdf');
+
+      if (!inputTitle || !renderDiagramContainer) return;
+
+      // Populate Quote Items Dropdown
+      window.populateProposalItemPicker = function() {
+        if (!inputItemPicker) return;
+        const currentVal = inputItemPicker.value || 'live';
+        let html = `<option value="live" ${currentVal === 'live' ? 'selected' : ''}>✨ 当前实时配置产品 (Current Live Configurator Product)</option>`;
+        
+        romanQuoteItems.forEach((item, idx) => {
+          const roomTag = item.room ? `[${item.room}] ` : '';
+          const sysName = item.sys.name_cn || item.sys.code;
+          const fabName = `${item.fab.series_cn} (${item.fab.color_cn})`;
+          const isSel = currentVal === String(idx) ? 'selected' : '';
+          html += `<option value="${idx}" ${isSel}>Item #${idx + 1}: ${roomTag}${sysName} • ${fabName}</option>`;
+        });
+        inputItemPicker.innerHTML = html;
+      };
+
+      // Populate Model & Color Dropdowns with all Systems & Fabrics
+      function populateModelAndColorOptions() {
+        if (inputModel) {
+          const currentModel = inputModel.value;
+          let sysHtml = '';
+          ROMAN_DB.SYSTEMS.forEach(sys => {
+            const label = `${sys.name_cn} (${sys.code})`;
+            const isSel = currentModel === label ? 'selected' : '';
+            sysHtml += `<option value="${label}" data-code="${sys.code}" ${isSel}>${label}</option>`;
+          });
+          inputModel.innerHTML = sysHtml;
+        }
+
+        if (inputColor) {
+          const currentColor = inputColor.value;
+          let fabHtml = '';
+          ROMAN_DB.FABRICS.forEach(fab => {
+            const label = `颜色：${fab.series_cn} / ${fab.color_cn} (${fab.code})`;
+            const isSel = currentColor === label ? 'selected' : '';
+            fabHtml += `<option value="${label}" data-code="${fab.code}" ${isSel}>${label}</option>`;
+          });
+          inputColor.innerHTML = fabHtml;
+        }
+      }
+
+      // Frame Border Color Mapping
+      function getFrameBorderColor(theme) {
+        if (theme === 'gold') return '#C5A059';
+        if (theme === 'white') return '#E2E8F0';
+        if (theme === 'wood') return '#8C6D58';
+        return '#1E293B'; // Default black
+      }
+
+      // 1. Render Window Diagrams with Individual Height Labels for EVERY Window
+      function renderDiagram() {
+        const countVal = inputCount.value || '3';
+        const frameTheme = inputFrameTheme ? inputFrameTheme.value : 'black';
+        const borderColor = getFrameBorderColor(frameTheme);
+
+        const w1 = inputW1 ? inputW1.value || '30.5"' : '30.5"';
+        const w2 = inputW2 ? inputW2.value || '40.5"' : '40.5"';
+        const w3 = inputW3 ? inputW3.value || '34.5"' : '34.5"';
+        const w4 = inputW4 ? inputW4.value || '32.0"' : '32.0"';
+
+        const h1 = inputH1 ? inputH1.value || '70.5"' : '70.5"';
+        const h2 = inputH2 ? inputH2.value || h1 : h1;
+        const h3 = inputH3 ? inputH3.value || h1 : h1;
+        const h4 = inputH4 ? inputH4.value || h1 : h1;
+
+        if (groupW2) groupW2.style.display = (countVal !== '1') ? 'block' : 'none';
+        if (groupH2) groupH2.style.display = (countVal !== '1') ? 'block' : 'none';
+        if (groupW3) groupW3.style.display = (countVal === '3' || countVal === '4') ? 'block' : 'none';
+        if (groupH3) groupH3.style.display = (countVal === '3' || countVal === '4') ? 'block' : 'none';
+        if (groupW4) groupW4.style.display = (countVal === '4') ? 'block' : 'none';
+        if (groupH4) groupH4.style.display = (countVal === '4') ? 'block' : 'none';
+
+        let html = '';
+        if (countVal === '1') {
+          html = `
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w1} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h1}</span>
+              </div>
+            </div>
+          `;
+        } else if (countVal === '2') {
+          html = `
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w1} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h1}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w2} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h2}</span>
+              </div>
+            </div>
+          `;
+        } else if (countVal === '4') {
+          html = `
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w1} ─┤</div>
+              <div class="window-frame-graphic" style="width: 80px; border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h1}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w2} ─┤</div>
+              <div class="window-frame-graphic" style="width: 80px; border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h2}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w3} ─┤</div>
+              <div class="window-frame-graphic" style="width: 80px; border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h3}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w4} ─┤</div>
+              <div class="window-frame-graphic" style="width: 80px; border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h4}</span>
+              </div>
+            </div>
+          `;
+        } else if (countVal === 'stacked') {
+          html = `
+            <div class="stacked-windows-wrap" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+              <div class="window-diagram-box">
+                <div class="dim-top-label">上层高窗 ├─ ${w1} ─┤</div>
+                <div class="window-frame-graphic" style="height: 65px; border-color: ${borderColor};">
+                  <div class="window-shade-canvas" style="height: 80%;"></div>
+                </div>
+                <div class="dim-side-label">
+                  <div class="dim-v-line"></div>
+                  <span class="dim-v-text">${h1}</span>
+                </div>
+              </div>
+              <div class="window-diagram-box">
+                <div class="dim-top-label">下层大窗 ├─ ${w2} ─┤</div>
+                <div class="window-frame-graphic" style="height: 120px; border-color: ${borderColor};">
+                  <div class="window-shade-canvas" style="height: 60%;"></div>
+                </div>
+                <div class="dim-side-label">
+                  <div class="dim-v-line"></div>
+                  <span class="dim-v-text">${h2}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          // Default 3 Windows with vertical dimension lines & height text
+          html = `
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w1} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h1}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w2} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h2}</span>
+              </div>
+            </div>
+            <div class="window-diagram-box">
+              <div class="dim-top-label">├─ ${w3} ─┤</div>
+              <div class="window-frame-graphic" style="border-color: ${borderColor};">
+                <div class="window-shade-canvas"></div>
+              </div>
+              <div class="dim-side-label">
+                <div class="dim-v-line"></div>
+                <span class="dim-v-text">${h3}</span>
+              </div>
+            </div>
+          `;
+        }
+        renderDiagramContainer.innerHTML = html;
+      }
+
+      // 2. Sync Card Content from Inputs & Item Picker
+      function syncProposalCard() {
+        if (cardPaper && inputTemplate) {
+          cardPaper.className = `proposal-card-paper theme-${inputTemplate.value}`;
+        }
+
+        let sys = null;
+        let fab = null;
+        let roomName = '';
+
+        const selectedIdx = inputItemPicker ? inputItemPicker.value : 'live';
+        if (selectedIdx !== 'live' && romanQuoteItems[parseInt(selectedIdx, 10)]) {
+          const item = romanQuoteItems[parseInt(selectedIdx, 10)];
+          sys = item.sys;
+          fab = item.fab;
+          roomName = item.room || '';
+        } else {
+          // Check dropdown selected model or live system
+          if (inputModel && inputModel.options[inputModel.selectedIndex]) {
+            const code = inputModel.options[inputModel.selectedIndex].getAttribute('data-code');
+            sys = ROMAN_DB.SYSTEMS.find(s => s.code === code) || ROMAN_DB.SYSTEMS.find(s => s.code === romanSelectedSysCode);
+          } else {
+            sys = ROMAN_DB.SYSTEMS.find(s => s.code === romanSelectedSysCode);
+          }
+
+          if (inputColor && inputColor.options[inputColor.selectedIndex]) {
+            const code = inputColor.options[inputColor.selectedIndex].getAttribute('data-code');
+            fab = ROMAN_DB.FABRICS.find(f => f.code === code) || ROMAN_DB.FABRICS.find(f => f.code === romanSelectedFabCode);
+          } else {
+            fab = ROMAN_DB.FABRICS.find(f => f.code === romanSelectedFabCode);
+          }
+        }
+
+        // Sync Model & Color Select dropdowns if quote item picked
+        if (selectedIdx !== 'live' && sys && fab) {
+          const targetModelVal = `${sys.name_cn} (${sys.code})`;
+          const targetColorVal = `颜色：${fab.series_cn} / ${fab.color_cn} (${fab.code})`;
+          if (inputModel) inputModel.value = targetModelVal;
+          if (inputColor) inputColor.value = targetColorVal;
+        }
+
+        if (renderTitle) renderTitle.textContent = inputTitle.value;
+        if (renderSchemeTitle) renderSchemeTitle.textContent = inputSchemeTitle.value;
+        if (renderModel && inputModel) renderModel.textContent = inputModel.value;
+
+        // Render Checkbox Bullets
+        if (renderBulletsContainer) {
+          const checkedItems = Array.from(document.querySelectorAll('.prop-feat-chk:checked')).map(chk => chk.value);
+          let bulletsHtml = checkedItems.map(item => `<div class="scheme-bullet-item">✓ ${item}</div>`).join('');
+          if (inputColor && inputColor.value) {
+            bulletsHtml += `<div class="scheme-bullet-item" style="font-weight: 700; color: #A83B24;">✓ ${inputColor.value}</div>`;
+          }
+          renderBulletsContainer.innerHTML = bulletsHtml;
+        }
+
+        // Auto Switch Right Images based on selected sys & fab
+        if (sys && renderProdImg) {
+          renderProdImg.src = sys.image_url || 'system_images/our_collections/collection_roller_2026_thumb.jpg';
+        }
+        if (fab && renderSwatchImg) {
+          renderSwatchImg.src = fab.image_url || 'system_images/guides/fabric_swatches_card_p1.png';
+          if (renderSwatchDesc) renderSwatchDesc.textContent = `${fab.series_cn}（${fab.color_cn}）`;
+        }
+
+        renderDiagram();
+      }
+
+      window.syncProposalFromBuilder = syncProposalCard;
+
+      if (inputModel) inputModel.addEventListener('input', () => { inputModel.dataset.manual = 'true'; });
+      if (inputColor) inputColor.addEventListener('input', () => { inputColor.dataset.manual = 'true'; });
+
+      // 3. Attach Live Input Listeners
+      [inputItemPicker, inputTemplate, inputFrameTheme, inputTitle, inputCount, inputSchemeTitle, inputW1, inputW2, inputW3, inputW4, inputH1, inputH2, inputH3, inputH4, inputModel, inputColor].forEach(el => {
+        if (el) {
+          el.addEventListener('input', syncProposalCard);
+          el.addEventListener('change', syncProposalCard);
+        }
+      });
+
+      document.querySelectorAll('.prop-feat-chk').forEach(chk => {
+        chk.addEventListener('change', syncProposalCard);
+      });
+
+      // 4. Export Proposal Card to Single-Page PDF
+      if (btnExportProposalPdf) {
+        btnExportProposalPdf.addEventListener('click', () => {
+          if (!cardPaper) return;
+
+          let iframe = document.getElementById('pdf-print-iframe');
+          if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'pdf-print-iframe';
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+          }
+
+          const doc = iframe.contentWindow.document;
+          doc.open();
+          doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Window Measurement & Treatment Design Scheme</title>
+              <style>
+                @page { size: letter portrait; margin: 0.4in; }
+                * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif; }
+                body { margin: 0; padding: 0; background: #ffffff; display: flex; justify-content: center; align-items: center; }
+                .proposal-card-paper { width: 100%; max-width: 650px; background: #FAF6F0; border-radius: 16px; padding: 1.5rem 1.75rem; border: 1px solid #EAE2D8; color: #1E293B; }
+                .proposal-card-paper.theme-terracotta { background: #FFFDF9; border: 2px solid #A83B24; }
+                .proposal-card-paper.theme-terracotta .proposal-top-header { background: #A83B24; color: #FFFFFF; padding: 0.75rem 1rem; border-radius: 12px 12px 0 0; margin: -1.5rem -1.75rem 1rem -1.75rem; }
+                .proposal-card-paper.theme-terracotta .proposal-top-title { color: #FFFFFF; }
+                .proposal-card-paper.theme-dark { background: #1E293B; border-color: #334155; color: #F8FAFC; }
+                .proposal-card-paper.theme-dark .proposal-top-title, .proposal-card-paper.theme-dark .scheme-card-title, .proposal-card-paper.theme-dark .dim-top-label, .proposal-card-paper.theme-dark .dim-side-label { color: #F8FAFC; }
+                .proposal-card-paper.theme-dark .proposal-diagram-area, .proposal-card-paper.theme-dark .proposal-scheme-card { background: #0F172A; border-color: #334155; }
+                .proposal-card-paper.theme-dark .scheme-card-subtitle, .proposal-card-paper.theme-dark .scheme-bullet-item { color: #CBD5E1; }
+                .proposal-card-paper.theme-wood { background: #FDFBF7; border: 2px solid #8C6D58; }
+                .proposal-card-paper.theme-wood .proposal-top-title { color: #5C4033; }
+                .proposal-top-header { border-bottom: 2px solid #E5DCD0; padding-bottom: 0.6rem; margin-bottom: 1rem; }
+                .proposal-top-title { font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0; }
+                .proposal-diagram-area { display: flex; justify-content: center; align-items: flex-end; gap: 1.25rem; padding: 1.25rem 0.5rem; background: #FAF6F0; border-radius: 12px; margin-bottom: 1.25rem; }
+                .window-diagram-box { display: flex; flex-direction: column; align-items: center; position: relative; }
+                .dim-top-label { font-size: 0.85rem; font-weight: 800; color: #0F172A; margin-bottom: 6px; }
+                .window-frame-graphic { position: relative; width: 110px; height: 160px; border: 4px solid #1E293B; border-radius: 3px; background: linear-gradient(to bottom, #dbeafe, #eff6ff); overflow: hidden; }
+                .window-shade-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background: linear-gradient(135deg, #f5f5f4, #e7e5e4); border-bottom: 3px solid #d6d3d1; }
+                .dim-side-label { position: absolute; right: -36px; top: 24px; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #0F172A; white-space: nowrap; }
+                .dim-v-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 1.5px; background-color: #0F172A; transform: translateX(-50%); }
+                .dim-v-line::before { content: ''; position: absolute; top: 0; left: -3px; width: 7.5px; height: 1.5px; background-color: #0F172A; }
+                .dim-v-line::after { content: ''; position: absolute; bottom: 0; left: -3px; width: 7.5px; height: 1.5px; background-color: #0F172A; }
+                .dim-v-text { position: relative; background: #FAF6F0; padding: 1px 3px; border-radius: 3px; z-index: 2; font-size: 0.72rem; font-weight: 800; color: #0F172A; }
+                .proposal-scheme-card { background: #FFFFFF; border-radius: 14px; padding: 1.25rem 1.35rem; border: 1px solid #EAE2D8; }
+                .scheme-card-title { font-size: 1.15rem; font-weight: 800; color: #0F172A; margin: 0 0 0.4rem 0; }
+                .scheme-card-subtitle { font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 0.75rem; }
+                .scheme-bullets-grid { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+                .scheme-bullet-item { font-size: 0.85rem; color: #334155; font-weight: 600; }
+                .scheme-images-flex { display: flex; gap: 1rem; margin-top: 1rem; }
+                .scheme-swatch-box { display: flex; flex-direction: column; align-items: center; }
+                .scheme-swatch-img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid #E2E8F0; }
+                .scheme-swatch-desc { font-size: 0.75rem; font-weight: 600; color: #475569; margin-top: 4px; text-align: center; }
+              </style>
+            </head>
+            <body>
+              ${cardPaper.outerHTML}
+            </body>
+            </html>
+          `);
+          doc.close();
+
+          setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          }, 300);
+        });
+      }
+
+      populateModelAndColorOptions();
+      window.populateProposalItemPicker();
+      syncProposalCard();
+    }
+
+    // --- Custom Dynamic File Importer Engine (智能解析用户任意上传的 Excel / CSV 表格) ---
+    function initCustomFileImporter() {
+      const customFileInput = document.getElementById('custom-excel-file-input');
+      const btnUploadExcel = document.getElementById('btn-upload-customer-excel');
+
+      if (!customFileInput || !btnUploadExcel) return;
+
+      btnUploadExcel.addEventListener('click', () => {
+        customFileInput.click();
+      });
+
+      customFileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        files.forEach(file => {
+          const fileName = file.name.toLowerCase();
+
+          if (file.type.startsWith('image/') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.webp') || fileName.endsWith('.heic')) {
+            // Process Image File (实拍测绘照片/手写表单图片)
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              const att = {
+                id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                name: file.name,
+                type: 'image',
+                size: formatFileSize(file.size),
+                dataUrl: evt.target.result
+              };
+              currentCustomerAttachments.push(att);
+              renderCustomerAttachments();
+              autoSaveActiveCustomerMeta();
+
+              alert(`🔍 已成功识别并导入现场测绘图片【${file.name}】！\n图片已自动绑定保存至客户档案附件库，并开启测绘画面数据分析。`);
+            };
+            reader.readAsDataURL(file);
+          } else if (fileName.endsWith('.pdf')) {
+            // Process PDF Document
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              const att = {
+                id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                name: file.name,
+                type: 'pdf',
+                size: formatFileSize(file.size),
+                dataUrl: evt.target.result
+              };
+              currentCustomerAttachments.push(att);
+              renderCustomerAttachments();
+              autoSaveActiveCustomerMeta();
+
+              alert(`📄 已成功识别并导入 PDF 图纸合同【${file.name}】！\nPDF 已自动关联保存至客户档案中。`);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            // Process Excel / CSV Table
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              try {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                  alert('无法读取表格内容，请确认文件格式为 Excel (.xlsx/.xls) 或 CSV。');
+                  return;
+                }
+
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+                if (!rawRows || rawRows.length === 0) {
+                  alert('读取到的表格内容为空！');
+                  return;
+                }
+
+                // Also attach to Customer Profile
+                const dataUrlReader = new FileReader();
+                dataUrlReader.onload = function(dEvt) {
+                  currentCustomerAttachments.push({
+                    id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                    name: file.name,
+                    type: 'excel',
+                    size: formatFileSize(file.size),
+                    dataUrl: dEvt.target.result
+                  });
+                  renderCustomerAttachments();
+                  autoSaveActiveCustomerMeta();
+                };
+                dataUrlReader.readAsDataURL(file);
+
+                parseAndImportExcelRows(rawRows, file.name);
+              } catch (err) {
+                console.error('Error reading custom file:', err);
+                alert('读取表格文件出错: ' + err.message);
+              }
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        });
+
+        customFileInput.value = '';
+      });
+    }
+
+    function parseAndImportExcelRows(rawRows, fileName) {
+      const defaultSys = ROMAN_DB.SYSTEMS[0];
+      const defaultFab = ROMAN_DB.FABRICS[0];
+      const sheerSys = ROMAN_DB.SYSTEMS.find(s => s.category === 'sheer') || defaultSys;
+      const dualSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'lM0022') || defaultSys;
+      const singleSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'LM0002') || defaultSys;
+      const trackSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'LM0024') || defaultSys;
+      const rollerSys = ROMAN_DB.SYSTEMS.find(s => s.category === 'roller') || defaultSys;
+
+      // Smart Header Identification
+      let headerIdx = -1;
+      let colRoom = 0, colW = -1, colH = -1, colQty = -1, colMount = -1, colProd = -1, colRemark = -1;
+
+      for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+        const rowStr = rawRows[i].map(c => String(c).toLowerCase()).join(' ');
+        if (rowStr.includes('width') || rowStr.includes('w') || rowStr.includes('宽') || rowStr.includes('height') || rowStr.includes('h') || rowStr.includes('高')) {
+          headerIdx = i;
+          rawRows[i].forEach((cell, colI) => {
+            const cStr = String(cell).trim().toLowerCase();
+            if (cStr.includes('room') || cStr.includes('位置') || cStr.includes('房间') || cStr.includes('代号') || cStr.includes('tag') || cStr.includes('no')) colRoom = colI;
+            else if (cStr === 'w' || cStr.includes('width') || cStr.includes('宽')) colW = colI;
+            else if (cStr === 'h' || cStr.includes('height') || cStr.includes('高')) colH = colI;
+            else if (cStr.includes('qty') || cStr.includes('数量') || cStr.includes('数') || cStr.includes('pcs')) colQty = colI;
+            else if (cStr.includes('mount') || cStr.includes('安装') || cStr.includes('im') || cStr.includes('om')) colMount = colI;
+            else if (cStr.includes('product') || cStr.includes('类型') || cStr.includes('品名') || cStr.includes('描述') || cStr.includes('shade') || cStr.includes('帘')) colProd = colI;
+            else if (cStr.includes('remark') || cStr.includes('备注') || cStr.includes('工艺') || cStr.includes('control') || cStr.includes('note')) colRemark = colI;
+          });
+          break;
+        }
+      }
+
+      // Fallback column positions if no explicit header row found
+      if (colW === -1) colW = (colRoom === 1 ? 2 : 2);
+      if (colH === -1) colH = colW + 1;
+
+      const dataRows = (headerIdx !== -1) ? rawRows.slice(headerIdx + 1) : rawRows;
+      const parsedItems = [];
+
+      dataRows.forEach((row, idx) => {
+        if (!row || row.length === 0) return;
+
+        const roomVal = String(row[colRoom] || row[0] || `Item #${idx+1}`).trim();
+        const wRaw = String(row[colW] !== undefined ? row[colW] : (row[1] !== undefined ? row[1] : 36));
+        const hRaw = String(row[colH] !== undefined ? row[colH] : (row[2] !== undefined ? row[2] : 60));
+        
+        // Extract numeric width & height (handling 34", 34.5, 34 1/2)
+        const wNum = parseFloat(wRaw.replace(/[^\d.]/g, '')) || 36;
+        const hNum = parseFloat(hRaw.replace(/[^\d.]/g, '')) || 60;
+
+        const qtyNum = parseInt(row[colQty] || 1, 10) || 1;
+        const mountRaw = String(row[colMount] || '').toLowerCase();
+        const mountVal = (mountRaw.includes('om') || mountRaw.includes('outside')) ? 'Outside Mount (框外)' : 'Inside Mount (框内)';
+
+        const prodRaw = String(colProd !== -1 && row[colProd] ? row[colProd] : (row[row.length - 1] || '')).trim();
+        const remarkRaw = String(colRemark !== -1 && row[colRemark] ? row[colRemark] : '').trim();
+
+        const combinedText = (prodRaw + ' ' + remarkRaw).toLowerCase();
+
+        // Check if marked as "不做" or "skip"
+        if (combinedText.includes('不做') || combinedText.includes('不要') || combinedText.includes('skip') || combinedText.includes('cancel')) {
+          return;
+        }
+
+        // Smart System Mapping
+        let matchedSys = defaultSys;
+        if (combinedText.includes('香格里拉') || combinedText.includes('sheer')) {
+          matchedSys = sheerSys;
+        } else if (combinedText.includes('双层') || combinedText.includes('日夜') || combinedText.includes('dual')) {
+          matchedSys = dualSys;
+        } else if (combinedText.includes('单层') || combinedText.includes('罗马') || combinedText.includes('roman')) {
+          matchedSys = singleSys;
+        } else if (combinedText.includes('卷帘') || combinedText.includes('roller')) {
+          matchedSys = rollerSys;
+        } else if (combinedText.includes('布艺') || combinedText.includes('窗帘') || combinedText.includes('drapery') || combinedText.includes('curtain')) {
+          matchedSys = trackSys;
+        }
+
+        const pricing = ROMAN_DB.calculateItemPrice(
+          matchedSys.code, defaultFab.code, wNum, hNum, 'none', 'none', 'none', romanDiscountFactor
+        );
+
+        parsedItems.push({
+          id: Date.now() + idx,
+          room: roomVal,
+          remark: remarkRaw || prodRaw || matchedSys.name_cn,
+          sys: matchedSys,
+          fab: defaultFab,
+          width: wNum,
+          height: hNum,
+          sqm: pricing.sqm,
+          qty: qtyNum,
+          mount: mountVal,
+          control: 'Cordless (无绳手提)',
+          addons: '',
+          msrp_unit: pricing.msrp_price,
+          final_unit: pricing.final_unit_price,
+          amount: Math.round(pricing.final_unit_price * qtyNum * 100) / 100
+        });
+      });
+
+      if (parsedItems.length === 0) {
+        alert('未在上传的 Excel 表格中识别出有效的数据明细！');
+        return;
+      }
+
+      romanQuoteItems = parsedItems;
+      renderQuoteItemsTable();
+
+      alert(`🎉 成功导入文件 [${fileName}]！已自动解析并录入 ${parsedItems.length} 项定制明细。`);
+    }
+
+    // --- Load Customer Order Table Items (将客户表格输入到报价系统) ---
+    function loadCustomerPresetOrder() {
+      const defaultSys = ROMAN_DB.SYSTEMS[0];
+      const defaultFab = ROMAN_DB.FABRICS[0];
+      const dualSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'lM0022') || defaultSys;
+      const singleSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'LM0002') || defaultSys;
+      const sheerSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'LML0012') || defaultSys;
+      const trackSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'LM0024') || defaultSys;
+
+      const rawItems = [
+        { room: 'K-1', w: 34, h: 52, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        // K-2 SD 142x90 不做
+        { room: 'K-3', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'K-4', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'FM-1', w: 22, h: 46, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'FM-2', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'FM-3', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'FM-4', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'BR1-1', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: 'BR1-2', w: 34, h: 58, sys: sheerSys, fab: defaultFab, type: '香格里拉 sheer shade', mount: 'Inside Mount (框内)' },
+        { room: '2MB-1', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2MB-2', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2MB-3', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2MB-4', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2MBB-1', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2MBB-2', w: 34, h: 58, sys: dualSys, fab: defaultFab, type: '罗马帘双层', mount: 'Inside Mount (框内)' },
+        { room: '2BR1', w: 34, h: 58, sys: singleSys, fab: defaultFab, type: '单层罗马帘', mount: 'Inside Mount (框内)' },
+        { room: '2BR2', w: 133, h: 104, sys: trackSys, fab: defaultFab, type: '双层布艺窗帘', mount: 'Inside Mount (框内)', remark: 'MID' },
+        { room: '2LF', w: 118, h: 104, sys: trackSys, fab: defaultFab, type: '双层布艺窗帘', mount: 'Inside Mount (框内)', remark: 'SINGLE' },
+        { room: '2BR3', w: 120, h: 104, sys: trackSys, fab: defaultFab, type: '双层布艺窗帘', mount: 'Inside Mount (框内)', remark: 'SINGLE' }
+      ];
+
+      romanQuoteItems = rawItems.map((item, idx) => {
+        const pricing = ROMAN_DB.calculateItemPrice(
+          item.sys.code, item.fab.code, item.w, item.h, 'none', 'none', 'none', romanDiscountFactor
+        );
+        return {
+          id: Date.now() + idx,
+          room: item.room,
+          remark: item.remark || item.type,
+          sys: item.sys,
+          fab: item.fab,
+          width: item.w,
+          height: item.h,
+          sqm: pricing.sqm,
+          qty: 1,
+          mount: item.mount,
+          control: 'Cordless (无绳手提)',
+          addons: '',
+          msrp_unit: pricing.msrp_price,
+          final_unit: pricing.final_unit_price,
+          amount: Math.round(pricing.final_unit_price * 1 * 100) / 100
+        };
+      });
+
+      renderQuoteItemsTable();
+    }
+
+    const btnImportCust = document.getElementById('btn-import-customer-table');
+    if (btnImportCust) {
+      btnImportCust.addEventListener('click', loadCustomerPresetOrder);
+    }
+
+    const btnSplitHardware = document.getElementById('btn-split-hardware-lines');
+    if (btnSplitHardware) {
+      btnSplitHardware.addEventListener('click', () => {
+        if (romanQuoteItems.length === 0) {
+          alert('当前报价单明细为空，请先添加商品！');
+          return;
+        }
+
+        let newItems = [];
+        let splitCount = 0;
+        const hwDiscount = Math.max(0.16, Math.max(romanHardwareFloorFactor, romanDiscountFactor));
+
+        romanQuoteItems.forEach(item => {
+          if (item.addons && item.addons.trim() !== '') {
+            splitCount++;
+            // 1. Recalculate pure shade item
+            const shadePricing = ROMAN_DB.calculateItemPrice(
+              item.sys.code, item.fab.code, item.width, item.height, 'none', 'none', 'none',
+              item.discount_factor !== undefined ? item.discount_factor : romanDiscountFactor,
+              romanHardwareFloorFactor
+            );
+
+            newItems.push({
+              ...item,
+              remark: item.remark ? `${item.remark.replace(/【硬件.*】/, '')} (仅帘体)` : '(仅帘体)',
+              addons: '',
+              msrp_unit: shadePricing.shade_msrp || shadePricing.msrp_price,
+              final_unit: shadePricing.final_unit_price,
+              amount: Math.round(shadePricing.final_unit_price * item.qty * 100) / 100
+            });
+
+            // 2. Itemize Motor, Remote, Smart Hub if found in text
+            const addonLower = item.addons.toLowerCase();
+            if (addonLower.includes('电机') || addonLower.includes('motor')) {
+              const motorMsrp = 167.00;
+              const motorFinal = Math.round(motorMsrp * hwDiscount * 100) / 100;
+              newItems.push({
+                id: Date.now() + Math.random(),
+                room: item.room,
+                remark: `电机 (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_MOTOR', sys_type: '配件 Hardware', name_cn: '167-单电动智能电机', image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'MOTOR', series_cn: '智能电机', color_cn: '智能驱动电机' },
+                width: item.width,
+                height: item.height,
+                sqm: 0,
+                qty: item.qty,
+                mount: item.mount,
+                control: 'Motor (电动驱动)',
+                sys_type_custom: '配件 Motor',
+                prod_text_custom: '167-单电动智能电机',
+                discount_factor: hwDiscount,
+                msrp_unit: motorMsrp,
+                final_unit: motorFinal,
+                amount: Math.round(motorFinal * item.qty * 100) / 100
+              });
+            }
+
+            if (addonLower.includes('遥控') || addonLower.includes('remote')) {
+              const remoteMsrp = 33.00;
+              const remoteFinal = Math.round(remoteMsrp * hwDiscount * 100) / 100;
+              newItems.push({
+                id: Date.now() + Math.random(),
+                room: item.room,
+                remark: `遥控器 (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_REMOTE', sys_type: '配件 Hardware', name_cn: '33-15通道多频道遥控器', image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'REMOTE', series_cn: '遥控器', color_cn: '多频道遥控器' },
+                width: item.width,
+                height: item.height,
+                sqm: 0,
+                qty: 1,
+                mount: item.mount,
+                control: 'Remote Control',
+                sys_type_custom: '配件 Remote',
+                prod_text_custom: '33-15通道多频道遥控器',
+                discount_factor: hwDiscount,
+                msrp_unit: remoteMsrp,
+                final_unit: remoteFinal,
+                amount: Math.round(remoteFinal * 100) / 100
+              });
+            }
+
+            if (addonLower.includes('网关') || addonLower.includes('smart') || addonLower.includes('智能')) {
+              const smartMsrp = 35.00;
+              const smartFinal = Math.round(smartMsrp * hwDiscount * 100) / 100;
+              newItems.push({
+                id: Date.now() + Math.random(),
+                room: item.room,
+                remark: `智能网关 (保底${Math.round(hwDiscount * 100)}%)`,
+                sys: { code: 'HW_SMART', sys_type: '配件 Hardware', name_cn: '35-WiFi智能控制网关', image_url: 'system_images/sys_0116_LM0002.png' },
+                fab: { code: 'SMART', series_cn: '智能网关', color_cn: 'WiFi智能网关' },
+                width: item.width,
+                height: item.height,
+                sqm: 0,
+                qty: 1,
+                mount: item.mount,
+                control: 'Smart Hub',
+                sys_type_custom: '配件 Smart',
+                prod_text_custom: '35-WiFi智能控制网关',
+                discount_factor: hwDiscount,
+                msrp_unit: smartMsrp,
+                final_unit: smartFinal,
+                amount: Math.round(smartFinal * 100) / 100
+              });
+            }
+          } else {
+            newItems.push(item);
+          }
+        });
+
+        if (splitCount > 0) {
+          romanQuoteItems = newItems;
+          renderQuoteItemsTable();
+          alert(`⚡ 已成功将 ${splitCount} 组商品的电机与配件拆分为独立报价明细行并重新生成 Invoice！`);
+        } else {
+          alert('当前报价单中的电机与配件已是独立明细行，或未选配电机！');
+        }
+      });
+    }
+
+    const shippingInputEl = document.getElementById('sheet-shipping-fee-input');
+    if (shippingInputEl) {
+      shippingInputEl.addEventListener('input', () => { renderQuoteItemsTable(); });
+      shippingInputEl.addEventListener('change', () => { renderQuoteItemsTable(); });
+    }
+
+    // Two-Way Reverse Sync from Proforma Invoice Paper contenteditable elements
+    function initInvoicePaperDirectEditing() {
+      const sheet = document.getElementById('william-quote-paper');
+      if (!sheet) return;
+
+      sheet.addEventListener('input', (e) => {
+        const target = e.target;
+        if (!target || !target.id) return;
+
+        if (target.id === 'sheet-client-name' && elCustName) elCustName.value = target.textContent.trim();
+        if (target.id === 'sheet-project-type' && elProjType) elProjType.value = target.textContent.trim();
+        if (target.id === 'sheet-client-phone' && elCustPhone) elCustPhone.value = target.textContent.trim();
+        if (target.id === 'sheet-client-email' && elCustEmail) elCustEmail.value = target.textContent.trim();
+        if (target.id === 'sheet-client-address' && elCustAddress) elCustAddress.value = target.textContent.trim();
+        if (target.id === 'sheet-meta-date' && elQuoteDate) elQuoteDate.value = target.textContent.trim();
+        if (target.id === 'sheet-meta-no' && elQuoteNo) elQuoteNo.value = target.textContent.trim();
+        if (target.id === 'sheet-special-notes' && elSpecialNotes) elSpecialNotes.value = target.textContent.trim();
+      });
+    }
+
+    // ==========================================================================
+    // Customer Information Persistence & Hardware Minimum 16% Floor Engine
+    // ==========================================================================
+    const LOCAL_SAVED_PROFILES_KEY = 'braun_saved_customer_profiles_v1';
+    const LOCAL_ACTIVE_CUSTOMER_KEY = 'braun_active_customer_meta_v1';
+
+    function initCustomerProfileEngine() {
+      const selectSaved = document.getElementById('saved-customer-select');
+      const btnSave = document.getElementById('btn-save-cust-profile');
+      const btnLoad = document.getElementById('btn-load-saved-cust');
+      const btnDelete = document.getElementById('btn-delete-saved-cust');
+
+      renderSavedCustomerDropdown();
+      initCustomerAttachmentEngine();
+      autoRestoreActiveCustomerMeta();
+
+      const custInputs = [
+        elCustName, elProjType, elCustAddress, elCustPhone, elCustEmail,
+        elQuoteDate, elQuoteNo, elSpecialNotes
+      ];
+      custInputs.forEach(input => {
+        if (input) {
+          input.addEventListener('input', autoSaveActiveCustomerMeta);
+          input.addEventListener('change', autoSaveActiveCustomerMeta);
+        }
+      });
+
+      if (btnSave) {
+        btnSave.addEventListener('click', saveCustomerProfile);
+      }
+
+      if (btnLoad && selectSaved) {
+        btnLoad.addEventListener('click', () => {
+          const selectedId = selectSaved.value;
+          if (!selectedId) {
+            alert('请先在下拉菜单中选择要加载的客户档案！');
+            return;
+          }
+          loadCustomerProfile(selectedId);
+        });
+      }
+
+      if (btnDelete && selectSaved) {
+        btnDelete.addEventListener('click', () => {
+          const selectedId = selectSaved.value;
+          if (!selectedId) {
+            alert('请先选择要删除的客户档案！');
+            return;
+          }
+          deleteCustomerProfile(selectedId);
+        });
+      }
+
+      initHardwareFloorEngine();
+    }
+
+    // Customer File & Multi-Media Attachment Management Engine
+    let currentCustomerAttachments = [];
+
+    function initCustomerAttachmentEngine() {
+      const input = document.getElementById('cust-attachment-input');
+      const btnUpload = document.getElementById('btn-upload-cust-attachment');
+
+      if (!input || !btnUpload) return;
+
+      btnUpload.addEventListener('click', () => {
+        input.click();
+      });
+
+      input.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        let processed = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            let fileKind = 'image';
+            const nameLower = file.name.toLowerCase();
+            if (nameLower.endsWith('.pdf')) {
+              fileKind = 'pdf';
+            } else if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv')) {
+              fileKind = 'excel';
+            }
+
+            const att = {
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              name: file.name,
+              type: fileKind,
+              size: formatFileSize(file.size),
+              dataUrl: evt.target.result
+            };
+
+            currentCustomerAttachments.push(att);
+            processed++;
+            if (processed === files.length) {
+              renderCustomerAttachments();
+              autoSaveActiveCustomerMeta();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+        input.value = '';
+      });
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderCustomerAttachments() {
+      const gallery = document.getElementById('cust-attachment-gallery');
+      const badge = document.getElementById('cust-attachment-count-badge');
+      if (!gallery) return;
+
+      if (badge) {
+        badge.textContent = `${currentCustomerAttachments.length} 个附件`;
+      }
+
+      if (currentCustomerAttachments.length === 0) {
+        gallery.innerHTML = `
+          <div class="empty-attachment-tip" style="grid-column: 1 / -1; text-align: center; color: #94a3b8; font-size: 0.78rem; padding: 0.8rem 0;">
+            📷 暂无关联文件附件。点击右上方按钮可选择上传实拍照片(.jpg/.png)、PDF合同图纸(.pdf) 或 测量Excel表格(.xlsx/.csv)。
+          </div>
+        `;
+        return;
+      }
+
+      gallery.innerHTML = currentCustomerAttachments.map(att => {
+        if (att.type === 'image') {
+          return `
+            <div class="attachment-item-card" data-id="${att.id}" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.4rem; position: relative; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button type="button" class="btn-delete-att" data-id="${att.id}" title="删除文件" style="position: absolute; top: 2px; right: 2px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <img src="${att.dataUrl}" class="lightbox-trigger" alt="${att.name}" style="width: 100%; height: 75px; object-fit: cover; border-radius: 4px; cursor: pointer;">
+              <div style="font-size: 0.7rem; font-weight: 700; color: #334155; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+              <div style="font-size: 0.65rem; color: #64748b;">${att.size}</div>
+            </div>
+          `;
+        } else if (att.type === 'pdf') {
+          return `
+            <div class="attachment-item-card" data-id="${att.id}" style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 0.5rem; position: relative; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button type="button" class="btn-delete-att" data-id="${att.id}" title="删除文件" style="position: absolute; top: 2px; right: 2px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <div style="font-size: 1.8rem; line-height: 1;">📄</div>
+              <div style="font-size: 0.72rem; font-weight: 700; color: #9f1239; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+              <div style="font-size: 0.65rem; color: #be123c;">${att.size} • PDF</div>
+              <a href="${att.dataUrl}" target="_blank" download="${att.name}" style="display: inline-block; margin-top: 4px; font-size: 0.68rem; background: #e11d48; color: #fff; padding: 2px 6px; border-radius: 3px; text-decoration: none; font-weight: 700;">👁️ 查看PDF</a>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="attachment-item-card" data-id="${att.id}" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 0.5rem; position: relative; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button type="button" class="btn-delete-att" data-id="${att.id}" title="删除文件" style="position: absolute; top: 2px; right: 2px; background: rgba(220, 38, 38, 0.85); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+              <div style="font-size: 1.8rem; line-height: 1;">📊</div>
+              <div style="font-size: 0.72rem; font-weight: 700; color: #166534; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${att.name}">${att.name}</div>
+              <div style="font-size: 0.65rem; color: #15803d;">${att.size} • Excel</div>
+              <a href="${att.dataUrl}" download="${att.name}" style="display: inline-block; margin-top: 4px; font-size: 0.68rem; background: #16a34a; color: #fff; padding: 2px 6px; border-radius: 3px; text-decoration: none; font-weight: 700;">📥 下载表格</a>
+            </div>
+          `;
+        }
+      }).join('');
+
+      gallery.querySelectorAll('.btn-delete-att').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const attId = btn.getAttribute('data-id');
+          currentCustomerAttachments = currentCustomerAttachments.filter(a => a.id !== attId);
+          renderCustomerAttachments();
+          autoSaveActiveCustomerMeta();
+        });
+      });
+    }
+
+    function initHardwareFloorEngine() {
+      const hwInput = document.getElementById('custom-hardware-floor-input');
+      const hwBadge = document.getElementById('hardware-floor-badge');
+      const hwBtns = document.querySelectorAll('#hardware-floor-presets .hw-floor-btn');
+
+      if (hwInput) {
+        hwInput.addEventListener('input', (e) => {
+          let val = parseFloat(e.target.value);
+          if (isNaN(val)) val = 16;
+          if (val < 16) val = 16; // Minimum 16% Floor Rule Enforced!
+          if (val > 100) val = 100;
+
+          romanHardwareFloorFactor = val / 100;
+          if (hwBadge) {
+            hwBadge.textContent = `保底 ${val}% (${(val/10).toFixed(1)}折 / ${romanHardwareFloorFactor.toFixed(2)})`;
+          }
+
+          hwBtns.forEach(b => {
+            b.classList.remove('active');
+            if (parseFloat(b.getAttribute('data-floor')) === romanHardwareFloorFactor) {
+              b.classList.add('active');
+            }
+          });
+
+          calculateLiveItemPrice();
+          recalculateQuoteItems();
+        });
+
+        hwInput.addEventListener('blur', (e) => {
+          let val = parseFloat(e.target.value);
+          if (isNaN(val) || val < 16) {
+            e.target.value = 16;
+            romanHardwareFloorFactor = 0.16;
+            if (hwBadge) hwBadge.textContent = '保底 16% (1.6折 / 0.16)';
+            calculateLiveItemPrice();
+            recalculateQuoteItems();
+          }
+        });
+      }
+
+      hwBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          hwBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const floorFactor = parseFloat(btn.getAttribute('data-floor')) || 0.16;
+          romanHardwareFloorFactor = Math.max(0.16, floorFactor);
+
+          if (hwInput) {
+            hwInput.value = Math.round(romanHardwareFloorFactor * 100);
+          }
+          if (hwBadge) {
+            hwBadge.textContent = `保底 ${Math.round(romanHardwareFloorFactor * 100)}% (${(romanHardwareFloorFactor * 10).toFixed(1)}折 / ${romanHardwareFloorFactor.toFixed(2)})`;
+          }
+
+          calculateLiveItemPrice();
+          recalculateQuoteItems();
+        });
+      });
+    }
+
+    function autoSaveActiveCustomerMeta() {
+      const data = {
+        name: elCustName ? elCustName.value : '',
+        proj: elProjType ? elProjType.value : '',
+        address: elCustAddress ? elCustAddress.value : '',
+        phone: elCustPhone ? elCustPhone.value : '',
+        email: elCustEmail ? elCustEmail.value : '',
+        date: elQuoteDate ? elQuoteDate.value : '',
+        no: elQuoteNo ? elQuoteNo.value : '',
+        notes: elSpecialNotes ? elSpecialNotes.value : '',
+        attachments: currentCustomerAttachments
+      };
+      try {
+        localStorage.setItem(LOCAL_ACTIVE_CUSTOMER_KEY, JSON.stringify(data));
+      } catch (err) {
+        console.error('Failed to auto-save active customer meta:', err);
+      }
+    }
+
+    function autoRestoreActiveCustomerMeta() {
+      try {
+        const raw = localStorage.getItem(LOCAL_ACTIVE_CUSTOMER_KEY);
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data.name && elCustName) elCustName.value = data.name;
+          if (data.proj && elProjType) elProjType.value = data.proj;
+          if (data.address && elCustAddress) elCustAddress.value = data.address;
+          if (data.phone && elCustPhone) elCustPhone.value = data.phone;
+          if (data.email && elCustEmail) elCustEmail.value = data.email;
+          if (data.date && elQuoteDate) elQuoteDate.value = data.date;
+          if (data.no && elQuoteNo) elQuoteNo.value = data.no;
+          if (data.notes && elSpecialNotes) elSpecialNotes.value = data.notes;
+          currentCustomerAttachments = data.attachments || [];
+          renderCustomerAttachments();
+          syncCustomerMeta();
+        }
+      } catch (err) {
+        console.error('Failed to auto-restore active customer meta:', err);
+      }
+    }
+
+    function saveCustomerProfile() {
+      const name = elCustName ? elCustName.value.trim() : '';
+      if (!name) {
+        alert('请输入客户姓名后再点击保存档案！');
+        return;
+      }
+
+      const profiles = getSavedCustomerProfiles();
+      const existingIdx = profiles.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+
+      const profile = {
+        id: existingIdx >= 0 ? profiles[existingIdx].id : 'cust_' + Date.now(),
+        name: name,
+        proj: elProjType ? elProjType.value.trim() : '',
+        address: elCustAddress ? elCustAddress.value.trim() : '',
+        phone: elCustPhone ? elCustPhone.value.trim() : '',
+        email: elCustEmail ? elCustEmail.value.trim() : '',
+        notes: elSpecialNotes ? elSpecialNotes.value.trim() : '',
+        attachments: currentCustomerAttachments,
+        savedAt: new Date().toLocaleDateString()
+      };
+
+      if (existingIdx >= 0) {
+        profiles[existingIdx] = profile;
+      } else {
+        profiles.push(profile);
+      }
+
+      try {
+        localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(profiles));
+        renderSavedCustomerDropdown();
+        const selectSaved = document.getElementById('saved-customer-select');
+        if (selectSaved) selectSaved.value = profile.id;
+        alert(`✅ 已成功保存客户【${name}】的档案及 ${currentCustomerAttachments.length} 个附件(图片/PDF/Excel)！`);
+      } catch (err) {
+        alert('保存出错: ' + err.message);
+      }
+    }
+
+    function loadCustomerProfile(profileId) {
+      const profiles = getSavedCustomerProfiles();
+      const target = profiles.find(p => p.id === profileId);
+      if (!target) return;
+
+      if (elCustName) elCustName.value = target.name || '';
+      if (elProjType) elProjType.value = target.proj || '';
+      if (elCustAddress) elCustAddress.value = target.address || '';
+      if (elCustPhone) elCustPhone.value = target.phone || '';
+      if (elCustEmail) elCustEmail.value = target.email || '';
+      if (elSpecialNotes) elSpecialNotes.value = target.notes || '';
+
+      currentCustomerAttachments = target.attachments || [];
+      renderCustomerAttachments();
+
+      syncCustomerMeta();
+      autoSaveActiveCustomerMeta();
+      alert(`⚡ 已成功加载客户【${target.name}】的完整档案及 ${currentCustomerAttachments.length} 个附件！`);
+    }
+
+    function deleteCustomerProfile(profileId) {
+      let profiles = getSavedCustomerProfiles();
+      const target = profiles.find(p => p.id === profileId);
+      if (!target) return;
+
+      if (confirm(`确定要删除客户【${target.name}】的保存档案吗？`)) {
+        profiles = profiles.filter(p => p.id !== profileId);
+        localStorage.setItem(LOCAL_SAVED_PROFILES_KEY, JSON.stringify(profiles));
+        renderSavedCustomerDropdown();
+        alert(`🗑️ 已成功删除客户【${target.name}】的档案！`);
+      }
+    }
+
+    function getSavedCustomerProfiles() {
+      try {
+        const raw = localStorage.getItem(LOCAL_SAVED_PROFILES_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function renderSavedCustomerDropdown() {
+      const select = document.getElementById('saved-customer-select');
+      if (!select) return;
+
+      const profiles = getSavedCustomerProfiles();
+      select.innerHTML = '<option value="">-- 选择已保存客户档案 --</option>' +
+        profiles.map(p => `<option value="${p.id}">${p.name} (${p.phone || p.savedAt})</option>`).join('');
+    }
+
     // Initial Engine Bootstrap
     bindCategoryTabs();
     initAddonSelects();
@@ -1117,10 +2924,18 @@ Estimated price: ${outPriceVal.textContent}`;
     bindDiscountButtons();
     bindTaxButtons();
     bindAllOptionInputListeners();
+    initDateManager();
+    initSignaturePad();
+    initDesignProposalSystem();
+    initCustomFileImporter();
+    initInvoicePaperDirectEditing();
+    initCustomerProfileEngine();
     validateDimensions();
     calculateLiveItemPrice();
     syncCustomerMeta();
-    renderQuoteItemsTable();
+    loadCustomerPresetOrder();
+    checkHashRoute();
+    window.addEventListener('hashchange', checkHashRoute);
   }
 });
 
