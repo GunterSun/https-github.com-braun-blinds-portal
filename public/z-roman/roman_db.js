@@ -11,6 +11,7 @@ const ROMAN_DB = {
 
   PRODUCT_CATEGORIES: [
     { id: 'roman', name_cn: 'Z系列罗马帘', name_en: 'Z Series Roman Shades', icon: '🏮' },
+    { id: 'dual', name_cn: '双层日夜帘系列', name_en: 'Dual-Layer Day & Night Shades', icon: '🌗' },
     { id: 'bamboo', name_cn: '竹帘系列', name_en: 'Bamboo / Woven Wood', icon: '🎋' },
     { id: 'roller', name_cn: '精做卷帘', name_en: 'Roller Shades', icon: '📜' },
     { id: 'zebra', name_cn: '斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
@@ -324,6 +325,54 @@ const ROMAN_DB = {
     "min_h": 20,
     "max_h": 96,
     "min_depth": 2.0
+  },
+  {
+    "code": "JL0024-DUAL",
+    "category": "dual",
+    "image_url": "system_images/sys_0116_JL0024.jpeg",
+    "name_cn": "精做双层卷帘 (日夜帘)",
+    "name_en": "Dual Layer Roller Shade (Day & Night)",
+    "sys_type": "精做卷帘 Roller",
+    "series": "双层日夜系列",
+    "style": "双层卷管式",
+    "craft": "精做大方包布",
+    "min_w": 12,
+    "max_w": 118,
+    "min_h": 20,
+    "max_h": 138,
+    "min_depth": 2.5
+  },
+  {
+    "code": "BM0010-DUAL",
+    "category": "dual",
+    "image_url": "system_images/sys_0116_BM0010.png",
+    "name_cn": "魔方双层斑马帘 (日夜帘)",
+    "name_en": "Dual Layer Zebra Shade (Day & Night)",
+    "sys_type": "斑马帘 Zebra",
+    "series": "双层日夜系列",
+    "style": "双层包布魔方款",
+    "craft": "精做大弧型包布",
+    "min_w": 12,
+    "max_w": 118,
+    "min_h": 20,
+    "max_h": 138,
+    "min_depth": 2.5
+  },
+  {
+    "code": "BZL01-DUAL",
+    "category": "dual",
+    "image_url": "system_images/z_image1.jpeg",
+    "name_cn": "魔方双层竹帘 (日夜帘)",
+    "name_en": "Dual Layer Woven Wood Shade (Day & Night)",
+    "sys_type": "竹帘 Woven Wood",
+    "series": "双层日夜系列",
+    "style": "双层无绳魔方款",
+    "craft": "精做大方包布/复衬",
+    "min_w": 12,
+    "max_w": 98,
+    "min_h": 20,
+    "max_h": 118,
+    "min_depth": 2.5
   },
   {
     "code": "LM0024",

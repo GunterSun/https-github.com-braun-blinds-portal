@@ -284,8 +284,8 @@ Estimated price: ${outPriceVal.textContent}`;
           romanSelectedCategory = btn.getAttribute('data-cat');
 
           // Reset default system & fabric selection for category
-          const availSystems = ROMAN_DB.SYSTEMS.filter(s => s.category === romanSelectedCategory || (romanSelectedCategory === 'bamboo' && (s.category === 'bamboo' || s.category === 'roman')) || (!s.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
-          const availFabrics = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
+          const availSystems = ROMAN_DB.SYSTEMS.filter(s => s.category === romanSelectedCategory || (romanSelectedCategory === 'dual' && (s.category === 'dual' || s.code === 'LML0005' || s.code === 'LML0012' || s.code === 'lM0022')) || (romanSelectedCategory === 'bamboo' && (s.category === 'bamboo' || s.category === 'roman')) || (!s.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
+          const availFabrics = ROMAN_DB.FABRICS.filter(f => romanSelectedCategory === 'dual' || (f.category || f.cat || 'roman') === romanSelectedCategory);
 
           if (availSystems.length > 0) romanSelectedSysCode = availSystems[0].code;
           if (availFabrics.length > 0) romanSelectedFabCode = availFabrics[0].code;
@@ -382,7 +382,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const sysSelect = document.getElementById('roman-sys-select');
       if (!grid) return;
 
-      const categorySystems = ROMAN_DB.SYSTEMS.filter(sys => sys.category === romanSelectedCategory || (romanSelectedCategory === 'bamboo' && (sys.category === 'bamboo' || sys.category === 'roman')) || (!sys.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
+      const categorySystems = ROMAN_DB.SYSTEMS.filter(sys => sys.category === romanSelectedCategory || (romanSelectedCategory === 'dual' && (sys.category === 'dual' || sys.code === 'LML0005' || sys.code === 'LML0012' || sys.code === 'lM0022')) || (romanSelectedCategory === 'bamboo' && (sys.category === 'bamboo' || sys.category === 'roman')) || (!sys.category && (romanSelectedCategory === 'roman' || romanSelectedCategory === 'bamboo')));
 
       if (categorySystems.length > 0) {
         const found = categorySystems.find(s => s.code === romanSelectedSysCode);
@@ -436,7 +436,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const tabsBox = document.getElementById('fabric-filter-tabs');
       if (!tabsBox) return;
 
-      const categoryFabrics = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
+      const categoryFabrics = ROMAN_DB.FABRICS.filter(f => romanSelectedCategory === 'dual' || (f.category || f.cat || 'roman') === romanSelectedCategory);
       const seriesSet = new Set(categoryFabrics.map(f => f.series_cn));
       const categories = ['ALL', ...Array.from(seriesSet)];
 
@@ -461,7 +461,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const fabSelect = document.getElementById('roman-fab-select');
       if (!grid) return;
 
-      let list = ROMAN_DB.FABRICS.filter(f => (f.category || f.cat || 'roman') === romanSelectedCategory);
+      let list = ROMAN_DB.FABRICS.filter(f => romanSelectedCategory === 'dual' || (f.category || f.cat || 'roman') === romanSelectedCategory);
 
       if (list.length > 0) {
         const found = list.find(f => f.code === romanSelectedFabCode);
