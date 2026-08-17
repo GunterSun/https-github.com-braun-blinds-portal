@@ -1027,6 +1027,7 @@ Estimated price: ${outPriceVal.textContent}`;
             <td style="white-space: nowrap;">
               <input type="number" class="table-inline-input inline-w" data-idx="${index}" value="${item.width}" step="0.125" style="width: 46px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">" ×
               <input type="number" class="table-inline-input inline-h" data-idx="${index}" value="${item.height}" step="0.125" style="width: 46px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">"
+              <div style="font-size: 0.65rem; color: #64748b; margin-top: 2px; font-weight: 500;">⚖️ ${Math.max(1.5, Math.round(((item.width * item.height) / 1550) * 2.5 * 10) / 10)} kg (${(Math.max(1.5, Math.round(((item.width * item.height) / 1550) * 2.5 * 10) / 10) * 2.20462).toFixed(1)} lbs)</div>
             </td>
             <td style="font-size: 0.78rem;">
               <select class="table-inline-select inline-control" data-idx="${index}" style="font-size: 0.72rem; border: 1px dashed #2563eb; border-radius: 4px; padding: 2px 2px; color: #1e40af; font-weight: 700; width: 100%;">
@@ -1280,13 +1281,32 @@ Estimated price: ${outPriceVal.textContent}`;
           pkgBadge.textContent = `📦 共 ${pkgInfo.total_boxes} 箱 / 总计费重 ${pkgInfo.total_billed_weight_kg} kg (材积重 ${pkgInfo.total_vol_weight_kg} kg, 实重 ${pkgInfo.total_act_weight_kg} kg) / 预估国际运费 $${pkgInfo.est_freight_usd.toFixed(2)}`;
 
           pkgDetails.innerHTML = `
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 4px;">
-              ${pkgInfo.boxes.map(b => `
-                <div style="background: #ffffff; border: 1px solid #93c5fd; border-radius: 4px; padding: 4px 8px; font-size: 0.7rem;">
-                  <strong>包裹 #${b.box_no}</strong> (${b.item_count} 件): 规格 ${b.length_cm} × ${b.width_cm} × ${b.height_cm} cm | 材积重: <strong>${b.vol_weight_kg} kg</strong> (实重: ${b.act_weight_kg} kg)
-                </div>
-              `).join('')}
-            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.7rem; text-align: center; background: #ffffff; border: 1px solid #bfdbfe; border-radius: 4px; overflow: hidden;">
+              <thead>
+                <tr style="background: #dbeafe; color: #1e3a8a; font-weight: 700;">
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">包裹编号 (Box #)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">装箱件数 (Qty)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">外箱尺寸 (长×宽×高 cm)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">外箱尺寸 (L×W×H inch)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">材积重量 (Vol. Wt)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">预估实重 (Act. Wt)</th>
+                  <th style="padding: 4px; border: 1px solid #bfdbfe;">计费重量 (Billed Wt)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pkgInfo.boxes.map(b => `
+                  <tr>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe; font-weight: 700;">包裹 Box #${b.box_no}</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe;">${b.item_count} 件</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe; font-weight: 700; color: #1d4ed8;">${b.length_cm} × ${b.width_cm} × ${b.height_cm} cm</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe; color: #475569;">${(b.length_cm / 2.54).toFixed(1)}" × ${(b.width_cm / 2.54).toFixed(1)}" × ${(b.height_cm / 2.54).toFixed(1)}"</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe;">${b.vol_weight_kg} kg</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe;">${b.act_weight_kg} kg (${(b.act_weight_kg * 2.20462).toFixed(1)} lbs)</td>
+                    <td style="padding: 4px; border: 1px solid #bfdbfe; font-weight: 700; color: #b91c1c;">${b.billed_weight_kg} kg (${(b.billed_weight_kg * 2.20462).toFixed(1)} lbs)</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           `;
         }
       }

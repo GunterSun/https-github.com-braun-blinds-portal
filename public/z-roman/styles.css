@@ -2804,11 +2804,43 @@ footer {
 }
 
 .scheme-swatch-desc {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #475569;
   margin-top: 4px;
   text-align: center;
+}
+
+/* Proforma Invoice Clean Plain Text Inputs (No Dashed/Dotted Outlines) */
+.proforma-invoice-paper .table-inline-input,
+.proforma-invoice-paper .table-inline-select,
+.proforma-invoice-paper input,
+.proforma-invoice-paper select {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 1px 2px !important;
+  color: inherit !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.proforma-invoice-paper .table-inline-input:hover,
+.proforma-invoice-paper .table-inline-select:hover,
+.proforma-invoice-paper .table-inline-input:focus,
+.proforma-invoice-paper .table-inline-select:focus {
+  background: rgba(37, 99, 235, 0.05) !important;
+  border-radius: 3px !important;
+}
+
+.proforma-invoice-paper input[type=number]::-webkit-inner-spin-button,
+.proforma-invoice-paper input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.proforma-invoice-paper input[type=number] {
+  -moz-appearance: textfield;
 }
 
 /* Proposal Template Theme Variations */
