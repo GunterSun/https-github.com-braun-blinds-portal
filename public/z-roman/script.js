@@ -3981,10 +3981,17 @@ Estimated price: ${outPriceVal.textContent}`;
 
       if (btnOpen) {
         btnOpen.addEventListener('click', openAdminCostModal);
+        btnOpen.addEventListener('touchstart', (e) => { e.preventDefault(); openAdminCostModal(); });
       }
 
-      if (btnClose) btnClose.addEventListener('click', closeAdminCostModal);
-      if (btnBottomClose) btnBottomClose.addEventListener('click', closeAdminCostModal);
+      if (btnClose) {
+        btnClose.addEventListener('click', closeAdminCostModal);
+        btnClose.addEventListener('touchstart', (e) => { e.preventDefault(); closeAdminCostModal(); });
+      }
+      if (btnBottomClose) {
+        btnBottomClose.addEventListener('click', closeAdminCostModal);
+        btnBottomClose.addEventListener('touchstart', (e) => { e.preventDefault(); closeAdminCostModal(); });
+      }
 
       if (freightSelect) {
         freightSelect.addEventListener('change', () => {
