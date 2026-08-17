@@ -13,11 +13,13 @@ const ROMAN_DB = {
     { id: 'roman', name_cn: 'Z系列罗马帘', name_en: 'Z Series Roman Shades', icon: '🏮' },
     { id: 'roller', name_cn: '精做卷帘', name_en: 'Roller Shades', icon: '📜' },
     { id: 'zebra', name_cn: '双层斑马帘', name_en: 'Zebra Blinds', icon: '🦓' },
-    { id: 'sheer', name_cn: '香格里拉柔纱帘', name_en: 'Shangri-La Sheer Shades', icon: '🪟' }
+    { id: 'sheer', name_cn: '香格里拉柔纱帘', name_en: 'Shangri-La Sheer Shades', icon: '🪟' },
+    { id: 'butterfly', name_cn: '蝴蝶帘', name_en: 'Butterfly Sheer Shades', icon: '🦋' }
   ],
 
   MOTOR_OPTIONS: [
     { id: 'none', name_cn: '无 (手动系统)', name_en: 'None (Manual System)', price_usd: 0, rmb_price: 0 },
+    { id: 'aok_motor_222', name_cn: '奥科静音电动电机 (+¥222)', name_en: 'A-OK Smart Motor (+¥222)', price_usd: 34, rmb_price: 222, desc_cn: '适用蝴蝶帘/卷帘/香格里拉', desc_en: 'For Butterfly & Sheer' },
     { id: 'single_motor', name_cn: 'Single Motor (单电机)', name_en: 'Single Smart Motor', price_usd: 167, rmb_price: 167, desc_cn: 'Cellular/Venetian/Roman 适用', desc_en: 'Cellular / Venetian / Roman' },
     { id: 'dual_motor', name_cn: 'Dual Motor (双电机)', name_en: 'Dual Smart Motors', price_usd: 233, rmb_price: 233, desc_cn: 'TDBU/Double Layer 双层/上下合', desc_en: 'For TDBU / Double Layer' },
     { id: 'tubular_20_04n', name_cn: 'Tubular 20 Motor 0.4N (静音电机)', name_en: 'Tubular 20 Motor (0.4N)', price_usd: 144, rmb_price: 144, desc_cn: 'Fits 28mm tube, max 2m x 2m', desc_en: 'Fits 28mm tube' },
@@ -30,12 +32,13 @@ const ROMAN_DB = {
 
   REMOTE_OPTIONS: [
     { id: 'none', name_cn: '无', name_en: 'None', price_usd: 0, rmb_price: 0 },
-    { id: 'remote_1ch', name_cn: 'Standard 单通道遥控器 (1-Ch)', name_en: 'Standard 1-Channel Remote', price_usd: 33, rmb_price: 33 },
-    { id: 'remote_15ch', name_cn: 'Standard 15通道多功能遥控器 (15-Ch)', name_en: 'Standard 15-Channel Remote', price_usd: 44, rmb_price: 44 },
-    { id: 'remote_dual_1ch', name_cn: '双电机专用 单通道遥控器', name_en: 'Dedicated 1-Ch for Dual Motor', price_usd: 33, rmb_price: 33 },
-    { id: 'remote_dual_15ch', name_cn: '双电机专用 15通道遥控器', name_en: 'Dedicated 15-Ch for Dual Motor', price_usd: 44, rmb_price: 44 },
-    { id: 'remote_re301', name_cn: 'RE301 单通道遥控器', name_en: 'RE301 1-Channel Remote', price_usd: 44, rmb_price: 44 },
-    { id: 'remote_re315', name_cn: 'RE315 15通道遥控器', name_en: 'RE315 15-Channel Remote', price_usd: 56, rmb_price: 56 }
+    { id: 'remote_1ch', name_cn: 'Standard 单通道遥控器 (1-Ch)', name_en: 'Standard 1-Channel Remote', price_usd: 5, rmb_price: 33 },
+    { id: 'remote_15ch', name_cn: 'Standard 15通道多功能遥控器 (15-Ch)', name_en: 'Standard 15-Channel Remote', price_usd: 7, rmb_price: 44 },
+    { id: 'remote_precision_6ch', name_cn: '精准调光 6通道遥控器 (Precision 6-Ch)', name_en: 'Precision Dimming 6-Ch Remote', price_usd: 12, rmb_price: 80 },
+    { id: 'remote_dual_1ch', name_cn: '双电机专用 单通道遥控器', name_en: 'Dedicated 1-Ch for Dual Motor', price_usd: 5, rmb_price: 33 },
+    { id: 'remote_dual_15ch', name_cn: '双电机专用 15通道遥控器', name_en: 'Dedicated 15-Ch for Dual Motor', price_usd: 7, rmb_price: 44 },
+    { id: 'remote_re301', name_cn: 'RE301 单通道遥控器', name_en: 'RE301 1-Channel Remote', price_usd: 7, rmb_price: 44 },
+    { id: 'remote_re315', name_cn: 'RE315 15通道遥控器', name_en: 'RE315 15-Channel Remote', price_usd: 9, rmb_price: 56 }
   ],
 
   SMART_ACC_OPTIONS: [
@@ -1069,7 +1072,70 @@ const ROMAN_DB = {
     "max_w": 98,
     "min_h": 20,
     "max_h": 96,
-    "min_depth": 2.0
+  },
+  {
+    "code": "BS0001",
+    "category": "butterfly",
+    "image_url": "system_images/sys_0116_BM0027.jpeg",
+    "name_cn": "大方贝38包边系统 (Butterfly Square Cassette)",
+    "name_en": "Square Cassette Butterfly Sheer System",
+    "sys_type": "蝴蝶帘 Butterfly",
+    "series": "蝴蝶帘系列",
+    "style": "大方贝38 包边",
+    "craft": "精做包边",
+    "min_w": 12,
+    "max_w": 98,
+    "min_h": 20,
+    "max_h": 146,
+    "min_depth": 1.5
+  },
+  {
+    "code": "BS0002",
+    "category": "butterfly",
+    "image_url": "system_images/sys_0116_LM0002.png",
+    "name_cn": "大弧织38包边系统 (Butterfly Curved Arch)",
+    "name_en": "Curved Arch Butterfly Sheer System",
+    "sys_type": "蝴蝶帘 Butterfly",
+    "series": "蝴蝶帘系列",
+    "style": "大弧织38 包边",
+    "craft": "精做包边",
+    "min_w": 12,
+    "max_w": 96,
+    "min_h": 20,
+    "max_h": 110,
+    "min_depth": 1.5
+  },
+  {
+    "code": "BS0003",
+    "category": "butterfly",
+    "image_url": "system_images/sys_0116_BM0027.jpeg",
+    "name_cn": "大方贝38电动系统 (Motorized Square Butterfly)",
+    "name_en": "Motorized Square Cassette Butterfly",
+    "sys_type": "蝴蝶帘 Butterfly",
+    "series": "蝴蝶帘电动系列",
+    "style": "大方贝38 电动包边",
+    "craft": "电动包边",
+    "min_w": 20,
+    "max_w": 98,
+    "min_h": 20,
+    "max_h": 138,
+    "min_depth": 1.5
+  },
+  {
+    "code": "BS0004",
+    "category": "butterfly",
+    "image_url": "system_images/sys_0116_LM0002.png",
+    "name_cn": "大弧织38电动系统 (Motorized Curved Butterfly)",
+    "name_en": "Motorized Curved Arch Butterfly",
+    "sys_type": "蝴蝶帘 Butterfly",
+    "series": "蝴蝶帘电动系列",
+    "style": "大弧织38 电动包边",
+    "craft": "电动包边",
+    "min_w": 20,
+    "max_w": 96,
+    "min_h": 20,
+    "max_h": 138,
+    "min_depth": 1.5
   }
 ],
 
@@ -6491,16 +6557,89 @@ const ROMAN_DB = {
     "rmb_base": 130.0,
     "image_url": "system_images/guides/fabric_swatches_card_p1.png"
   },
+  },
   {
-    "code": "BSL-F05",
-    "category": "sheer",
-    "series_cn": "香格里拉遮光",
-    "series_en": "Shangri-La Blackout",
-    "color_cn": "遮光深灰",
-    "color_en": "Blackout Charcoal",
+    "code": "ZJL01",
+    "category": "butterfly",
+    "series_cn": "织境系列",
+    "series_en": "Zhijing Series",
+    "color_cn": "滤光白色",
+    "color_en": "Filter White",
+    "type": "滤光 Light Filtering",
+    "hex": "#FAFAFA",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZJL06",
+    "category": "butterfly",
+    "series_cn": "织境系列",
+    "series_en": "Zhijing Series",
+    "color_cn": "滤光米色",
+    "color_en": "Filter Beige",
+    "type": "滤光 Light Filtering",
+    "hex": "#F5F2EB",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZXL01",
+    "category": "butterfly",
+    "series_cn": "织絮系列",
+    "series_en": "Zhixu Series",
+    "color_cn": "滤光白色",
+    "color_en": "Filter White",
+    "type": "滤光 Light Filtering",
+    "hex": "#FAFAFA",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZXL06",
+    "category": "butterfly",
+    "series_cn": "织絮系列",
+    "series_en": "Zhixu Series",
+    "color_cn": "滤光米色",
+    "color_en": "Filter Beige",
+    "type": "滤光 Light Filtering",
+    "hex": "#F5F2EB",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZXL03",
+    "category": "butterfly",
+    "series_cn": "织絮系列",
+    "series_en": "Zhixu Series",
+    "color_cn": "滤光浅灰",
+    "color_en": "Filter Light Gray",
+    "type": "滤光 Light Filtering",
+    "hex": "#E2E8F0",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZXL10",
+    "category": "butterfly",
+    "series_cn": "织絮系列",
+    "series_en": "Zhixu Series",
+    "color_cn": "滤光黑色",
+    "color_en": "Filter Black",
+    "type": "滤光 Light Filtering",
+    "hex": "#1E293B",
+    "rmb_base": 153.0,
+    "image_url": "system_images/guides/fabric_swatches_card_p1.png"
+  },
+  {
+    "code": "ZMB01",
+    "category": "butterfly",
+    "series_cn": "织密系列",
+    "series_en": "Zhipi Series",
+    "color_cn": "遮光白色",
+    "color_en": "Blackout White",
     "type": "遮光 Blackout",
-    "hex": "#475569",
-    "rmb_base": 150.0,
+    "hex": "#FFFFFF",
+    "rmb_base": 168.0,
     "image_url": "system_images/guides/fabric_swatches_card_p1.png"
   }
 ],
@@ -6597,6 +6736,86 @@ const ROMAN_DB = {
       usd_landed_freight: Math.round((usdShadeLanded + usdAddons) * 100) / 100,
       msrp_price: Math.round(msrpPrice * 100) / 100,
       final_unit_price: Math.round(finalUnitPrice * 100) / 100
+    };
+  },
+
+  // Package Freight & Weight Calculator Engine (Based on 包裹重量测算规划.docx & 重量测算表.xlsx)
+  calculatePackageShipping: function(items) {
+    if (!items || items.length === 0) {
+      return { total_boxes: 0, total_vol_weight_kg: 0, total_act_weight_kg: 0, total_billed_weight_kg: 0, est_freight_usd: 0, boxes: [] };
+    }
+
+    const sorted = [...items].sort((a, b) => (b.width || 36) - (a.width || 36));
+    let boxes = [];
+    let currentBox = [];
+
+    sorted.forEach(item => {
+      if (currentBox.length === 0) {
+        currentBox.push(item);
+      } else {
+        const maxWidth = currentBox[0].width || 36;
+        const curW = item.width || 36;
+        if (Math.abs(maxWidth - curW) <= 8 && currentBox.length < 5) {
+          currentBox.push(item);
+        } else {
+          boxes.push(currentBox);
+          currentBox = [item];
+        }
+      }
+    });
+    if (currentBox.length > 0) boxes.push(currentBox);
+
+    let totalVolWeightKg = 0;
+    let totalActWeightKg = 0;
+    let boxDetails = [];
+
+    boxes.forEach((boxItems, bIdx) => {
+      const maxWInches = Math.max(...boxItems.map(i => i.width || 36));
+      const maxWcm = maxWInches * 2.54;
+      const boxLengthCm = Math.round(maxWcm + 15);
+
+      const totalQty = boxItems.reduce((acc, i) => acc + (i.qty || 1), 0);
+      let boxWcm = 20;
+      let boxHcm = 18;
+      if (totalQty <= 2) { boxWcm = 14; boxHcm = 10; }
+      else if (totalQty <= 4) { boxWcm = 20; boxHcm = 18; }
+      else { boxWcm = 24; boxHcm = 22; }
+
+      const volWeightKg = Math.round(((boxLengthCm * boxWcm * boxHcm) / 6000) * 100) / 100;
+      
+      let actWeightKg = 0;
+      boxItems.forEach(i => {
+        const itemSqm = ((i.width || 36) * (i.height || 60)) / 1550;
+        actWeightKg += Math.max(1.5, Math.round(itemSqm * 2.5 * 10) / 10) * (i.qty || 1);
+      });
+      actWeightKg = Math.round(actWeightKg * 100) / 100;
+
+      const billedWeightKg = Math.max(volWeightKg, actWeightKg);
+      totalVolWeightKg += volWeightKg;
+      totalActWeightKg += actWeightKg;
+
+      boxDetails.push({
+        box_no: bIdx + 1,
+        item_count: boxItems.length,
+        length_cm: boxLengthCm,
+        width_cm: boxWcm,
+        height_cm: boxHcm,
+        vol_weight_kg: volWeightKg,
+        act_weight_kg: actWeightKg,
+        billed_weight_kg: billedWeightKg
+      });
+    });
+
+    const totalBilledWeightKg = Math.max(totalVolWeightKg, totalActWeightKg);
+    const estFreightUsd = Math.round(totalBilledWeightKg * 8.5 * 100) / 100;
+
+    return {
+      total_boxes: boxes.length,
+      total_vol_weight_kg: Math.round(totalVolWeightKg * 100) / 100,
+      total_act_weight_kg: Math.round(totalActWeightKg * 100) / 100,
+      total_billed_weight_kg: Math.round(totalBilledWeightKg * 100) / 100,
+      est_freight_usd: estFreightUsd,
+      boxes: boxDetails
     };
   }
 };

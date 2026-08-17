@@ -363,6 +363,10 @@
                   <span class="cat-icon">🪟</span>
                   <span class="cat-title">香格里拉柔纱帘 <br><span class="sub">Shangri-La Sheer</span></span>
                 </button>
+                <button type="button" class="category-tab-btn" data-cat="butterfly">
+                  <span class="cat-icon">🦋</span>
+                  <span class="cat-title">蝴蝶帘系列 <br><span class="sub">Butterfly Sheer</span></span>
+                </button>
               </div>
             </div>
 
@@ -779,6 +783,21 @@
                   <td class="tot-val" id="sheet-grand-total">$0.00</td>
                 </tr>
               </table>
+            </div>
+
+            <!-- Shipping Package & Freight Logistics Calculator Card (Based on 包裹重量测算规划.docx) -->
+            <div class="proforma-shipping-pkg-box" style="margin-top: 0.75rem; border: 1px solid #bfdbfe; border-radius: 6px; padding: 0.6rem; background: #eff6ff;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.3rem;">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="font-weight: 700; font-size: 0.78rem; color: #1e3a8a;">📦 Shipping Logistics & Package Weight Summary / 包裹打包规划与计费重量测算:</span>
+                </div>
+                <div style="font-size: 0.72rem; color: #2563eb; font-weight: 700;" id="pkg-summary-badge">
+                  0 箱 / 计费重 0 kg / 预估运费 $0.00
+                </div>
+              </div>
+              <div id="pkg-details-container" style="font-size: 0.72rem; color: #1e40af; line-height: 1.4;">
+                <span class="text-muted">按宽度相近自动规划分箱包长与材积重（长=Max.W+15cm, 材积=L×W×H/6000）。添加报价项后自动计算。</span>
+              </div>
             </div>
 
             <!-- Embedded Project Files & Window Photos Section inside Proforma Invoice -->

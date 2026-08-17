@@ -1247,6 +1247,16 @@ Estimated price: ${outPriceVal.textContent}`;
       const shippingInput = document.getElementById('sheet-shipping-fee-input');
       const shippingValDisplay = document.getElementById('sheet-shipping-fee-val');
 
+      // Run Shipping Package & Logistics Freight Calculator
+      const pkgInfo = ROMAN_DB.calculatePackageShipping ? ROMAN_DB.calculatePackageShipping(romanQuoteItems) : null;
+
+      if (pkgInfo && pkgInfo.est_freight_usd > 0) {
+        if (shippingInput && (!shippingInput.value || shippingInput.value === "0" || shippingInput.getAttribute('data-auto') === 'true')) {
+          shippingInput.value = pkgInfo.est_freight_usd.toFixed(2);
+          shippingInput.setAttribute('data-auto', 'true');
+        }
+      }
+
       const shippingFee = shippingInput ? (parseFloat(shippingInput.value) || 0) : 0;
       const taxAmount = totalFinal * (romanSalesTaxRate / 100);
       const grandTotal = totalFinal + taxAmount + shippingFee;
@@ -1258,6 +1268,28 @@ Estimated price: ${outPriceVal.textContent}`;
       if (taxAmountVal) taxAmountVal.textContent = `$${taxAmount.toFixed(2)}`;
       if (shippingValDisplay) shippingValDisplay.textContent = `$${shippingFee.toFixed(2)}`;
       if (sheetGrandTotal) sheetGrandTotal.textContent = `$${grandTotal.toFixed(2)}`;
+
+      // Update Shipping Package Summary Badge & Box Details Card
+      const pkgBadge = document.getElementById('pkg-summary-badge');
+      const pkgDetails = document.getElementById('pkg-details-container');
+      if (pkgInfo && pkgBadge && pkgDetails) {
+        if (pkgInfo.total_boxes === 0) {
+          pkgBadge.textContent = `0 箱 / 计费重 0 kg / 预估运费 $0.00`;
+          pkgDetails.innerHTML = `<span class="text-muted">按宽度相近自动规划分箱包长与材积重（长=Max.W+15cm, 材积=L×W×H/6000）。添加报价项后自动计算。</span>`;
+        } else {
+          pkgBadge.textContent = `📦 共 ${pkgInfo.total_boxes} 箱 / 总计费重 ${pkgInfo.total_billed_weight_kg} kg (材积重 ${pkgInfo.total_vol_weight_kg} kg, 实重 ${pkgInfo.total_act_weight_kg} kg) / 预估国际运费 $${pkgInfo.est_freight_usd.toFixed(2)}`;
+
+          pkgDetails.innerHTML = `
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 4px;">
+              ${pkgInfo.boxes.map(b => `
+                <div style="background: #ffffff; border: 1px solid #93c5fd; border-radius: 4px; padding: 4px 8px; font-size: 0.7rem;">
+                  <strong>包裹 #${b.box_no}</strong> (${b.item_count} 件): 规格 ${b.length_cm} × ${b.width_cm} × ${b.height_cm} cm | 材积重: <strong>${b.vol_weight_kg} kg</strong> (实重: ${b.act_weight_kg} kg)
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      }
     }
 
     // Bilingual i18n Dictionary
