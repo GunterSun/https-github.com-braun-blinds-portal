@@ -6,10 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navigation scroll effect
   const header = document.querySelector('header');
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
+    if (header) {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
     }
   });
 
@@ -321,6 +323,7 @@ Estimated price: ${outPriceVal.textContent}`;
     const elSmartSelect = document.getElementById('roman-smart-select');
 
     const elRoomName = document.getElementById('roman-room-name');
+    const elItemRemark = document.getElementById('roman-item-remark');
     const elQtyInput = document.getElementById('roman-qty-input');
     const btnAddItem = document.getElementById('btn-add-roman-item');
 
@@ -341,6 +344,7 @@ Estimated price: ${outPriceVal.textContent}`;
     const quoteItemsBody = document.getElementById('quote-items-body');
     const itemCountBadge = document.getElementById('item-count-badge');
     const btnPrintPdf = document.getElementById('btn-print-pdf');
+    const btnExportExcel = document.getElementById('btn-export-excel');
 
     // Set default date
     if (elQuoteDate) {
@@ -563,8 +567,6 @@ Estimated price: ${outPriceVal.textContent}`;
         w, h, motorId, remoteId, smartId, romanDiscountFactor, romanHardwareFloorFactor
       );
 
-      if (elLiveRmbBase) elLiveRmbBase.textContent = `¥${res.rmb_total}`;
-      if (elLiveUsdBase) elLiveUsdBase.textContent = `$${(res.usd_landed_freight || res.usd_ex_factory || 0).toFixed(2)}`;
       if (elLiveMsrp) elLiveMsrp.textContent = `$${(res.msrp_price || 0).toFixed(2)}`;
       if (elLiveFinalRate) elLiveFinalRate.textContent = `$${(res.final_unit_price || 0).toFixed(2)}`;
 
@@ -675,7 +677,6 @@ Estimated price: ${outPriceVal.textContent}`;
       const labelStr = factor === 1.0 ? '100% MSRP (原价)' : `${offPercentage}% OFF (${(factor*10).toFixed(1)}折 / ${factor.toFixed(2)})`;
       
       if (elDiscountBadge) elDiscountBadge.textContent = labelStr;
-      if (sheetClientDiscount) sheetClientDiscount.textContent = labelStr;
 
       calculateLiveItemPrice();
       recalculateQuoteItems();
@@ -1449,7 +1450,7 @@ Estimated price: ${outPriceVal.textContent}`;
         const dateStr = elQuoteDate ? elQuoteDate.value : new Date().toISOString().split('T')[0];
         const quoteNo = elQuoteNo ? elQuoteNo.value : 'QT-20260806-01';
         const specNotes = elSpecialNotes ? elSpecialNotes.value : 'Square Headrail Cordless';
-        const discText = sheetClientDiscount ? sheetClientDiscount.textContent : '50% OFF';
+        const discText = elDiscountBadge ? elDiscountBadge.textContent : '50% OFF';
 
         // Prepare Excel Data Matrix
         let data = [
@@ -1717,16 +1718,9 @@ Estimated price: ${outPriceVal.textContent}`;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         hasDrawn = false;
         if (sheetContainer) sheetContainer.innerHTML = '';
-        if (statusBadge) {
-          statusBadge.textContent = '未签名 (Click & draw signature)';
-          statusBadge.style.background = '#f1f5f9';
-          statusBadge.style.color = '#475569';
-        }
       }
 
       if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
-      if (btnClearTop) btnClearTop.addEventListener('click', clearCanvas);
-      if (btnSaveTop) btnSaveTop.addEventListener('click', updateRenderedSig);
     }
 
     // Auto Hash Router for Braun-Z-1.0
