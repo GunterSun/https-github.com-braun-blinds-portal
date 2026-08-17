@@ -1732,10 +1732,10 @@ Estimated price: ${outPriceVal.textContent}`;
       const href = window.location.href.toLowerCase();
       if (hash.includes('braun-z-1.0') || hash.includes('zhenpin-roman') || hash.includes('z-roman') || href.includes('braun-z-1.0')) {
         document.title = 'Braun-Z-1.0 | Z系列罗马帘窗饰定制报价系统';
-        const calcElem = document.getElementById('calculator');
-        if (calcElem) {
+        const sysElem = document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
+        if (sysElem) {
           setTimeout(() => {
-            calcElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            sysElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 300);
         }
       }
