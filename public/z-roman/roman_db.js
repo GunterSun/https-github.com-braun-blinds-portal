@@ -6557,7 +6557,6 @@ const ROMAN_DB = {
     "rmb_base": 130.0,
     "image_url": "system_images/guides/fabric_swatches_card_p1.png"
   },
-  },
   {
     "code": "ZJL01",
     "category": "butterfly",

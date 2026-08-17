@@ -56,6 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // State Variables
+  let romanCurrentLang = 'cn';
+  let romanSelectedCategory = 'roman'; // Default category 'roman' (Roman Shades)
+  let romanDiscountFactor = 0.50; // Default 50% OFF (5折)
+  let romanSalesTaxRate = 0.00; // Default Sales Tax Rate 0.00%
+  let romanHardwareFloorFactor = 0.16; // Default 16% Hardware Minimum Floor (1.6折 / 0.16)
+  let romanSelectedSysCode = 'LM0002'; // Default Square Cordless
+  let romanSelectedFabCode = 'BZM11'; // Default Zhong Linen Blackout Dark Grey
+  let romanSelectedFabCategory = 'ALL';
+  let romanQuoteItems = [];
+
   // ==========================================
   // Braun Price Calculator Logic
   // ==========================================
@@ -263,16 +274,6 @@ Estimated price: ${outPriceVal.textContent}`;
   // ==========================================================================
   
   if (typeof ROMAN_DB !== 'undefined') {
-    let romanCurrentLang = 'cn';
-    let romanSelectedCategory = 'roman'; // Default category 'roman' (Roman Shades)
-    let romanDiscountFactor = 0.50; // Default 50% OFF (5折)
-    let romanSalesTaxRate = 0.00; // Default Sales Tax Rate 0.00%
-    let romanHardwareFloorFactor = 0.16; // Default 16% Hardware Minimum Floor (1.6折 / 0.16)
-    let romanSelectedSysCode = 'LM0002'; // Default Square Cordless
-    let romanSelectedFabCode = 'BZM11'; // Default Zhong Linen Blackout Dark Grey
-    let romanSelectedFabCategory = 'ALL';
-    let romanQuoteItems = [];
-
     // Category Tabs Binding
     function bindCategoryTabs() {
       const btns = document.querySelectorAll('#product-category-tabs .category-tab-btn');
