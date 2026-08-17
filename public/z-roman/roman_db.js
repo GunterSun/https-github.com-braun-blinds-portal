@@ -19,7 +19,7 @@ const ROMAN_DB = {
 
   MOTOR_OPTIONS: [
     { id: 'none', name_cn: '无 (手动系统)', name_en: 'None (Manual System)', price_usd: 0, rmb_price: 0 },
-    { id: 'aok_motor_222', name_cn: '奥科静音电动电机 (+¥222)', name_en: 'A-OK Smart Motor (+¥222)', price_usd: 34, rmb_price: 222, desc_cn: '适用蝴蝶帘/卷帘/香格里拉', desc_en: 'For Butterfly & Sheer' },
+    { id: 'aok_motor_222', name_cn: '奥科静音电动电机', name_en: 'A-OK Smart Motor', price_usd: 222, rmb_price: 222, desc_cn: '适用蝴蝶帘/卷帘/香格里拉', desc_en: 'For Butterfly & Sheer' },
     { id: 'single_motor', name_cn: 'Single Motor (单电机)', name_en: 'Single Smart Motor', price_usd: 167, rmb_price: 167, desc_cn: 'Cellular/Venetian/Roman 适用', desc_en: 'Cellular / Venetian / Roman' },
     { id: 'dual_motor', name_cn: 'Dual Motor (双电机)', name_en: 'Dual Smart Motors', price_usd: 233, rmb_price: 233, desc_cn: 'TDBU/Double Layer 双层/上下合', desc_en: 'For TDBU / Double Layer' },
     { id: 'tubular_20_04n', name_cn: 'Tubular 20 Motor 0.4N (静音电机)', name_en: 'Tubular 20 Motor (0.4N)', price_usd: 144, rmb_price: 144, desc_cn: 'Fits 28mm tube, max 2m x 2m', desc_en: 'Fits 28mm tube' },
@@ -32,20 +32,20 @@ const ROMAN_DB = {
 
   REMOTE_OPTIONS: [
     { id: 'none', name_cn: '无', name_en: 'None', price_usd: 0, rmb_price: 0 },
-    { id: 'remote_1ch', name_cn: 'Standard 单通道遥控器 (1-Ch)', name_en: 'Standard 1-Channel Remote', price_usd: 5, rmb_price: 33 },
-    { id: 'remote_15ch', name_cn: 'Standard 15通道多功能遥控器 (15-Ch)', name_en: 'Standard 15-Channel Remote', price_usd: 7, rmb_price: 44 },
-    { id: 'remote_precision_6ch', name_cn: '精准调光 6通道遥控器 (Precision 6-Ch)', name_en: 'Precision Dimming 6-Ch Remote', price_usd: 12, rmb_price: 80 },
-    { id: 'remote_dual_1ch', name_cn: '双电机专用 单通道遥控器', name_en: 'Dedicated 1-Ch for Dual Motor', price_usd: 5, rmb_price: 33 },
-    { id: 'remote_dual_15ch', name_cn: '双电机专用 15通道遥控器', name_en: 'Dedicated 15-Ch for Dual Motor', price_usd: 7, rmb_price: 44 },
-    { id: 'remote_re301', name_cn: 'RE301 单通道遥控器', name_en: 'RE301 1-Channel Remote', price_usd: 7, rmb_price: 44 },
-    { id: 'remote_re315', name_cn: 'RE315 15通道遥控器', name_en: 'RE315 15-Channel Remote', price_usd: 9, rmb_price: 56 }
+    { id: 'remote_1ch', name_cn: 'Standard 单通道遥控器 (1-Ch)', name_en: 'Standard 1-Channel Remote', price_usd: 33, rmb_price: 33 },
+    { id: 'remote_15ch', name_cn: 'Standard 15通道多功能遥控器 (15-Ch)', name_en: 'Standard 15-Channel Remote', price_usd: 44, rmb_price: 44 },
+    { id: 'remote_precision_6ch', name_cn: '精准调光 6通道遥控器 (Precision 6-Ch)', name_en: 'Precision Dimming 6-Ch Remote', price_usd: 80, rmb_price: 80 },
+    { id: 'remote_dual_1ch', name_cn: '双电机专用 单通道遥控器', name_en: 'Dedicated 1-Ch for Dual Motor', price_usd: 33, rmb_price: 33 },
+    { id: 'remote_dual_15ch', name_cn: '双电机专用 15通道遥控器', name_en: 'Dedicated 15-Ch for Dual Motor', price_usd: 44, rmb_price: 44 },
+    { id: 'remote_re301', name_cn: 'RE301 单通道遥控器', name_en: 'RE301 1-Channel Remote', price_usd: 44, rmb_price: 44 },
+    { id: 'remote_re315', name_cn: 'RE315 15通道遥控器', name_en: 'RE315 15-Channel Remote', price_usd: 56, rmb_price: 56 }
   ],
 
   SMART_ACC_OPTIONS: [
     { id: 'none', name_cn: '无', name_en: 'None', price_usd: 0, rmb_price: 0 },
-    { id: 'aok_rf_ac520_02', name_cn: '奥科 RF 控制器小黑盒 (AC520-02 - ¥180/个)', name_en: 'A-OK AC520-02 RF Controller Box (¥180)', price_usd: 47.08, rmb_price: 180, manual_url: 'system_images/guides/奥科RF控制器说明书-小黑盒AC520-02(1).pdf' },
-    { id: 'aok_zigbee_ac526', name_cn: '奥科 ZigBee 智能网关 (AC526 - ¥210/个)', name_en: 'A-OK AC526 ZigBee Smart Gateway (¥210)', price_usd: 54.92, rmb_price: 210, manual_url: 'system_images/guides/无线网关-中英文说明书2020-7-7.pdf' },
-    { id: 'smart_hub', name_cn: 'Wireless Smart Gateway (ZXZGW-04 涂鸦/谷歌/亚马逊网关)', name_en: 'Wireless Smart Gateway Hub ZXZGW-04', price_usd: 144, rmb_price: 144, manual_url: 'system_images/guides/无线网关-中英文说明书2020-7-7.pdf' },
+    { id: 'aok_rf_ac520_02', name_cn: '奥科 RF 控制器小黑盒 (AC520-02 - $180/个)', name_en: 'A-OK AC520-02 RF Controller Box ($180)', price_usd: 180, rmb_price: 180, manual_url: 'system_images/guides/奥科RF控制器说明书-小黑盒AC520-02(1).pdf' },
+    { id: 'aok_zigbee_ac526', name_cn: '奥科 ZigBee 智能网关 (AC526 - $210/个)', name_en: 'A-OK AC526 ZigBee Smart Gateway ($210)', price_usd: 210, rmb_price: 210, manual_url: 'system_images/guides/无线网关-中英文说明书2020-7-7.pdf' },
+    { id: 'smart_hub', name_cn: 'Wireless Smart Gateway (ZXZGW-04 涂鸦/谷歌/亚马逊网关 - $144)', name_en: 'Wireless Smart Gateway Hub ZXZGW-04 ($144)', price_usd: 144, rmb_price: 144, manual_url: 'system_images/guides/无线网关-中英文说明书2020-7-7.pdf' },
     { id: 'solar_panel', name_cn: 'Solar Panel 太阳能充电板', name_en: 'Solar Charging Panel', price_usd: 56, rmb_price: 56 },
     { id: 'zigbee_hub', name_cn: '英文 ZigBee 智能网关', name_en: 'English ZigBee Smart Gateway', price_usd: 133, rmb_price: 133 },
     { id: 'ext_rod', name_cn: 'Extension Rod 加长手拉杆', name_en: 'Extension Rod', price_usd: 15, rmb_price: 15 }
