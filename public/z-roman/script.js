@@ -1013,7 +1013,7 @@ Estimated price: ${outPriceVal.textContent}`;
           <tr>
             <td style="text-align: center;"><strong>${index + 1}</strong></td>
             <td style="text-align: center;">
-              <img src="${item.sys.image_url}" class="table-sys-img lightbox-trigger" alt="${item.sys.name_cn}" style="width: 44px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" onerror="this.parentElement.innerHTML='🖼️'">
+              <img src="${item.custom_image_url || item.sys.image_url}" class="table-sys-img lightbox-trigger" alt="${item.sys.name_cn}" style="width: 44px; height: 34px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" onerror="this.parentElement.innerHTML='🖼️'">
             </td>
             <td>
               <input type="text" class="table-inline-input inline-room" data-idx="${index}" value="${item.room}" style="width: 80px; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 4px; font-size: 0.8rem;">
@@ -2778,35 +2778,162 @@ Estimated price: ${outPriceVal.textContent}`;
     function handleInvoiceFilesArray(files) {
       if (!files || files.length === 0) return;
 
+      const defaultSys = ROMAN_DB.SYSTEMS[0];
+      const defaultFab = ROMAN_DB.FABRICS[0];
+      const sheerSys = ROMAN_DB.SYSTEMS.find(s => s.category === 'sheer') || defaultSys;
+      const dualSys = ROMAN_DB.SYSTEMS.find(s => s.code === 'lM0022') || defaultSys;
+
       let processed = 0;
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          let fileKind = 'image';
-          const nameLower = file.name.toLowerCase();
-          if (nameLower.endsWith('.pdf')) {
-            fileKind = 'pdf';
-          } else if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv') || nameLower.endsWith('.txt')) {
-            fileKind = 'excel';
-          }
+      files.forEach((file, fIdx) => {
+        const nameLower = file.name.toLowerCase();
 
-          const att = {
-            id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-            name: file.name,
-            type: fileKind,
-            size: formatFileSize(file.size),
-            dataUrl: evt.target.result
+        if (nameLower.endsWith('.xlsx') || nameLower.endsWith('.xls') || nameLower.endsWith('.csv') || nameLower.endsWith('.txt')) {
+          // 1. Process & Auto-Itemize Excel/CSV Table
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const data = new Uint8Array(evt.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              if (workbook && workbook.SheetNames && workbook.SheetNames.length > 0) {
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                if (rawRows && rawRows.length > 0) {
+                  parseAndImportExcelRows(rawRows, file.name);
+                }
+              }
+
+              // Also attach to Customer Profile & Invoice embedded gallery
+              const dReader = new FileReader();
+              dReader.onload = (dEvt) => {
+                currentCustomerAttachments.push({
+                  id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                  name: file.name,
+                  type: 'excel',
+                  size: formatFileSize(file.size),
+                  dataUrl: dEvt.target.result
+                });
+                renderCustomerAttachments();
+                renderInvoiceEmbeddedFiles();
+                autoSaveActiveCustomerMeta();
+              };
+              dReader.readAsDataURL(file);
+            } catch (err) {
+              console.error('Error reading excel file:', err);
+            }
           };
+          reader.readAsArrayBuffer(file);
+        } else if (file.type.startsWith('image/') || nameLower.endsWith('.jpg') || nameLower.endsWith('.jpeg') || nameLower.endsWith('.png') || nameLower.endsWith('.webp') || nameLower.endsWith('.heic')) {
+          // 2. Process & Auto-Itemize Image File (Window Photo / Hand-written Measurement Screenshot)
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
 
-          currentCustomerAttachments.push(att);
-          processed++;
-          if (processed === files.length) {
+            // Save to attachment gallery & invoice embedded cards
+            currentCustomerAttachments.push({
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              name: file.name,
+              type: 'image',
+              size: formatFileSize(file.size),
+              dataUrl: dataUrl
+            });
             renderCustomerAttachments();
             renderInvoiceEmbeddedFiles();
             autoSaveActiveCustomerMeta();
-          }
-        };
-        reader.readAsDataURL(file);
+
+            // Extract numeric dimensions e.g. "LivingRoom_36.5x60.jpg" or "W34_H58_Master"
+            let extractedW = 36;
+            let extractedH = 60;
+            let extractedRoom = file.name.replace(/\.[^/.]+$/, "").replace(/[_\-]/g, ' ');
+            if (extractedRoom.length <= 2) {
+              extractedRoom = `Window Photo #${romanQuoteItems.length + 1}`;
+            }
+
+            const dimMatch = file.name.match(/(\d+(?:\.\d+)?)\s*(?:x|X|×|\*|\s+W|\s+w)\s*(\d+(?:\.\d+)?)/);
+            if (dimMatch) {
+              extractedW = parseFloat(dimMatch[1]) || 36;
+              extractedH = parseFloat(dimMatch[2]) || 60;
+            }
+
+            let matchedSys = defaultSys;
+            if (nameLower.includes('sheer') || nameLower.includes('柔纱')) matchedSys = sheerSys;
+            if (nameLower.includes('double') || nameLower.includes('双层')) matchedSys = dualSys;
+
+            const pricing = ROMAN_DB.calculateItemPrice(
+              matchedSys.code, defaultFab.code, extractedW, extractedH, 'none', 'none', 'none', romanDiscountFactor, romanHardwareFloorFactor
+            );
+
+            // Auto-populate quote item into Invoice table with custom image!
+            const newItem = {
+              id: Date.now() + fIdx + Math.random(),
+              room: extractedRoom,
+              remark: `📷 [实拍图片自动识别嵌入件] ${file.name}`,
+              sys: matchedSys,
+              fab: defaultFab,
+              custom_image_url: dataUrl,
+              width: extractedW,
+              height: extractedH,
+              sqm: pricing.sqm,
+              qty: 1,
+              mount: 'Inside Mount (框内)',
+              control: 'Cordless (无绳手提)',
+              addons: '',
+              msrp_unit: pricing.msrp_price,
+              final_unit: pricing.final_unit_price,
+              amount: Math.round(pricing.final_unit_price * 1 * 100) / 100
+            };
+
+            romanQuoteItems.push(newItem);
+            renderQuoteItemsTable();
+
+            alert(`⚡ 已自动识别实拍照片/手写表单【${file.name}】！\n图片已成功嵌入至 Invoice 报价单表格中，并生成对应的测量算价行。`);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // 3. Process PDF / Text file
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
+
+            currentCustomerAttachments.push({
+              id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+              name: file.name,
+              type: nameLower.endsWith('.pdf') ? 'pdf' : 'excel',
+              size: formatFileSize(file.size),
+              dataUrl: dataUrl
+            });
+            renderCustomerAttachments();
+            renderInvoiceEmbeddedFiles();
+            autoSaveActiveCustomerMeta();
+
+            // Auto-populate PDF item line into Invoice
+            const pricing = ROMAN_DB.calculateItemPrice(
+              defaultSys.code, defaultFab.code, 36, 60, 'none', 'none', 'none', romanDiscountFactor, romanHardwareFloorFactor
+            );
+
+            romanQuoteItems.push({
+              id: Date.now() + fIdx + Math.random(),
+              room: file.name.replace(/\.[^/.]+$/, ""),
+              remark: `📄 [PDF/文档图纸自动识别件] ${file.name}`,
+              sys: defaultSys,
+              fab: defaultFab,
+              width: 36,
+              height: 60,
+              sqm: pricing.sqm,
+
+              qty: 1,
+              mount: 'Inside Mount (框内)',
+              control: 'Cordless (无绳手提)',
+              addons: '',
+              msrp_unit: pricing.msrp_price,
+              final_unit: pricing.final_unit_price,
+              amount: Math.round(pricing.final_unit_price * 1 * 100) / 100
+            });
+            renderQuoteItemsTable();
+
+            alert(`📄 已自动识别文档图纸【${file.name}】！已成功归档并自动生成 Invoice 明细行。`);
+          };
+          reader.readAsDataURL(file);
+        }
       });
     }
 
