@@ -6686,9 +6686,18 @@ const ROMAN_DB = {
       ratePerSqm = fab.rmb_base;
     }
 
-    // Version 1.2 Rule: Zebra (斑马帘), Sheer Shades / Shangri-La (柔纱帘), and Butterfly Sheer (蝴蝶帘) base cost increased by +35% (* 1.35) over Version 1.1 baseline
-    if (sys && (sys.category === 'zebra' || sys.category === 'butterfly' || sys.category === 'sheer' || sys.code.startsWith('BM') || sys.code.startsWith('BSB') || sys.code.startsWith('BSL') || sys.code.startsWith('BS00') || (sys.name_cn && (sys.name_cn.includes('蝴蝶') || sys.name_cn.includes('斑马') || sys.name_cn.includes('柔纱') || sys.name_cn.includes('香格里拉'))) || (sys.sys_type && (sys.sys_type.includes('斑马') || sys.sys_type.includes('蝴蝶') || sys.sys_type.includes('柔纱') || sys.sys_type.includes('香格里拉') || sys.sys_type.includes('Zebra') || sys.sys_type.includes('Butterfly') || sys.sys_type.includes('Sheer'))))) {
-      ratePerSqm = ratePerSqm * 1.35;
+    // Version 1.2 Cost Multiplier Rules:
+    // 斑马帘 (Zebra): +15% (* 1.15) over Version 1.1 baseline
+    // 柔纱帘 (Shangri-La Sheer) & 蝴蝶帘 (Butterfly Sheer): +35% (* 1.35) over Version 1.1 baseline
+    if (sys) {
+      const isZebra = sys.category === 'zebra' || sys.code.startsWith('BM') || (sys.name_cn && sys.name_cn.includes('斑马')) || (sys.sys_type && (sys.sys_type.includes('斑马') || sys.sys_type.includes('Zebra')));
+      const isSheerOrButterfly = sys.category === 'butterfly' || sys.category === 'sheer' || sys.code.startsWith('BSB') || sys.code.startsWith('BSL') || sys.code.startsWith('BS00') || (sys.name_cn && (sys.name_cn.includes('蝴蝶') || sys.name_cn.includes('柔纱') || sys.name_cn.includes('香格里拉'))) || (sys.sys_type && (sys.sys_type.includes('蝴蝶') || sys.sys_type.includes('柔纱') || sys.sys_type.includes('香格里拉') || sys.sys_type.includes('Butterfly') || sys.sys_type.includes('Sheer')));
+
+      if (isZebra) {
+        ratePerSqm = ratePerSqm * 1.15;
+      } else if (isSheerOrButterfly) {
+        ratePerSqm = ratePerSqm * 1.35;
+      }
     }
 
     // 3. Base Shade RMB Cost = Rate per SQM * SQM
