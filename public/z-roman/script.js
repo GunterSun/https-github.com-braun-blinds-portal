@@ -3936,10 +3936,228 @@ Estimated price: ${outPriceVal.textContent}`;
       }
     }
 
+    // ==========================================================================
+    // Secret Admin Panel: RMB Base Cost + International Freight + Net Profit Engine
+    // ==========================================================================
+    let adminExchangeRate = 7.20;
+    let adminFreightRmbPerKg = 61.2; // $8.50/kg * 7.20
+
+    function initAdminCostModalEngine() {
+      const btnOpen = document.getElementById('btn-open-admin-cost-modal');
+      const logo = document.getElementById('header-logo');
+      const modal = document.getElementById('admin-cost-modal');
+      const btnClose = document.getElementById('admin-modal-close-btn');
+      const btnBottomClose = document.getElementById('admin-modal-bottom-close');
+      const rateInput = document.getElementById('admin-exchange-rate');
+      const freightSelect = document.getElementById('admin-freight-mode');
+      const customFreightWrap = document.getElementById('admin-custom-freight-wrap');
+      const customFreightInput = document.getElementById('admin-custom-freight-rmb');
+      const btnRecalc = document.getElementById('admin-recalc-btn');
+
+      // Secret Triple-Click on Logo
+      let logoClickCount = 0;
+      let logoClickTimer = null;
+      if (logo) {
+        logo.addEventListener('click', (e) => {
+          logoClickCount++;
+          if (logoClickTimer) clearTimeout(logoClickTimer);
+          if (logoClickCount >= 3) {
+            e.preventDefault();
+            logoClickCount = 0;
+            openAdminCostModal();
+          } else {
+            logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1200);
+          }
+        });
+      }
+
+      // Keyboard Shortcut Ctrl+Shift+K
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'K' || e.key === 'k')) {
+          e.preventDefault();
+          openAdminCostModal();
+        }
+      });
+
+      if (btnOpen) {
+        btnOpen.addEventListener('click', openAdminCostModal);
+      }
+
+      if (btnClose) btnClose.addEventListener('click', closeAdminCostModal);
+      if (btnBottomClose) btnBottomClose.addEventListener('click', closeAdminCostModal);
+
+      if (freightSelect) {
+        freightSelect.addEventListener('change', () => {
+          const val = freightSelect.value;
+          if (val === 'air_8.5') {
+            adminFreightRmbPerKg = Math.round(8.50 * adminExchangeRate * 10) / 10;
+            if (customFreightWrap) customFreightWrap.style.display = 'none';
+          } else if (val === 'air_10') {
+            adminFreightRmbPerKg = Math.round(10.00 * adminExchangeRate * 10) / 10;
+            if (customFreightWrap) customFreightWrap.style.display = 'none';
+          } else if (val === 'sea_3.5') {
+            adminFreightRmbPerKg = Math.round(3.50 * adminExchangeRate * 10) / 10;
+            if (customFreightWrap) customFreightWrap.style.display = 'none';
+          } else if (val === 'custom') {
+            if (customFreightWrap) customFreightWrap.style.display = 'inline-block';
+            if (customFreightInput) adminFreightRmbPerKg = parseFloat(customFreightInput.value) || 61.2;
+          }
+          renderAdminCostBreakdown();
+        });
+      }
+
+      if (rateInput) {
+        rateInput.addEventListener('input', () => {
+          adminExchangeRate = parseFloat(rateInput.value) || 7.20;
+          renderAdminCostBreakdown();
+        });
+      }
+
+      if (customFreightInput) {
+        customFreightInput.addEventListener('input', () => {
+          adminFreightRmbPerKg = parseFloat(customFreightInput.value) || 61.2;
+          renderAdminCostBreakdown();
+        });
+      }
+
+      if (btnRecalc) {
+        btnRecalc.addEventListener('click', renderAdminCostBreakdown);
+      }
+    }
+
+    function openAdminCostModal() {
+      const modal = document.getElementById('admin-cost-modal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      renderAdminCostBreakdown();
+    }
+
+    function closeAdminCostModal() {
+      const modal = document.getElementById('admin-cost-modal');
+      if (!modal) return;
+      modal.style.display = 'none';
+    }
+
+    function renderAdminCostBreakdown() {
+      const tbody = document.getElementById('admin-cost-tbody');
+      if (!tbody) return;
+
+      if (!romanQuoteItems || romanQuoteItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="padding: 20px; color: #94a3b8;">报价列表中暂无窗饰条目，请先在面板中添加产品。</td></tr>`;
+        updateAdminKPIs(0, 0, 0, 0);
+        return;
+      }
+
+      // Calculate total shipping weight & packages
+      const pkgInfo = ROMAN_DB.calculatePackageShipping ? ROMAN_DB.calculatePackageShipping(romanQuoteItems) : null;
+      const totalBilledWeight = pkgInfo ? pkgInfo.total_billed_weight_kg : 0;
+      const totalEstFreightRmb = totalBilledWeight * adminFreightRmbPerKg;
+
+      let grandFactoryRmb = 0;
+      let grandFreightRmb = 0;
+      let grandCostLandedRmb = 0;
+      let grandCostLandedUsd = 0;
+      let grandQuotedUsd = 0;
+
+      // Distribute shipping cost per item proportional to item weight/sqm
+      const totalQuoteSqm = romanQuoteItems.reduce((acc, item) => acc + (item.sqm || 1) * (item.qty || 1), 0);
+
+      const rowsHtml = romanQuoteItems.map((item, idx) => {
+        const sysCode = item.sys ? item.sys.code : 'LM0002';
+        const fabCode = item.fab ? item.fab.code : 'BZL01';
+
+        // Calculate item RMB base factory cost
+        const priceObj = ROMAN_DB.calculateItemPrice(
+          sysCode, fabCode, item.width, item.height, 'none', 'none', 'none', romanDiscountFactor
+        );
+
+        // Factory bare cost in RMB for 1 unit
+        const unitRmbBase = priceObj.rmb_base_cost || priceObj.rmb_base || 163.0;
+        const totalRmbBase = unitRmbBase * (item.qty || 1);
+
+        // Item proportion of shipping weight
+        const itemSqm = (item.sqm || 1) * (item.qty || 1);
+        const sqmRatio = totalQuoteSqm > 0 ? (itemSqm / totalQuoteSqm) : (1 / romanQuoteItems.length);
+        const itemFreightRmb = totalEstFreightRmb * sqmRatio;
+        const itemFreightUsd = itemFreightRmb / adminExchangeRate;
+
+        // Total Landed Cost
+        const itemLandedCostRmb = totalRmbBase + itemFreightRmb;
+        const itemLandedCostUsd = itemLandedCostRmb / adminExchangeRate;
+
+        // Quoted price to customer
+        const itemCustomerUsd = (item.amount || 0);
+
+        // Profit
+        const itemProfitUsd = itemCustomerUsd - itemLandedCostUsd;
+        const itemProfitRmb = itemProfitUsd * adminExchangeRate;
+        const itemMarginPct = itemCustomerUsd > 0 ? ((itemProfitUsd / itemCustomerUsd) * 100) : 0;
+
+        // Accumulate totals
+        grandFactoryRmb += totalRmbBase;
+        grandFreightRmb += itemFreightRmb;
+        grandCostLandedRmb += itemLandedCostRmb;
+        grandCostLandedUsd += itemLandedCostUsd;
+        grandQuotedUsd += itemCustomerUsd;
+
+        const isProfitPositive = itemProfitUsd >= 0;
+        const profitColor = isProfitPositive ? '#16a34a' : '#dc2626';
+
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; font-size: 0.78rem;">
+            <td style="padding: 6px; font-weight: 700;">${idx + 1}</td>
+            <td style="padding: 6px; font-weight: 700; color: #1e293b;">${item.room || '未指定'} (${item.remark || item.mount || ''})</td>
+            <td style="padding: 6px; font-family: monospace;">${item.width}" × ${item.height}" (${(item.sqm || 1).toFixed(2)} ㎡) × ${item.qty}件</td>
+            <td style="padding: 6px; font-size: 0.72rem; text-align: left;">
+              <strong>${item.sys ? item.sys.code : ''}</strong> ${item.sys ? item.sys.name_cn : ''}<br>
+              <span class="text-muted">${item.fab ? item.fab.code : ''} ${item.fab ? item.fab.name_cn : ''}</span>
+            </td>
+            <td style="padding: 6px; font-weight: 700; color: #be185d; background: #fdf2f8;">¥${totalRmbBase.toFixed(2)} RMB</td>
+            <td style="padding: 6px; font-weight: 700; color: #a16207; background: #fefce8;">¥${itemFreightRmb.toFixed(2)} RMB<br><span style="font-size:0.68rem; color:#ca8a04;">($${itemFreightUsd.toFixed(2)})</span></td>
+            <td style="padding: 6px; font-weight: 700; color: #1e3a8a; background: #eff6ff;">¥${itemLandedCostRmb.toFixed(2)} RMB<br><span style="font-size:0.68rem; color:#3b82f6;">($${itemLandedCostUsd.toFixed(2)})</span></td>
+            <td style="padding: 6px; font-weight: 800; color: #15803d; background: #f0fdf4;">$${itemCustomerUsd.toFixed(2)} USD</td>
+            <td style="padding: 6px; font-weight: 800; color: ${profitColor};">$${itemProfitUsd.toFixed(2)} USD<br><span style="font-size:0.68rem;">(¥${itemProfitRmb.toFixed(2)})</span></td>
+            <td style="padding: 6px; font-weight: 700; color: ${profitColor};">${itemMarginPct.toFixed(1)}%</td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.innerHTML = rowsHtml;
+      updateAdminKPIs(grandQuotedUsd, grandFactoryRmb, grandFreightRmb, grandCostLandedUsd);
+    }
+
+    function updateAdminKPIs(grandQuotedUsd, grandFactoryRmb, grandFreightRmb, grandCostLandedUsd) {
+      const grandQuotedRmb = grandQuotedUsd * adminExchangeRate;
+      const grandFreightUsd = grandFreightRmb / adminExchangeRate;
+      const grandFactoryUsd = grandFactoryRmb / adminExchangeRate;
+      const netProfitUsd = grandQuotedUsd - grandCostLandedUsd;
+      const netProfitRmb = netProfitUsd * adminExchangeRate;
+      const marginPct = grandQuotedUsd > 0 ? ((netProfitUsd / grandQuotedUsd) * 100) : 0;
+
+      const elQuoted = document.getElementById('admin-kpi-quoted');
+      const elQuotedRmb = document.getElementById('admin-kpi-quoted-rmb');
+      const elFreightRmb = document.getElementById('admin-kpi-freight-rmb');
+      const elFreightUsd = document.getElementById('admin-kpi-freight-usd');
+      const elFactoryRmb = document.getElementById('admin-kpi-factory-rmb');
+      const elFactoryUsd = document.getElementById('admin-kpi-factory-usd');
+      const elNetProfit = document.getElementById('admin-kpi-net-profit');
+      const elNetProfitRmb = document.getElementById('admin-kpi-net-profit-rmb');
+
+      if (elQuoted) elQuoted.textContent = `$${grandQuotedUsd.toFixed(2)} USD`;
+      if (elQuotedRmb) elQuotedRmb.textContent = `¥${grandQuotedRmb.toFixed(2)} RMB`;
+      if (elFreightRmb) elFreightRmb.textContent = `¥${grandFreightRmb.toFixed(2)} RMB`;
+      if (elFreightUsd) elFreightUsd.textContent = `$${grandFreightUsd.toFixed(2)} USD`;
+      if (elFactoryRmb) elFactoryRmb.textContent = `¥${grandFactoryRmb.toFixed(2)} RMB`;
+      if (elFactoryUsd) elFactoryUsd.textContent = `$${grandFactoryUsd.toFixed(2)} USD`;
+      if (elNetProfit) elNetProfit.textContent = `$${netProfitUsd.toFixed(2)} USD`;
+      if (elNetProfitRmb) elNetProfitRmb.innerHTML = `¥${netProfitRmb.toFixed(2)} RMB (利润率 <span id="admin-kpi-margin-pct" style="font-weight:800; color:${netProfitUsd>=0?'#15803d':'#dc2626'}">${marginPct.toFixed(1)}%</span>)`;
+    }
+
     // Initial Engine Bootstrap
     migrateAndPreserveAllHistoricalData();
     initQuoteNumberSequence();
     initCustomerCrmModalEngine();
+    initAdminCostModalEngine();
     updateSavedOrdersBadge();
     bindCategoryTabs();
     initAddonSelects();

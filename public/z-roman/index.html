@@ -717,6 +717,9 @@
               <button type="button" class="btn-print-pdf" id="btn-print-pdf">
                 🖨️ 打印 / 导出 PDF 报价单 (Print / PDF)
               </button>
+              <button type="button" id="btn-open-admin-cost-modal" style="background: #0f172a; color: #f8fafc; border: 1px solid #334155; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-left: 4px; font-size: 0.78rem;">
+                🔐 成本与运费 (Admin Secret)
+              </button>
             </div>
           </div>
 
@@ -1500,6 +1503,103 @@
     </div>
   </div>
 
+  <!-- Secret Admin Cost & Freight Analysis Modal (隐藏专享：人民币裸价 + 运费成本 + 纯利润核算) -->
+  <div id="admin-cost-modal" class="custom-modal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center;">
+    <div style="background: #ffffff; width: 95%; max-width: 1100px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+      
+      <!-- Modal Header -->
+      <div style="padding: 14px 20px; background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">🔐</span>
+          <div>
+            <h3 style="margin:0; font-size: 1.1rem; color: #f8fafc; font-weight: 700;">内部保密：人民币裸价 + 国际运费成本与纯利润核算</h3>
+            <span style="font-size: 0.75rem; color: #94a3b8;">Owner Confidential Admin Cost Panel • 裸成本/海空运费/纯利润明细</span>
+          </div>
+        </div>
+        <button type="button" id="admin-modal-close-btn" style="background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Config Toolbar -->
+      <div style="padding: 10px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; gap: 20px; align-items: center; font-size: 0.82rem; flex-wrap: wrap;">
+        <div>
+          <label style="font-weight: 700; color: #334155;">实时汇率 (RMB/USD):</label>
+          <input type="number" id="admin-exchange-rate" value="7.20" step="0.05" style="width: 75px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 700;">
+        </div>
+        <div>
+          <label style="font-weight: 700; color: #334155;">估算国际运费单价:</label>
+          <select id="admin-freight-mode" style="padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem;">
+            <option value="air_8.5">✈️ 国际空运 (标准 $8.50/kg = ¥61.2/kg)</option>
+            <option value="air_10">✈️ 国际空运 (加急 $10.00/kg = ¥72.0/kg)</option>
+            <option value="sea_3.5">🚢 国际海运 (专线 $3.50/kg = ¥25.2/kg)</option>
+            <option value="custom">✏️ 自定义运费单价</option>
+          </select>
+        </div>
+        <div id="admin-custom-freight-wrap" style="display: none;">
+          <label style="font-weight: 700; color: #334155;">运费 (RMB/kg):</label>
+          <input type="number" id="admin-custom-freight-rmb" value="61.2" step="1" style="width: 70px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center;">
+        </div>
+        <button type="button" id="admin-recalc-btn" class="btn-preset-active" style="padding: 4px 12px; font-size: 0.78rem;">🔄 重新核算成本利润</button>
+      </div>
+
+      <!-- Summary KPI Cards Grid -->
+      <div style="padding: 12px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: #ffffff;">
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 14px; border-radius: 8px;">
+          <div style="font-size: 0.75rem; color: #1e40af; font-weight: 700;">🔴 客户总售价 (Grand Quoted)</div>
+          <div id="admin-kpi-quoted" style="font-size: 1.25rem; font-weight: 800; color: #1e3a8a; margin-top: 2px;">$0.00</div>
+          <div id="admin-kpi-quoted-rmb" style="font-size: 0.72rem; color: #3b82f6;">¥0.00 RMB</div>
+        </div>
+
+        <div style="background: #fefce8; border: 1px solid #fef08a; padding: 10px 14px; border-radius: 8px;">
+          <div style="font-size: 0.75rem; color: #854d0e; font-weight: 700;">📦 预估国际运费成本 (Freight)</div>
+          <div id="admin-kpi-freight-rmb" style="font-size: 1.25rem; font-weight: 800; color: #a16207; margin-top: 2px;">¥0.00 RMB</div>
+          <div id="admin-kpi-freight-usd" style="font-size: 0.72rem; color: #ca8a04;">$0.00 USD</div>
+        </div>
+
+        <div style="background: #fdf2f8; border: 1px solid #fbcfe8; padding: 10px 14px; border-radius: 8px;">
+          <div style="font-size: 0.75rem; color: #9d174d; font-weight: 700;">🏭 工厂裸出厂价 (Factory Cost)</div>
+          <div id="admin-kpi-factory-rmb" style="font-size: 1.25rem; font-weight: 800; color: #be185d; margin-top: 2px;">¥0.00 RMB</div>
+          <div id="admin-kpi-factory-usd" style="font-size: 0.72rem; color: #db2777;">$0.00 USD</div>
+        </div>
+
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 8px;">
+          <div style="font-size: 0.75rem; color: #166534; font-weight: 700;">💰 预估预留纯利润 (Net Profit)</div>
+          <div id="admin-kpi-net-profit" style="font-size: 1.25rem; font-weight: 800; color: #15803d; margin-top: 2px;">$0.00 USD</div>
+          <div id="admin-kpi-net-profit-rmb" style="font-size: 0.72rem; color: #16a34a;">¥0.00 RMB (利润率 <span id="admin-kpi-margin-pct">0%</span>)</div>
+        </div>
+      </div>
+
+      <!-- Detail Table -->
+      <div style="padding: 0 20px 16px 20px; overflow-y: auto; flex: 1;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: center; border: 1px solid #e2e8f0;">
+          <thead>
+            <tr style="background: #0f172a; color: #f8fafc; font-weight: 700;">
+              <th style="padding: 8px; border: 1px solid #334155;">#</th>
+              <th style="padding: 8px; border: 1px solid #334155;">房间/部位</th>
+              <th style="padding: 8px; border: 1px solid #334155;">规格 W×H (面积)</th>
+              <th style="padding: 8px; border: 1px solid #334155;">产品与面料型号</th>
+              <th style="padding: 8px; border: 1px solid #334155; background: #831843; color: #fff;">裸出厂价 (RMB ¥)</th>
+              <th style="padding: 8px; border: 1px solid #334155; background: #713f12; color: #fff;">运费成本 (RMB ¥)</th>
+              <th style="padding: 8px; border: 1px solid #334155; background: #1e3a8a; color: #fff;">含运总成本 (RMB / USD)</th>
+              <th style="padding: 8px; border: 1px solid #334155; background: #166534; color: #fff;">客户售价 (USD $)</th>
+              <th style="padding: 8px; border: 1px solid #334155; background: #14532d; color: #fff;">预估纯利润 (USD / RMB)</th>
+              <th style="padding: 8px; border: 1px solid #334155;">利润率</th>
+            </tr>
+          </thead>
+          <tbody id="admin-cost-tbody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 10px 20px; background: #f1f5f9; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #64748b;">
+        <span>🔒 本面板为内部保密核算工具，客户视角完全隐藏。连击顶部 Logo 3 下或按 `Ctrl+Shift+K` 可再次调出。</span>
+        <button type="button" id="admin-modal-bottom-close" class="btn-preset-clear" style="padding: 4px 14px;">关闭保密面板</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Fullscreen Image Lightbox Modal -->
   <div id="image-lightbox-modal" class="lightbox-modal">
     <span class="lightbox-close" id="lightbox-close-btn">&times;</span>
@@ -1512,7 +1612,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260817_v1.3.3"></script>
-  <script src="script.js?v=20260817_v1.3.3"></script>
+  <script src="roman_db.js?v=20260817_v1.3.4"></script>
+  <script src="script.js?v=20260817_v1.3.4"></script>
 </body>
 </html>
