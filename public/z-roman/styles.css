@@ -2937,6 +2937,14 @@ footer {
 }
 
 @media print {
+  body {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .navbar, .hero-banner, .config-section, .no-print {
+    display: none !important;
+  }
   .proforma-invoice-paper [contenteditable="true"] {
     border-bottom: none !important;
     background: transparent !important;
@@ -2945,6 +2953,14 @@ footer {
   }
   .no-print-edit-badge {
     display: none !important;
+  }
+  .proforma-invoice-paper {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
   }
 }
 
