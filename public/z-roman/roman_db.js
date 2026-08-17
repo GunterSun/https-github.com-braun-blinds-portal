@@ -6687,14 +6687,14 @@ const ROMAN_DB = {
     }
 
     // Version 1.2 Cost Multiplier Rules:
-    // 斑马帘 (Zebra): +15% (* 1.15) over Version 1.1 baseline
+    // 斑马帘 (Zebra): +10% (* 1.10) over Version 1.1 baseline
     // 柔纱帘 (Shangri-La Sheer) & 蝴蝶帘 (Butterfly Sheer): +35% (* 1.35) over Version 1.1 baseline
     if (sys) {
       const isZebra = sys.category === 'zebra' || sys.code.startsWith('BM') || (sys.name_cn && sys.name_cn.includes('斑马')) || (sys.sys_type && (sys.sys_type.includes('斑马') || sys.sys_type.includes('Zebra')));
       const isSheerOrButterfly = sys.category === 'butterfly' || sys.category === 'sheer' || sys.code.startsWith('BSB') || sys.code.startsWith('BSL') || sys.code.startsWith('BS00') || (sys.name_cn && (sys.name_cn.includes('蝴蝶') || sys.name_cn.includes('柔纱') || sys.name_cn.includes('香格里拉'))) || (sys.sys_type && (sys.sys_type.includes('蝴蝶') || sys.sys_type.includes('柔纱') || sys.sys_type.includes('香格里拉') || sys.sys_type.includes('Butterfly') || sys.sys_type.includes('Sheer')));
 
       if (isZebra) {
-        ratePerSqm = ratePerSqm * 1.15;
+        ratePerSqm = ratePerSqm * 1.10;
       } else if (isSheerOrButterfly) {
         ratePerSqm = ratePerSqm * 1.35;
       }
