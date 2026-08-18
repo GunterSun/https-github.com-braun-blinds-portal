@@ -1255,7 +1255,23 @@ Estimated price: ${outPriceVal.textContent}`;
 
       const shippingFee = shippingInput ? (parseFloat(shippingInput.value) || 0) : 0;
       const taxAmount = totalFinal * (romanSalesTaxRate / 100);
-      const grandTotal = totalFinal + taxAmount + shippingFee;
+
+      // Credit Card Processing Fee (3.5%)
+      const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
+      const sheetCcFeeVal = document.getElementById('sheet-cc-fee-val');
+      const isCcFeeEnabled = sheetCcCheckbox ? sheetCcCheckbox.checked : false;
+
+      if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
+        sheetCcCheckbox.setAttribute('data-bound', 'true');
+        sheetCcCheckbox.addEventListener('change', () => {
+          updateQuoteTotalsSummary();
+          autoSaveActiveCustomerMeta();
+        });
+      }
+
+      const subtotalBeforeCc = totalFinal + taxAmount + shippingFee;
+      const ccFeeAmount = isCcFeeEnabled ? Math.round(subtotalBeforeCc * 0.035 * 100) / 100 : 0;
+      const grandTotal = subtotalBeforeCc + ccFeeAmount;
 
       const sheetSubtotalMsrp = document.getElementById('sheet-subtotal-msrp');
       const sheetDiscountAmount = document.getElementById('sheet-discount-amount');
@@ -1268,6 +1284,10 @@ Estimated price: ${outPriceVal.textContent}`;
       if (taxRateLabel) taxRateLabel.textContent = `${romanSalesTaxRate.toFixed(2)}%`;
       if (taxAmountVal) taxAmountVal.textContent = `$${taxAmount.toFixed(2)}`;
       if (shippingValDisplay) shippingValDisplay.textContent = `$${shippingFee.toFixed(2)}`;
+      if (sheetCcFeeVal) {
+        sheetCcFeeVal.textContent = isCcFeeEnabled ? `+$${ccFeeAmount.toFixed(2)}` : `$0.00`;
+        sheetCcFeeVal.style.color = isCcFeeEnabled ? '#d97706' : '#94a3b8';
+      }
       if (sheetGrandTotal) sheetGrandTotal.textContent = `$${grandTotal.toFixed(2)}`;
 
       // Update Shipping Package Summary Badge & Box Details Card
