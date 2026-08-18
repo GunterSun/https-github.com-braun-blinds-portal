@@ -1158,10 +1158,15 @@ Estimated price: ${outPriceVal.textContent}`;
           const idx = parseInt(input.getAttribute('data-idx'), 10);
           if (romanQuoteItems[idx]) {
             let typedVal = parseFloat(input.value);
-            if (isNaN(typedVal) || typedVal <= 0) typedVal = 5;
-            if (typedVal > 10) typedVal = typedVal / 10;
-            
-            const newDiscFactor = typedVal / 10;
+            if (isNaN(typedVal) || typedVal <= 0) typedVal = 3;
+            let newDiscFactor = 0.30;
+            if (typedVal > 0 && typedVal <= 1.0) {
+              newDiscFactor = typedVal;
+            } else if (typedVal > 1.0 && typedVal <= 10.0) {
+              newDiscFactor = typedVal / 10.0;
+            } else if (typedVal > 10.0 && typedVal <= 100.0) {
+              newDiscFactor = typedVal / 100.0;
+            }
             romanQuoteItems[idx].discount_factor = newDiscFactor;
 
             const pricing = ROMAN_DB.calculateItemPrice(
@@ -4282,10 +4287,13 @@ Estimated price: ${outPriceVal.textContent}`;
       const rowsHtml = romanQuoteItems.map((item, idx) => {
         const sysCode = item.sys ? item.sys.code : 'LM0002';
         const fabCode = item.fab ? item.fab.code : 'BZL01';
+        const wVal = parseFloat(item.width) || 36;
+        const hVal = parseFloat(item.height) || 60;
+        const itemDiscount = item.discount_factor !== undefined ? item.discount_factor : romanDiscountFactor;
 
         // Calculate item RMB base factory cost
         const priceObj = ROMAN_DB.calculateItemPrice(
-          sysCode, fabCode, item.width, item.height, 'none', 'none', 'none', romanDiscountFactor
+          sysCode, fabCode, wVal, hVal, 'none', 'none', 'none', itemDiscount
         );
 
         // Factory bare cost in RMB for 1 unit
