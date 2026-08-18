@@ -1265,40 +1265,7 @@ Estimated price: ${outPriceVal.textContent}`;
       const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
       const sheetCcFeeVal = document.getElementById('sheet-cc-fee-val');
       const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
-      const sheetCcFeeRow = document.getElementById('sheet-cc-fee-row');
       const isCcFeeEnabled = sheetCcCheckbox ? sheetCcCheckbox.checked : false;
-
-      if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
-        sheetCcCheckbox.setAttribute('data-bound', 'true');
-        const handleCcToggle = () => {
-          updateQuoteTotalsSummary();
-          autoSaveActiveCustomerMeta();
-        };
-
-        sheetCcCheckbox.addEventListener('change', handleCcToggle);
-
-        if (btnToggleCcFee) {
-          btnToggleCcFee.addEventListener('click', (e) => {
-            e.preventDefault();
-            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
-            handleCcToggle();
-          });
-          btnToggleCcFee.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
-            handleCcToggle();
-          });
-        }
-
-        if (sheetCcFeeRow) {
-          sheetCcFeeRow.addEventListener('click', (e) => {
-            if (e.target !== sheetCcCheckbox && e.target.tagName !== 'LABEL') {
-              sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
-              handleCcToggle();
-            }
-          });
-        }
-      }
 
       const subtotalBeforeCc = totalFinal + taxAmount + shippingFee;
       const ccFeeAmount = isCcFeeEnabled ? Math.round(subtotalBeforeCc * 0.035 * 100) / 100 : 0;
@@ -4417,8 +4384,50 @@ Estimated price: ${outPriceVal.textContent}`;
     // Initial Engine Bootstrap
     migrateAndPreserveAllHistoricalData();
     initQuoteNumberSequence();
+    function initCreditCardFeeEngine() {
+      const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
+      const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
+      const sheetCcFeeRow = document.getElementById('sheet-cc-fee-row');
+
+      const toggleFee = () => {
+        updateQuoteTotalsSummary();
+        autoSaveActiveCustomerMeta();
+      };
+
+      if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
+        sheetCcCheckbox.setAttribute('data-bound', 'true');
+        sheetCcCheckbox.addEventListener('change', toggleFee);
+      }
+
+      if (btnToggleCcFee && !btnToggleCcFee.hasAttribute('data-bound')) {
+        btnToggleCcFee.setAttribute('data-bound', 'true');
+        const handleBtnToggle = (e) => {
+          if (e) e.preventDefault();
+          if (sheetCcCheckbox) {
+            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+          }
+          toggleFee();
+        };
+        btnToggleCcFee.addEventListener('click', handleBtnToggle);
+        btnToggleCcFee.addEventListener('touchstart', handleBtnToggle);
+      }
+
+      if (sheetCcFeeRow && !sheetCcFeeRow.hasAttribute('data-bound')) {
+        sheetCcFeeRow.setAttribute('data-bound', 'true');
+        sheetCcFeeRow.addEventListener('click', (e) => {
+          if (e.target !== sheetCcCheckbox && e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
+            if (sheetCcCheckbox) {
+              sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+            }
+            toggleFee();
+          }
+        });
+      }
+    }
+
     initCustomerCrmModalEngine();
     initAdminCostModalEngine();
+    initCreditCardFeeEngine();
     updateSavedOrdersBadge();
     bindCategoryTabs();
     initAddonSelects();
