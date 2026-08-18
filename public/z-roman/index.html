@@ -717,6 +717,9 @@
               <button type="button" class="btn-import-table" id="btn-split-hardware-lines" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-right: 6px;">
                 ⚡ 拆分电机/配件为独立报价行 (Itemize Accessories)
               </button>
+              <button type="button" id="btn-toggle-cc-fee" style="background: #d97706; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-right: 6px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                💳 信用卡支付 (+3.5% 手续费): 关 (OFF)
+              </button>
               <button type="button" class="btn-print-pdf" id="btn-print-pdf">
                 🖨️ 打印 / 导出 PDF 报价单 (Print / PDF)
               </button>
@@ -823,11 +826,11 @@
                     <span class="print-only" id="sheet-shipping-fee-val" style="display: none;">$0.00</span>
                   </td>
                 </tr>
-                <tr id="sheet-cc-fee-row">
-                  <td class="tot-label">
-                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; color: #1e293b;">
-                      <input type="checkbox" id="sheet-cc-fee-checkbox" class="no-print" style="cursor: pointer; width: 15px; height: 15px; accent-color: #2563eb;">
-                      <span>💳 Credit Card Fee (3.5%) / 信用卡支付手续费</span>
+                <tr id="sheet-cc-fee-row" style="cursor: pointer;">
+                  <td class="tot-label" style="user-select: none;">
+                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; font-size: 0.82rem; color: #1e293b; width: 100%; padding: 4px 0;">
+                      <input type="checkbox" id="sheet-cc-fee-checkbox" class="no-print" style="cursor: pointer; width: 20px; height: 20px; accent-color: #2563eb; transform: scale(1.2); margin-right: 4px;">
+                      <span>💳 Credit Card Fee (+3.5%) / 信用卡支付手续费</span>
                     </label>
                   </td>
                   <td class="tot-val" id="sheet-cc-fee-val" style="color: #d97706; font-weight: 700;">+$0.00</td>
@@ -1624,7 +1627,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260818_v1.3.9"></script>
-  <script src="script.js?v=20260818_v1.3.9"></script>
+  <script src="roman_db.js?v=20260818_v1.4.0"></script>
+  <script src="script.js?v=20260818_v1.4.0"></script>
 </body>
 </html>

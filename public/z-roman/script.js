@@ -1264,19 +1264,55 @@ Estimated price: ${outPriceVal.textContent}`;
       // Credit Card Processing Fee (3.5%)
       const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
       const sheetCcFeeVal = document.getElementById('sheet-cc-fee-val');
+      const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
+      const sheetCcFeeRow = document.getElementById('sheet-cc-fee-row');
       const isCcFeeEnabled = sheetCcCheckbox ? sheetCcCheckbox.checked : false;
 
       if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
         sheetCcCheckbox.setAttribute('data-bound', 'true');
-        sheetCcCheckbox.addEventListener('change', () => {
+        const handleCcToggle = () => {
           updateQuoteTotalsSummary();
           autoSaveActiveCustomerMeta();
-        });
+        };
+
+        sheetCcCheckbox.addEventListener('change', handleCcToggle);
+
+        if (btnToggleCcFee) {
+          btnToggleCcFee.addEventListener('click', (e) => {
+            e.preventDefault();
+            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+            handleCcToggle();
+          });
+          btnToggleCcFee.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+            handleCcToggle();
+          });
+        }
+
+        if (sheetCcFeeRow) {
+          sheetCcFeeRow.addEventListener('click', (e) => {
+            if (e.target !== sheetCcCheckbox && e.target.tagName !== 'LABEL') {
+              sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+              handleCcToggle();
+            }
+          });
+        }
       }
 
       const subtotalBeforeCc = totalFinal + taxAmount + shippingFee;
       const ccFeeAmount = isCcFeeEnabled ? Math.round(subtotalBeforeCc * 0.035 * 100) / 100 : 0;
       const grandTotal = subtotalBeforeCc + ccFeeAmount;
+
+      if (btnToggleCcFee) {
+        if (isCcFeeEnabled) {
+          btnToggleCcFee.style.background = '#15803d';
+          btnToggleCcFee.textContent = `💳 信用卡支付 (+3.5% 手续费): 已开启 (ON +$${ccFeeAmount.toFixed(2)})`;
+        } else {
+          btnToggleCcFee.style.background = '#d97706';
+          btnToggleCcFee.textContent = `💳 信用卡支付 (+3.5% 手续费): 关 (OFF)`;
+        }
+      }
 
       const sheetSubtotalMsrp = document.getElementById('sheet-subtotal-msrp');
       const sheetDiscountAmount = document.getElementById('sheet-discount-amount');
