@@ -1756,13 +1756,12 @@ Estimated price: ${outPriceVal.textContent}`;
       if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
     }
 
-    // Auto Hash Router for Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
+    // Auto Hash Router for Braun-Z-1.5, Braun-Z-1.4, Braun-Z-1.3, Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
     function checkHashRoute() {
       const hash = window.location.hash.toLowerCase();
-      const href = window.location.href.toLowerCase();
       if (hash.includes('braun-z') || hash.includes('zhenpin-roman') || hash.includes('z-roman')) {
-        document.title = 'Braun-Z-1.3 | Z系列罗马帘与竹帘窗饰定制报价系统';
-        const sysElem = document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
+        document.title = 'Braun-Z-1.5 | Z系列罗马帘与竹帘窗饰定制报价系统';
+        const sysElem = document.getElementById('Braun-Z-1-5') || document.getElementById('Braun-Z-1-4') || document.getElementById('Braun-Z-1-3') || document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
         if (sysElem) {
           setTimeout(() => {
             sysElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4389,24 +4388,31 @@ Estimated price: ${outPriceVal.textContent}`;
       const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
       const sheetCcFeeRow = document.getElementById('sheet-cc-fee-row');
 
-      const toggleFee = () => {
+      if (!sheetCcCheckbox) return;
+
+      const setCcState = (newState) => {
+        sheetCcCheckbox.checked = !!newState;
         updateQuoteTotalsSummary();
         autoSaveActiveCustomerMeta();
       };
 
-      if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
+      if (!sheetCcCheckbox.hasAttribute('data-bound')) {
         sheetCcCheckbox.setAttribute('data-bound', 'true');
-        sheetCcCheckbox.addEventListener('change', toggleFee);
+        sheetCcCheckbox.addEventListener('change', (e) => {
+          if (e) e.stopPropagation();
+          updateQuoteTotalsSummary();
+          autoSaveActiveCustomerMeta();
+        });
       }
 
       if (btnToggleCcFee && !btnToggleCcFee.hasAttribute('data-bound')) {
         btnToggleCcFee.setAttribute('data-bound', 'true');
         const handleBtnToggle = (e) => {
-          if (e) e.preventDefault();
-          if (sheetCcCheckbox) {
-            sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
           }
-          toggleFee();
+          setCcState(!sheetCcCheckbox.checked);
         };
         btnToggleCcFee.addEventListener('click', handleBtnToggle);
         btnToggleCcFee.addEventListener('touchstart', handleBtnToggle);
@@ -4415,11 +4421,12 @@ Estimated price: ${outPriceVal.textContent}`;
       if (sheetCcFeeRow && !sheetCcFeeRow.hasAttribute('data-bound')) {
         sheetCcFeeRow.setAttribute('data-bound', 'true');
         sheetCcFeeRow.addEventListener('click', (e) => {
-          if (e.target !== sheetCcCheckbox && e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
-            if (sheetCcCheckbox) {
-              sheetCcCheckbox.checked = !sheetCcCheckbox.checked;
+          if (e.target !== sheetCcCheckbox && e.target.tagName !== 'INPUT') {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
             }
-            toggleFee();
+            setCcState(!sheetCcCheckbox.checked);
           }
         });
       }
