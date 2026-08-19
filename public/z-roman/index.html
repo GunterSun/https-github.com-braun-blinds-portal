@@ -571,9 +571,14 @@
                 </div>
               </div>
 
-              <button type="button" class="btn-add-item" id="btn-add-roman-item">
-                ➕ 添加到报价单明细 (Add Item to Quotation)
-              </button>
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem;">
+                <button type="button" class="btn-add-item" id="btn-add-roman-item" style="flex: 1;">
+                  ➕ 添加到报价单明细 (Add Item to Quotation)
+                </button>
+                <button type="button" id="btn-cancel-edit-item" style="display: none; background: #dc2626; color: #ffffff; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.88rem;">
+                  ❌ 取消修改
+                </button>
+              </div>
             </div>
 
           </div>
@@ -1627,7 +1632,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260818_v1.5.0"></script>
-  <script src="script.js?v=20260818_v1.5.0"></script>
+  <script src="roman_db.js?v=20260819_v1.5.2"></script>
+  <script src="script.js?v=20260819_v1.5.2"></script>
 </body>
 </html>

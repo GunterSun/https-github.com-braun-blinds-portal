@@ -951,7 +951,13 @@ Estimated price: ${outPriceVal.textContent}`;
               amount: Math.round(pricing.final_unit_price * qty * 100) / 100
             };
 
-            romanQuoteItems.push(newItem);
+            if (editingItemIndex !== null && romanQuoteItems[editingItemIndex]) {
+              newItem.id = romanQuoteItems[editingItemIndex].id; // preserve ID
+              romanQuoteItems[editingItemIndex] = newItem;
+              resetEditingMode();
+            } else {
+              romanQuoteItems.push(newItem);
+            }
           }
 
           renderQuoteItemsTable();
@@ -969,6 +975,111 @@ Estimated price: ${outPriceVal.textContent}`;
           console.error('Error adding item to quotation:', err);
         }
       });
+
+      const btnCancelEdit = document.getElementById('btn-cancel-edit-item');
+      if (btnCancelEdit) {
+        btnCancelEdit.addEventListener('click', () => {
+          resetEditingMode();
+        });
+      }
+    }
+
+    let editingItemIndex = null;
+
+    function resetEditingMode() {
+      editingItemIndex = null;
+      const btnAdd = document.getElementById('btn-add-roman-item');
+      const btnCancel = document.getElementById('btn-cancel-edit-item');
+      if (btnAdd) {
+        btnAdd.style.background = 'linear-gradient(135deg, #1e3a8a, #2563eb)';
+        btnAdd.textContent = '➕ 添加到报价单明细 (Add Item to Quotation)';
+      }
+      if (btnCancel) {
+        btnCancel.style.display = 'none';
+      }
+    }
+
+    function loadItemToConfiguratorForEditing(idx) {
+      const item = romanQuoteItems[idx];
+      if (!item) return;
+
+      editingItemIndex = idx;
+
+      // 1. Populate Room & Remark
+      const elRoomName = document.getElementById('roman-room-name');
+      const elItemRemark = document.getElementById('roman-item-remark');
+      if (elRoomName) elRoomName.value = item.room || '';
+      if (elItemRemark) elItemRemark.value = item.remark || '';
+
+      // 2. Populate Dimensions
+      const elWidth = document.getElementById('roman-width-input');
+      const elHeight = document.getElementById('roman-height-input');
+      if (elWidth) elWidth.value = item.width || 36;
+      if (elHeight) elHeight.value = item.height || 60;
+
+      // 3. Populate Quantity
+      const elQty = document.getElementById('roman-qty-input');
+      if (elQty) elQty.value = item.qty || 1;
+
+      // 4. Select System Card
+      if (item.sys && item.sys.code) {
+        romanSelectedSystemCode = item.sys.code;
+        const sysGrid = document.getElementById('roman-system-grid');
+        if (sysGrid) {
+          sysGrid.querySelectorAll('.option-card').forEach(card => {
+            if (card.getAttribute('data-code') === item.sys.code) {
+              card.click();
+            }
+          });
+        }
+      }
+
+      // 5. Select Fabric Card
+      if (item.fab && item.fab.code) {
+        romanSelectedFabricCode = item.fab.code;
+        const fabContainer = document.getElementById('fabric-cards-container');
+        if (fabContainer) {
+          fabContainer.querySelectorAll('.fabric-card').forEach(card => {
+            if (card.getAttribute('data-code') === item.fab.code) {
+              card.click();
+            }
+          });
+        }
+      }
+
+      // 6. Select Option Selects
+      const elMount = document.getElementById('roman-mount-select');
+      const elControl = document.getElementById('roman-control-select');
+      const elMotor = document.getElementById('roman-motor-select');
+      const elRemote = document.getElementById('roman-remote-select');
+      const elSmart = document.getElementById('roman-smart-select');
+
+      if (elMount && item.mount) elMount.value = item.mount;
+      if (elControl && item.control) elControl.value = item.control;
+
+      // 7. Update UI to Editing Mode
+      const btnAdd = document.getElementById('btn-add-roman-item');
+      const btnCancel = document.getElementById('btn-cancel-edit-item');
+      if (btnAdd) {
+        btnAdd.style.background = 'linear-gradient(135deg, #15803d, #16a34a)';
+        btnAdd.textContent = `✏️ 保存修改第 ${idx + 1} 行明细 (Update Line #${idx + 1})`;
+      }
+      if (btnCancel) {
+        btnCancel.style.display = 'block';
+      }
+
+      // 8. Recalculate Live Price
+      calculateLiveItemPrice();
+
+      // 9. Smooth Scroll back up to Configurator
+      const configurator = document.querySelector('.item-configurator-card') || document.getElementById('zhenpin-roman');
+      if (configurator) {
+        configurator.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        configurator.style.boxShadow = '0 0 0 3px #2563eb, 0 10px 25px rgba(37,99,235,0.25)';
+        setTimeout(() => {
+          configurator.style.boxShadow = '';
+        }, 2000);
+      }
     }
 
     // Render Quotation Table & Calculate Totals
@@ -1055,18 +1166,30 @@ Estimated price: ${outPriceVal.textContent}`;
             <td style="text-align: center;">
               <input type="text" class="table-inline-input inline-mount" data-idx="${index}" value="${item.mount_code_custom || mountCode}" style="width: 42px; text-align: center; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">
             </td>
-            <td class="no-print text-center" style="text-align: center;">
-              <button type="button" class="btn-row-delete" data-id="${item.id}" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;">❌</button>
+            <td class="no-print text-center" style="text-align: center; white-space: nowrap;">
+              <button type="button" class="btn-row-edit" data-idx="${index}" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 0.76rem; font-weight: 700; margin-right: 4px; box-shadow: 0 1px 3px rgba(37,99,235,0.3);" title="在上方区域重新选择和修改此行内容">✏️ 修改</button>
+              <button type="button" class="btn-row-delete" data-id="${item.id}" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;" title="删除此行">❌</button>
             </td>
           </tr>
         `;
       }).join('');
 
+      // Edit item handler -> loads item parameters back into upper configurator panel
+      quoteItemsBody.querySelectorAll('.btn-row-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          loadItemToConfiguratorForEditing(idx);
+        });
+      });
+
       // Delete item handler
       quoteItemsBody.querySelectorAll('.btn-row-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
           const id = parseInt(btn.getAttribute('data-id'), 10);
           romanQuoteItems = romanQuoteItems.filter(i => i.id !== id);
+          if (editingItemIndex !== null) resetEditingMode();
           renderQuoteItemsTable();
         });
       });
@@ -4283,8 +4406,13 @@ Estimated price: ${outPriceVal.textContent}`;
       let grandCostLandedUsd = 0;
       let grandQuotedUsd = 0;
 
-      // Distribute shipping cost per item proportional to item weight/sqm
-      const totalQuoteSqm = romanQuoteItems.reduce((acc, item) => acc + (item.sqm || 1) * (item.qty || 1), 0);
+      // Distribute shipping cost per item proportional to item weight/sqm (excluding zero-freight hardware)
+      const isZeroFreight = (item) => {
+        return ROMAN_DB.isZeroFreightHardware ? ROMAN_DB.isZeroFreightHardware(item) : false;
+      };
+
+      const shadeQuoteItems = romanQuoteItems.filter(item => !isZeroFreight(item));
+      const totalShadeSqm = shadeQuoteItems.reduce((acc, item) => acc + (item.sqm || 1) * (item.qty || 1), 0);
 
       const rowsHtml = romanQuoteItems.map((item, idx) => {
         const sysCode = item.sys ? item.sys.code : 'LM0002';
@@ -4302,11 +4430,17 @@ Estimated price: ${outPriceVal.textContent}`;
         const unitRmbBase = priceObj.rmb_base_cost || priceObj.rmb_base || 163.0;
         const totalRmbBase = unitRmbBase * (item.qty || 1);
 
-        // Item proportion of shipping weight
-        const itemSqm = (item.sqm || 1) * (item.qty || 1);
-        const sqmRatio = totalQuoteSqm > 0 ? (itemSqm / totalQuoteSqm) : (1 / romanQuoteItems.length);
-        const itemFreightRmb = totalEstFreightRmb * sqmRatio;
-        const itemFreightUsd = itemFreightRmb / adminExchangeRate;
+        // Item proportion of shipping weight (Motors, Remotes & Smart Hubs have 0 freight)
+        const isHw = isZeroFreight(item);
+        let itemFreightRmb = 0;
+        let itemFreightUsd = 0;
+
+        if (!isHw) {
+          const itemSqm = (item.sqm || 1) * (item.qty || 1);
+          const sqmRatio = totalShadeSqm > 0 ? (itemSqm / totalShadeSqm) : (1 / (shadeQuoteItems.length || 1));
+          itemFreightRmb = totalEstFreightRmb * sqmRatio;
+          itemFreightUsd = itemFreightRmb / adminExchangeRate;
+        }
 
         // Total Landed Cost
         const itemLandedCostRmb = totalRmbBase + itemFreightRmb;
