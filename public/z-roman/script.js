@@ -1024,7 +1024,7 @@ Estimated price: ${outPriceVal.textContent}`;
       // 4. Select System Card
       if (item.sys && item.sys.code) {
         romanSelectedSystemCode = item.sys.code;
-        const sysGrid = document.getElementById('roman-system-grid');
+        const sysGrid = document.getElementById('system-selector-grid') || document.getElementById('roman-system-grid');
         if (sysGrid) {
           sysGrid.querySelectorAll('.option-card').forEach(card => {
             if (card.getAttribute('data-code') === item.sys.code) {
@@ -1037,7 +1037,7 @@ Estimated price: ${outPriceVal.textContent}`;
       // 5. Select Fabric Card
       if (item.fab && item.fab.code) {
         romanSelectedFabricCode = item.fab.code;
-        const fabContainer = document.getElementById('fabric-cards-container');
+        const fabContainer = document.getElementById('fabric-selector-grid') || document.getElementById('fabric-cards-container');
         if (fabContainer) {
           fabContainer.querySelectorAll('.fabric-card').forEach(card => {
             if (card.getAttribute('data-code') === item.fab.code) {
@@ -1048,8 +1048,8 @@ Estimated price: ${outPriceVal.textContent}`;
       }
 
       // 6. Select Option Selects
-      const elMount = document.getElementById('roman-mount-select');
-      const elControl = document.getElementById('roman-control-select');
+      const elMount = document.getElementById('roman-mount-type') || document.getElementById('roman-mount-select');
+      const elControl = document.getElementById('roman-control-side') || document.getElementById('roman-control-select');
       const elMotor = document.getElementById('roman-motor-select');
       const elRemote = document.getElementById('roman-remote-select');
       const elSmart = document.getElementById('roman-smart-select');
@@ -1904,12 +1904,12 @@ Estimated price: ${outPriceVal.textContent}`;
       if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
     }
 
-    // Auto Hash Router for Braun-Z-1.5, Braun-Z-1.4, Braun-Z-1.3, Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
+    // Auto Hash Router for Braun-Z-1.6, Braun-Z-1.5, Braun-Z-1.4, Braun-Z-1.3, Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
     function checkHashRoute() {
       const hash = window.location.hash.toLowerCase();
       if (hash.includes('braun-z') || hash.includes('zhenpin-roman') || hash.includes('z-roman')) {
-        document.title = 'Braun-Z-1.5 | Z系列罗马帘与竹帘窗饰定制报价系统';
-        const sysElem = document.getElementById('Braun-Z-1-5') || document.getElementById('Braun-Z-1-4') || document.getElementById('Braun-Z-1-3') || document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
+        document.title = 'Braun-Z-1.6 | Z系列罗马帘与竹帘窗饰定制报价系统';
+        const sysElem = document.getElementById('Braun-Z-1-6') || document.getElementById('Braun-Z-1-5') || document.getElementById('Braun-Z-1-4') || document.getElementById('Braun-Z-1-3') || document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
         if (sysElem) {
           setTimeout(() => {
             sysElem.scrollIntoView({ behavior: 'smooth', block: 'start' });

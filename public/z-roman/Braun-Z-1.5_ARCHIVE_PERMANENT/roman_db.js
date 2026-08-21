@@ -6864,13 +6864,29 @@ const ROMAN_DB = {
     };
   },
 
+  isZeroFreightHardware: function(item) {
+    if (!item) return false;
+    if (item.is_hardware_only || item.is_accessory_only) return true;
+    const sysName = (item.sys && item.sys.name_cn) ? item.sys.name_cn : '';
+    const sysCode = (item.sys && item.sys.code) ? item.sys.code : '';
+    const roomName = item.room || '';
+    const remark = item.remark || '';
+    const str = (sysName + ' ' + sysCode + ' ' + roomName + ' ' + remark).toLowerCase();
+    return (str.includes('电机') || str.includes('遥控') || str.includes('智能') || 
+            str.includes('motor') || str.includes('remote') || str.includes('gateway') || 
+            str.includes('hub') || str.includes('aok') || str.includes('ac520'));
+  },
+
   // Package Freight & Weight Calculator Engine (Based on 包裹重量测算规划.docx & 重量测算表.xlsx)
   calculatePackageShipping: function(items) {
     if (!items || items.length === 0) {
       return { total_boxes: 0, total_vol_weight_kg: 0, total_act_weight_kg: 0, total_billed_weight_kg: 0, est_freight_usd: 0, boxes: [] };
     }
 
-    const sorted = [...items].sort((a, b) => (b.width || 36) - (a.width || 36));
+    const shadeItems = items.filter(i => !this.isZeroFreightHardware(i));
+    const targetItems = shadeItems.length > 0 ? shadeItems : items;
+
+    const sorted = [...targetItems].sort((a, b) => (b.width || 36) - (a.width || 36));
     let boxes = [];
     let currentBox = [];
 
