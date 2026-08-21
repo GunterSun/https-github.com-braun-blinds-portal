@@ -1,0 +1,6 @@
+CREATE TABLE `customer_property_access` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`user_id` integer NOT NULL,`customer_id` integer NOT NULL,`property_id` integer NOT NULL,`access_role` text DEFAULT 'household' NOT NULL,`status` text DEFAULT 'active' NOT NULL,`granted_by` integer NOT NULL,`granted_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,`revoked_by` integer,`revoked_at` text);
+CREATE UNIQUE INDEX `customer_property_access_user_property_unique` ON `customer_property_access` (`user_id`,`property_id`);
+CREATE INDEX `customer_property_access_property_idx` ON `customer_property_access` (`property_id`);
+CREATE TABLE `customer_invitations` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`customer_id` integer NOT NULL,`property_id` integer NOT NULL,`email` text NOT NULL,`phone` text DEFAULT '' NOT NULL,`display_name` text NOT NULL,`access_role` text DEFAULT 'household' NOT NULL,`token_hash` text NOT NULL,`status` text DEFAULT 'pending' NOT NULL,`expires_at` text NOT NULL,`invited_by` integer NOT NULL,`accepted_by_user_id` integer,`accepted_at` text,`revoked_at` text,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE UNIQUE INDEX `customer_invitations_token_hash_unique` ON `customer_invitations` (`token_hash`);
+CREATE INDEX `customer_invitations_property_idx` ON `customer_invitations` (`property_id`);

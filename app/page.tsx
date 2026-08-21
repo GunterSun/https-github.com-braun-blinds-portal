@@ -36,13 +36,6 @@ const nav: NavGroup[] = [
 
 const orders:ModuleRow[] = [];
 
-const kpis = [
-  { label: "本月销售额", value: "$84,620", delta: "较上月 +12.4%", icon: "↗", trend: [12,20,16,31,28,45,39,58] },
-  { label: "进行中销售订单", value: "24", delta: "其中6项需处理", icon: "▣", trend: [24,22,30,27,36,33,41,45] },
-  { label: "本周现场任务", value: "18", delta: "团队产能已使用82%", icon: "✓", trend: [18,22,21,31,26,36,42,38] },
-  { label: "应收账款", value: "$31,480", delta: "逾期金额 $4,950", icon: "$", trend: [46,39,44,37,34,31,28,24] },
-];
-
 const pages: Record<string, { title: string; kicker: string }> = {
   客户与订单: { title: "客户与订单", kicker: "从 jin 汇总文件查看真实经销商、项目代号、产品、数量、结算金额和汇款状态。" },
   销售线索: { title: "销售线索", kicker: "记录来源、跟进人、客户需求、预约时间和成交阶段。" },
@@ -73,69 +66,8 @@ const pages: Record<string, { title: string; kicker: string }> = {
   真实经营分析: { title: "真实经营分析", kicker: "仅使用Excel真实字段分析订单、数量、客户、产品和汇款状态。" },
 };
 
-const moduleRows: Record<string, ModuleRow[]> = {
-  销售线索: [
-    {id:"LD-2026-0081",client:"林女士 · Pasadena",product:"客厅电动卷帘，预约现场咨询",owner:"陈美雅",value:"预计 $8,000",status:"待联系",tone:"amber",date:"今天 3:00"},
-    {id:"LD-2026-0078",client:"Cedar Design Group",product:"酒店公共区窗帘项目",owner:"朴立欧",value:"预计 $35,000",status:"已预约",tone:"green",date:"7月18日"},
-  ],
-  客户管理: [
-    {id:"CU-0148",client:"Hillcrest Residence",product:"2个项目 · 26个窗位",owner:"陈美雅",value:"累计 $28,460",status:"活跃客户",tone:"green",date:"7月14日"},
-    {id:"CU-0139",client:"Ontario Office Partners",product:"商业客户 · Net 30",owner:"金诺亚",value:"累计 $42,180",status:"活跃客户",tone:"green",date:"7月11日"},
-  ],
-  项目管理: [
-    {id:"PJ-2026-0036",client:"山景别墅项目",product:"12个窗位 · 已完成测量",owner:"陈美雅",value:"$18,420",status:"执行中",tone:"blue",date:"7月28日"},
-    {id:"PJ-2026-0031",client:"银湖设计工作室",product:"8个窗位 · 蛇形帘",owner:"朴立欧",value:"$9,860",status:"待安装",tone:"green",date:"7月22日"},
-  ],
-  上门测量: [
-    {id:"MS-2026-0114",client:"峡谷住宅项目",product:"14个窗位 · 整墙及逐窗照片完整",owner:"陈美雅",value:"14/14窗",status:"已完成",tone:"green",date:"7月15日"},
-    {id:"MS-2026-0116",client:"Park Residence",product:"主卧及客厅 · 6个窗位",owner:"金诺亚",value:"待测量",status:"已排程",tone:"blue",date:"7月17日"},
-  ],
-  报价管理: [
-    {id:"QT-2026-0188",client:"山景别墅项目",product:"电动卷帘 · Somfy电机",owner:"陈美雅",value:"$18,420",status:"客户已批准",tone:"green",date:"7月2日"},
-    {id:"QT-2026-0194",client:"Westside Loft",product:"罗马帘 · 7个窗位",owner:"朴立欧",value:"$6,780",status:"已发送",tone:"blue",date:"7月16日"},
-  ],
-  销售订单: orders,
-  采购订单: [
-    {id:"PO-2026-0726",client:"供应商：Suntex",product:"关联 SO-2026-1048 · 电动卷帘",owner:"金诺亚",value:"$8,940",status:"生产中",tone:"blue",date:"预计7月22日"},
-    {id:"PO-2026-0719",client:"供应商：Fabricut",product:"关联 SO-2026-1042 · 窗帘面料",owner:"陈美雅",value:"$3,260",status:"已发货",tone:"green",date:"预计7月18日"},
-  ],
-  采购入库: [
-    {id:"RC-2026-0042",client:"PO-2026-0719",product:"5箱 · 关联 SO-2026-1042",owner:"仓库",value:"数量 8/8",status:"待质检",tone:"amber",date:"今天"},
-    {id:"RC-2026-0038",client:"PO-2026-0708",product:"3箱 · 2件轨道",owner:"仓库",value:"数量 3/3",status:"已入库",tone:"green",date:"7月14日"},
-  ],
-  安装工单: [
-    {id:"WO-2026-0094",client:"银湖设计工作室",product:"安装蛇形帘 · 8个窗位 · 二人组",owner:"安装二组",value:"预计 4.5小时",status:"已排程",tone:"blue",date:"7月22日 11:30"},
-    {id:"WO-2026-0091",client:"Ontario Offices",product:"垂直百叶 · 28个窗位",owner:"安装一组",value:"预计 6小时",status:"待确认",tone:"amber",date:"7月24日 8:30"},
-  ],
-  应收账款: [
-    {id:"INV-2026-0241",client:"山景别墅项目",product:"SO-2026-1048 · 50%尾款",owner:"财务",value:"$9,210",status:"未到期",tone:"blue",date:"7月28日"},
-    {id:"INV-2026-0228",client:"Ontario Offices",product:"SO-2026-1033 · 定金",owner:"财务",value:"$4,950",status:"已逾期",tone:"red",date:"逾期5天"},
-  ],
-  生产进度:[
-    {id:"SO-2026-1048",client:"山景别墅项目",product:"电动卷帘12件 · 供应商已确认生产",owner:"金诺亚",value:"完成 7/12",status:"生产中",tone:"blue",date:"预计7月25日"},
-    {id:"SO-2026-1039",client:"峡谷住宅项目",product:"斑马帘14件 · 等待装箱照片",owner:"陈美雅",value:"完成 14/14",status:"待发货",tone:"amber",date:"7月20日"}
-  ],
-  照片资料:[
-    {id:"PH-SO-1048",client:"山景别墅项目",product:"测量照片36张 · 墙面6张 · 电源位置8张",owner:"陈美雅",value:"50张",status:"资料完整",tone:"green",date:"7月19日更新"},
-    {id:"PH-SO-1042",client:"银湖设计工作室",product:"安装前18张 · 完工照片待上传",owner:"安装二组",value:"18张",status:"缺完工照片",tone:"amber",date:"今天到期"}
-  ],
-  供应商管理:[
-    {id:"VN-0012",client:"Jin Park / CWF",product:"罗马帘加工 · 一级批发价 · 支持外销",owner:"采购",value:"平均21天",status:"合作中",tone:"green",date:"7月18日更新"},
-    {id:"VN-0007",client:"Somfy",product:"电机、遥控器、Hub及智能控制",owner:"采购",value:"Net 30",status:"合作中",tone:"green",date:"7月12日更新"}
-  ],
-  供应商账单:[
-    {id:"BILL-2026-0184",client:"Jin Park / CWF",product:"关联 PO-2026-0726 · SO-2026-1048",owner:"财务",value:"$8,940",status:"待审核",tone:"amber",date:"7月20日前"},
-    {id:"BILL-2026-0179",client:"Fabricut",product:"关联 PO-2026-0719 · 面料采购",owner:"财务",value:"$3,260",status:"已付款",tone:"green",date:"7月16日"}
-  ],
-  收付款:[
-    {id:"PAY-2026-0316",client:"山景别墅项目",product:"SO-2026-1048 · 客户定金 · Zelle",owner:"财务",value:"+$9,210",status:"已到账",tone:"green",date:"7月3日"},
-    {id:"PAY-2026-0328",client:"Jin Park / CWF",product:"BILL-2026-0184 · 供应商付款",owner:"财务",value:"-$4,470",status:"待批准",tone:"amber",date:"7月20日"}
-  ],
-  产品与文档:[
-    {id:"DOC-MEASURE-01",client:"窗帘测量标准",product:"整墙、窗位、口深、IB/OB及照片要求",owner:"管理员",value:"版本 3.0",status:"已发布",tone:"green",date:"7月19日"},
-    {id:"DOC-ROMAN-02",client:"罗马帘加工说明",product:"款式、拉绳、里布、帘头、分档及加工图",owner:"生产",value:"版本 2.4",status:"已发布",tone:"green",date:"7月18日"}
-  ]
-};
+// Business rows must come from imported workbooks or records explicitly entered by users.
+const moduleRows: Record<string, ModuleRow[]> = {};
 
 function Status({ children, tone = "blue" }: { children: React.ReactNode; tone?: string }) {
   return <span className={`status ${tone}`}><i />{children}</span>;
@@ -310,7 +242,7 @@ function ListView({ name, onOpen, search, status, compact }: { name: string; onO
 
 function CalendarView(){ const [month,setMonth]=useState(7);const [selected,setSelected]=useState<number|null>(null);const days=Array.from({length:35},(_,i)=>i<3?29+i:i-2); return <div className="panel calendar"><div className="calendar-head"><button onClick={()=>setMonth(m=>m===1?12:m-1)}>←</button><h2>2026年{month}月 <small>/ {['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]}</small></h2><button onClick={()=>setMonth(m=>m===12?1:m+1)}>→</button><span/><Status tone="blue">上门测量</Status><Status tone="green">安装施工</Status><Status tone="amber">方案咨询</Status></div><div className="weekdays">{['周日','周一','周二','周三','周四','周五','周六'].map(d=><b key={d}>{d}</b>)}</div><div className="days">{days.map((d,i)=><button key={i} className={`${i<3?'muted':''} ${selected===i?'selected-day':''}`} onClick={()=>setSelected(i)}><span>{d}</span>{month===7&&i===9&&<em className="event blue">9:00 · 测量</em>}{month===7&&i===11&&<em className="event amber">14:00 · 咨询</em>}{month===7&&i===17&&<em className="event green">11:30 · 安装</em>}{month===7&&i===24&&<em className="event green">8:30 · 安装</em>}</button>)}</div>{selected!==null&&<div className="calendar-selection">已选择 {month}月{days[selected]}日 / Selected date　<button onClick={()=>setSelected(null)}>清除 / Clear</button></div>}</div> }
 
-function ReportView({name}:{name:string}){ return <><section className="kpi-grid report-kpis">{kpis.map((k,i)=><article className="kpi" key={k.label}><div className="kpi-top"><span>{name==='应收账款'&&i===0?'应收余额合计':k.label}</span></div><strong>{k.value}</strong><small>{k.delta}</small></article>)}</section><div className="report-grid"><article className="panel chart-card"><div className="panel-head"><div><span className="eyebrow">近12个月趋势</span><h2>{name}概览</h2></div></div><div className="bars">{[32,48,42,58,68,62,78,72,88,77,92,84].map((v,i)=><div key={i}><i style={{height:`${v}%`}}/><small>{['8月','9月','10月','11月','12月','1月','2月','3月','4月','5月','6月','7月'][i]}</small></div>)}</div></article><article className="panel mix"><span className="eyebrow">产品构成</span><h2>销售产品占比</h2>{[['卷帘 / 阳光面料','36%'],['窗帘 / 轨道','24%'],['百叶 / 垂直帘','19%'],['木百叶 / 百叶窗','12%'],['罗马帘及其他','9%']].map(x=><div key={x[0]}><span>{x[0]}</span><b>{x[1]}</b></div>)}</article></div></> }
+function ReportView({name}:{name:string}){ return <section className="panel empty-search"><h2>{name}</h2><p>尚无可验证的业务数据。导入真实 Excel 或建立正式记录后，系统才会生成统计和趋势。</p></section> }
 
 type CommerceRow={po:string;dealer:string;sidemark:string;product:string;qty:number;settlement:number;previousEmail:number;transferReference:string;received:number;remittance:string;difference:string};
 type WholesaleRow={seller:string;date:string;reference:string;amount:number};

@@ -1,0 +1,7 @@
+import { asc, desc, eq, inArray } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { getDb } from "@/db";
+import { measureProperties, measureRooms, measureWindows } from "@/db/schema";
+import { getCurrentAppUser } from "@/lib/v4-auth";
+
+export async function GET(){const user=await getCurrentAppUser();if(!user)return NextResponse.json({error:"Authentication required"},{status:401});if(!["owner","sales","installer"].includes(user.role))return NextResponse.json({error:"Permission denied"},{status:403});const db=await getDb(),properties=await db.select({id:measureProperties.id,name:measureProperties.name}).from(measureProperties).where(user.role==="sales"?eq(measureProperties.createdBy,user.id):undefined).orderBy(desc(measureProperties.updatedAt)),ids=properties.map(item=>item.id);if(!ids.length)return NextResponse.json({properties:[]});const rooms=await db.select({id:measureRooms.id,propertyId:measureRooms.propertyId,name:measureRooms.name}).from(measureRooms).where(inArray(measureRooms.propertyId,ids)).orderBy(asc(measureRooms.sortOrder)),roomIds=rooms.map(item=>item.id),windows=roomIds.length?await db.select({id:measureWindows.id,roomId:measureWindows.roomId,code:measureWindows.code}).from(measureWindows).where(inArray(measureWindows.roomId,roomIds)).orderBy(asc(measureWindows.code)):[];return NextResponse.json({properties:properties.map(property=>({...property,rooms:rooms.filter(room=>room.propertyId===property.id).map(room=>({...room,windows:windows.filter(window=>window.roomId===room.id)}))}))})}

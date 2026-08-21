@@ -18,6 +18,12 @@ if [[ ! -x "${vinext}" ]]; then
   exit 69
 fi
 
+echo "Checking Chinese / English locale parity..."
+node "${SITES_PROJECT_ROOT}/scripts/check-locales.mjs"
+
+echo "Checking Owner-approved Z-Series catalog integrity..."
+node "${SITES_PROJECT_ROOT}/scripts/check-z-series-catalog.mjs"
+
 echo "Running bounded vinext build..."
 timeout \
   --signal=TERM \
