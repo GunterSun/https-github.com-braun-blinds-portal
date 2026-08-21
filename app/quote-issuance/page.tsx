@@ -4,14 +4,15 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 type Handoff = { id: number; revision: number; source: { property: { name: string }; room: { name: string }; window: { code: string }; design: { version: number; combinationType: string } } };
-type Quote = { id: number; quoteNumber: string; version: number; status: string; total: number; currency: string };
+type Quote = { id: number; quoteNumber: string; version: number; status: string; total: number; currency: string; shippingFee:number };
 type Lang = "zh" | "en";
 
 const moneyFields = [
-  ["subtotal", "小计", "Subtotal"],
+  ["subtotal", "产品小计", "Product subtotal"],
   ["discountAmount", "折扣金额", "Discount amount"],
   ["taxAmount", "税额", "Tax amount"],
   ["installationFee", "安装费", "Installation fee"],
+  ["shippingFee", "运输费", "Shipping fee"],
   ["depositRequired", "所需订金", "Required deposit"],
 ] as const;
 
@@ -20,7 +21,7 @@ const statusLabel = (status: string, lang: Lang) => {
     draft: ["草稿", "Draft"], issued: ["已签发", "Issued"], option_selected: ["已选配置", "Option selected"],
     signed: ["已签署", "Signed"], declined: ["已拒绝", "Declined"], expired: ["已过期", "Expired"],
   };
-  return labels[status]?.[lang === "zh" ? 0 : 1] || status.replaceAll("_", " ");
+  return labels[status]?.[lang === "zh" ? 0 : 1] || (lang === "zh" ? "未知状态" : "Unknown status");
 };
 
 export default function Page() {
@@ -30,7 +31,7 @@ export default function Page() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState(() => ({
-    handoffId: 0, currency: "USD", subtotal: 0, discountAmount: 0, taxAmount: 0, installationFee: 0, depositRequired: 0,
+    handoffId: 0, currency: "USD", subtotal: 0, discountAmount: 0, taxAmount: 0, installationFee: 0, shippingFee:0, depositRequired: 0,
     validUntil: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
     terms: "Valid for 30 days. Deposit required before order conversion.", renderingUrls: "", options: "",
   }));
@@ -65,10 +66,10 @@ export default function Page() {
   };
 
   return <main className="page">
-    <header><div><small>SPRINT 9 · QUOTE ISSUANCE #149</small><h1>{t("签发客户报价", "Issue customer Quote")}</h1><p>{t("从权威 Handoff 建立客户可见版本；不会读取或公开内部成本与利润。", "Create a customer-visible version from the authoritative Handoff. Internal cost and margin are never exposed.")}</p></div><nav><button type="button" onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/workflow-handoff">{t("业务交接", "Handoff")}</Link><Link href="/hub">{t("工作台", "Hub")}</Link></nav></header>
+    <header><div><small>SPRINT 9 · QUOTE ISSUANCE #149</small><h1>{t("签发客户报价", "Issue customer Quote")}</h1><p>{t("从权威 Handoff 建立客户可见版本；产品、税、安装和运输费用分别保存。", "Create a customer-visible version from the authoritative Handoff; product, tax, installation and shipping are stored separately.")}</p></div><nav><button type="button" onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/workflow-handoff">{t("业务交接", "Handoff")}</Link><Link href="/hub">{t("工作台", "Hub")}</Link></nav></header>
     <form className="card form" onSubmit={issue}>
       <h2>{t("新建不可变报价版本", "New immutable Quote version")}</h2>
-      <p className="notice">{t("每次签发都会建立新版本。提交期间按钮会锁定，防止浏览器重复提交。", "Each issuance creates a new version. The action is locked while submitting to prevent duplicate browser submissions.")}</p>
+      <p className="notice">{t("每次签发都会建立新版本。运输费不会混入产品价或安装费；已签署版本不可修改。", "Each issuance creates a new version. Shipping is never hidden inside product or installation pricing; signed versions remain immutable.")}</p>
       <label>{t("权威来源", "Authoritative source")}<select required value={form.handoffId} onChange={e => setForm({ ...form, handoffId: +e.target.value })}><option value={0}>{t("选择 Handoff", "Select Handoff")}</option>{handoffs.map(h => <option value={h.id} key={h.id}>{h.source.property.name} · {h.source.room.name}/{h.source.window.code} · Design V{h.source.design.version} · Handoff R{h.revision}</option>)}</select></label>
       <label>{t("币种", "Currency")}<select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}><option>USD</option><option>CNY</option></select></label>
       {moneyFields.map(([key, zh, en]) => <label key={key}>{t(zh, en)}<input min="0" step="0.01" type="number" value={form[key]} onChange={e => setForm({ ...form, [key]: +e.target.value })} /></label>)}
@@ -79,7 +80,7 @@ export default function Page() {
       <button disabled={busy || !form.handoffId}>{busy ? t("正在签发…", "Issuing…") : t("签发客户报价", "Issue customer Quote")}</button>
     </form>
     {message && <p className="message" role="status">{message}</p>}
-    <section className="card"><h2>{t("签发历史", "Issued history")}</h2>{!quotes.length && <p>{t("尚无已签发报价。", "No Quotes have been issued.")}</p>}{quotes.map(q => <article key={q.id}><b>{q.quoteNumber} · V{q.version}</b><span>{statusLabel(q.status, lang)}</span><strong>{q.currency} {q.total.toFixed(2)}</strong></article>)}</section>
+    <section className="card"><h2>{t("签发历史", "Issued history")}</h2>{!quotes.length && <p>{t("尚无已签发报价。", "No Quotes have been issued.")}</p>}{quotes.map(q => <article key={q.id}><b>{q.quoteNumber} · V{q.version}</b><span>{statusLabel(q.status, lang)}</span><span>{t("运输费", "Shipping")}: {q.currency} {(q.shippingFee??0).toFixed(2)}</span><strong>{q.currency} {q.total.toFixed(2)}</strong></article>)}</section>
     <style jsx>{styles}</style>
   </main>;
 }
