@@ -1,0 +1,3 @@
+CREATE TABLE `wall_elevation_versions` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,`room_id` integer NOT NULL,`version` integer NOT NULL,`title` text NOT NULL,`window_ids_json` text NOT NULL,`measurement_version_ids_json` text NOT NULL,`configuration_json` text DEFAULT '{}' NOT NULL,`language` text DEFAULT 'bilingual' NOT NULL,`created_by` integer NOT NULL,`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL);
+CREATE UNIQUE INDEX `wall_elevation_versions_room_version_unique` ON `wall_elevation_versions` (`room_id`,`version`);
+CREATE INDEX `wall_elevation_versions_room_idx` ON `wall_elevation_versions` (`room_id`);

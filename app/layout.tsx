@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import OfflineRuntime from "./offline-runtime";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Braun Blinds Smart Portal",
   description: "Braun Blinds unified customer, order, finance, factory, logistics and installation portal.",
+  manifest: "/manifest.webmanifest",
   other: {
     "codex-preview": "development",
   },
@@ -34,6 +36,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <OfflineRuntime />
         {children}
       </body>
     </html>
