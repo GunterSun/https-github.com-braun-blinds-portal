@@ -10136,6 +10136,11 @@ function setupActionButtons() {
         });
     }
 
+    const exportLongInvoiceBtn = document.getElementById('btn-export-long-invoice');
+    if (exportLongInvoiceBtn) {
+        exportLongInvoiceBtn.addEventListener('click', exportLongInvoicePdf);
+    }
+
     const printFabBtn = document.getElementById('btn-print-fab');
     if (printFabBtn) {
         printFabBtn.addEventListener('click', () => {
@@ -10200,6 +10205,61 @@ function setupActionButtons() {
     }
 
     setupPhotoUpload();
+}
+
+async function exportLongInvoicePdf() {
+    if (currentOrderItems.length === 0) {
+        alert('报价细目表为空，无法下载 Invoice！');
+        return;
+    }
+    if (typeof window.html2pdf !== 'function') {
+        alert('PDF 组件尚未加载，请刷新页面后重试。');
+        return;
+    }
+
+    const button = document.getElementById('btn-export-long-invoice');
+    const originalLabel = button ? button.textContent : '';
+    if (button) {
+        button.disabled = true;
+        button.textContent = '正在生成长图 PDF…';
+    }
+
+    try {
+        populatePrintQuoteTemplate();
+        const fabTemplate = document.getElementById('print-fab-template');
+        if (fabTemplate) fabTemplate.innerHTML = '';
+        const template = document.getElementById('print-quote-template');
+        const sheet = template && template.querySelector('.print-invoice-sheet');
+        if (!template || !sheet) throw new Error('Invoice 模板生成失败');
+
+        document.body.classList.add('exporting-long-invoice');
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+        const width = Math.max(sheet.scrollWidth, 1);
+        const height = Math.max(sheet.scrollHeight, 1);
+        const pageWidthMm = 210;
+        const pageHeightMm = Math.max(297, Math.ceil(pageWidthMm * height / width));
+        const po = (document.getElementById('meta-po').value || 'Order').replace(/[^a-zA-Z0-9_-]+/g, '_');
+
+        await window.html2pdf().set({
+            margin: 0,
+            filename: `Invoice_PO_${po}_Long.pdf`,
+            image: { type: 'jpeg', quality: 0.96 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+            jsPDF: { unit: 'mm', format: [pageWidthMm, pageHeightMm], orientation: 'portrait', compress: true },
+            pagebreak: { mode: [] }
+        }).from(sheet).save();
+    } catch (error) {
+        console.error(error);
+        alert(error && error.message ? error.message : '长图 PDF 生成失败，请刷新页面后重试。');
+    } finally {
+        document.body.classList.remove('exporting-long-invoice');
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalLabel || '下载 Invoice 长图 PDF';
+        }
+    }
 }
 
 function sendEmailNotification() {

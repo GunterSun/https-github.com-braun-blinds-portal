@@ -717,6 +717,33 @@ tbody tr:hover {
     display: none;
 }
 
+body.exporting-long-invoice #print-quote-template {
+    display: block;
+    position: fixed;
+    z-index: -1;
+    left: -20000px;
+    top: 0;
+    width: 1200px;
+    background: #fff;
+}
+body.exporting-long-invoice .print-invoice-sheet {font-family:'Times New Roman',serif;color:#000;background:#fff;padding:32px;box-sizing:border-box}
+body.exporting-long-invoice .print-invoice-title-row {border-bottom:3px solid #B55A30;padding-bottom:12px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end}
+body.exporting-long-invoice .print-invoice-title-row h1 {font-size:30px;color:#B55A30;margin:0}
+body.exporting-long-invoice .print-invoice-title-row span {font-size:17px;font-weight:700}
+body.exporting-long-invoice .print-meta-grid {display:grid;grid-template-columns:repeat(2,1fr);gap:12px 24px;margin-bottom:26px;font-size:14px}
+body.exporting-long-invoice .print-meta-item strong {display:inline-block;width:160px}
+body.exporting-long-invoice .print-table {width:100%;border-collapse:collapse;margin-bottom:28px;font-size:12px}
+body.exporting-long-invoice .print-table th,body.exporting-long-invoice .print-table td {border:1px solid #222;padding:8px;text-align:left;vertical-align:top}
+body.exporting-long-invoice .print-table th {background:#B55A30;color:#fff}
+body.exporting-long-invoice .print-totals-box {display:flex;justify-content:flex-end;margin-bottom:30px}
+body.exporting-long-invoice .print-totals-table {width:360px;border-collapse:collapse;font-size:13px}
+body.exporting-long-invoice .print-totals-table td {border:1px solid #222;padding:8px 12px}
+body.exporting-long-invoice .print-totals-table td:last-child {text-align:right;font-weight:700}
+body.exporting-long-invoice .print-totals-table .grand-total td {background:#B55A30;color:#fff;font-size:15px}
+body.exporting-long-invoice .print-terms-box {border-top:1px solid #222;padding-top:16px;margin-top:24px;font-size:12px;line-height:1.5}
+body.exporting-long-invoice .print-signature-row {display:flex;justify-content:space-between;margin-top:46px;font-size:13px}
+body.exporting-long-invoice .print-sig-box {width:280px;border-top:1px solid #222;text-align:center;padding-top:8px}
+
 @media print {
     /* Hide all layout screens */
     body {
