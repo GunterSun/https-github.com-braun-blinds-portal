@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRAUN INTERNATIONAL LLC 智能报价与订单管理系统</title>
+    <title>Jin Park (CWF) 智能报价与订单管理系统</title>
     <link rel="stylesheet" href="style.css">
-<!-- Mobile App Settings -->
+    <!-- Mobile App Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Jin报价">
-<!-- Google Fonts: Inter & Outfit -->
+    <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <a class="portal-return" href="/calculators">← 返回三个计算器</a>
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="brand">
                 <div class="logo">J</div>
-                <h2>BRAUN INTERNATIONAL LLC</h2>
+                <h2>Jin Park CWF</h2>
             </div>
             <nav class="nav-menu">
                 <button class="nav-btn active" data-tab="tab-calculator">
@@ -33,9 +34,9 @@
                 </button>
             </nav>
             <div class="sidebar-footer">
-                <p>v3.0 Complete (2026.07)</p>
+                <p>v2.2.0 (2026.06)</p>
                 <p>📞 +1 (818) 266-9988</p>
-                <p>✉️ sunblinds9@gmail.com</p>
+                <p>✉️ sales@braunblinds.com</p>
                 <p style="margin-top: 8px; font-weight: 500; color: #fff;">2026.braunblinds.com</p>
             </div>
         </aside>
@@ -45,8 +46,8 @@
             <!-- Top bar -->
             <header class="top-bar">
                 <div class="page-title">
-                    <h1 id="main-header">BRAUN INTERNATIONAL LLC 智能报价</h1>
-                    <p class="subtitle">Quotation · Invoice · Fabrication Management System</p>
+                    <h1 id="main-header">Jin Park 智能报价</h1>
+                    <p class="subtitle">自动化 Invoice 与 Fabrication 排版系统</p>
                 </div>
                 <div class="date-badge" id="date-badge">
                     2026年06月16日
@@ -314,8 +315,8 @@
                         <div class="form-group" id="group-mount">
                             <label for="item-mount">安装方式 (Mount / IB or OB)</label>
                             <select id="item-mount">
-                                <option value="IM" selected>Inside Mount (口内安装 / IB・IM，自动减宽 1/4")</option>
-                                <option value="OM">Outside Mount (口外安装 / OB・OM，不减宽)</option>
+                                <option value="IM" selected>Inside Mount (口内安装 / IM)</option>
+                                <option value="OM">Outside Mount (口外安装 / OM)</option>
                             </select>
                         </div>
                         
@@ -369,10 +370,6 @@
                         <button class="btn btn-danger-text" id="btn-clear-all">
                             清空全部细目
                         </button>
-                        <button class="btn btn-primary" id="btn-import-measure" type="button">
-                            导入测量数据 / Import Measure
-                        </button>
-                        <input type="file" id="measure-file-input" accept=".json,application/json" style="display:none;">
                     </div>
                     <div class="table-container">
                         <table id="items-table">
@@ -435,22 +432,28 @@
 
                     <!-- Actions Footer -->
                     <div class="action-footer-row">
-                        <button class="btn btn-secondary" id="btn-export-long-invoice" style="background: linear-gradient(135deg, #2F6B7C, #244F5B); color: white; border: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 3v12"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <path d="M5 21h14"></path>
-                            </svg>
-                            下载 Invoice 长图 PDF
+                        <button class="btn btn-secondary" id="btn-gen-contract">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            自动生成 Invoice Excel
+                        </button>
+                        <button class="btn btn-secondary" id="btn-gen-fab">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                            自动生成 Fabrication Excel
+                        </button>
+                        <button class="btn btn-primary" id="btn-print-quote">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            保存 PDF / 打印 Invoice (PDF/Print)
+                        </button>
+                        <button class="btn btn-secondary" id="btn-import-portal" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;">
+                            导入门户订单与收款中心
                         </button>
                         <button class="btn btn-accent" id="btn-print-fab">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                                <line x1="7" y1="8" x2="17" y2="8"></line>
-                                <line x1="7" y1="12" x2="17" y2="12"></line>
-                                <line x1="7" y1="16" x2="13" y2="16"></line>
-                            </svg>
-                            一键生成加工图 / Fabrication
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            保存 PDF / 打印 Fabrication (PDF/Print)
+                        </button>
+                        <button class="btn btn-secondary" id="btn-send-email" style="background: linear-gradient(135deg, #4A5B42, #3D4A36); color: white; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            一键生成邮件发送
                         </button>
                     </div>
                 </div>
