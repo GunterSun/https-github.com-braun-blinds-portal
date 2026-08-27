@@ -100,7 +100,7 @@ export async function findLoginUser(login: string) {
   const rows = await db
     .select()
     .from(appUsers)
-    .where(or(eq(appUsers.email, normalized), eq(appUsers.username, normalized)))
+    .where(or(eq(appUsers.email, normalized), eq(appUsers.username, normalized), eq(appUsers.phone, login.trim())))
     .limit(1);
   return rows[0] || null;
 }

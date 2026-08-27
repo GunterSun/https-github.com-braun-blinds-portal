@@ -38,8 +38,8 @@ export default function UnifiedHubPage(){
   },[]);
 
   const modules=useMemo(()=>{
-    const role=user?.role||"customer";
-    return UNIFIED_MODULES.filter(module=>module.roles.includes(role));
+    if(!user)return [];
+    return UNIFIED_MODULES.filter(module=>module.roles.includes(user.role));
   },[user]);
 
   const t=(zh:string,en:string)=>lang==="zh-CN"?zh:en;const common=lang==="zh-CN"?commonZh:commonEn;
