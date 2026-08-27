@@ -1,4 +1,4 @@
-/* style.css - BRAUN INTERNATIONAL LLC Pricing & Order System CSS Design System */
+/* style.css - Braun Quiju Pricing & Order System CSS Design System */
 
 /* Global Reset & Typography */
 * {
@@ -764,20 +764,19 @@ tbody tr:hover {
         font-family: 'Times New Roman', serif;
         color: #000000;
         padding: 15px;
-        min-height: 0; /* Remove forced full-page height that could create a blank first page */
-        display: block;
+        min-height: 260mm; /* Safe height to prevent page break overflow */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         box-sizing: border-box;
-        page-break-inside: auto;
-        break-inside: auto;
+        page-break-inside: avoid;
     }
     .print-invoice-body {
-        display: block;
+        flex: 1 0 auto;
     }
     .print-invoice-footer-container {
-        display: block;
-        margin-top: 18px;
-        page-break-inside: avoid;
-        break-inside: avoid;
+        flex: 0 0 auto;
+        margin-top: auto;
     }
     
     .print-invoice-title-row {
@@ -834,14 +833,6 @@ tbody tr:hover {
     }
     .print-table tr:hover {
         background: none !important;
-    }
-
-    .print-table thead {
-        display: table-header-group;
-    }
-    .print-table tr {
-        page-break-inside: avoid;
-        break-inside: avoid;
     }
     
     .print-totals-box {
@@ -1016,130 +1007,5 @@ tbody tr:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-
-
-/* v2.2.6: simplified output actions */
-.action-footer-row {
-    flex-wrap: wrap;
-}
-.action-footer-row .btn {
-    min-width: 230px;
-}
-@media (max-width: 600px) {
-    .action-footer-row {
-        flex-direction: column;
-    }
-    .action-footer-row .btn {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
-
-/* =========================================================
-   BRAUN v3.0 COMPLETE — Fabrication printing
-   ========================================================= */
-@page {
-    size: A4 landscape;
-    margin: 7mm;
-}
-
-body.printing-fabrication #print-quote-template {
-    display: none !important;
-}
-
-@media print {
-    html, body {
-        width: 100% !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-    }
-
-    /* Hide the application without leaving layout space. */
-    .app-container,
-    #print-quote-template {
-        display: none !important;
-    }
-
-    /* Print the fabrication template from page one. */
-    #print-fab-template {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        page-break-before: auto !important;
-        break-before: auto !important;
-        page-break-after: auto !important;
-        break-after: auto !important;
-    }
-
-    #print-fab-template:empty {
-        display: none !important;
-    }
-
-    .print-fab-sheet {
-        display: block !important;
-        width: 100% !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-        page-break-before: auto !important;
-        break-before: auto !important;
-        page-break-after: auto !important;
-        break-after: auto !important;
-    }
-
-    .print-fab-header {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    .print-fab-table {
-        page-break-inside: auto !important;
-        break-inside: auto !important;
-    }
-
-    .print-fab-table thead {
-        display: table-header-group !important;
-    }
-
-    .print-fab-table tr {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-    }
-
-    .print-fab-guidelines,
-    .print-fab-footer {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-    }
-
-    /* Never create a trailing blank page. */
-    #print-fab-template > :last-child,
-    .print-fab-sheet > :last-child {
-        page-break-after: auto !important;
-        break-after: auto !important;
-    }
-}
-
-/* Two output buttons only */
-.action-footer-row {
-    flex-wrap: wrap;
-}
-.action-footer-row .btn {
-    min-width: 245px;
-}
-@media (max-width: 600px) {
-    .action-footer-row {
-        flex-direction: column;
-    }
-    .action-footer-row .btn {
-        width: 100%;
-        min-width: 0;
-    }
-}
+:root { --portal-return-bg: #3d4a36; }
+.portal-return { position: fixed; z-index: 9999; right: 16px; bottom: 16px; padding: 10px 14px; border-radius: 999px; color: #fff; background: var(--portal-return-bg); box-shadow: 0 8px 24px rgba(0,0,0,.2); text-decoration: none; font: 600 12px/1.2 Inter, sans-serif; }
