@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Braun-Z-1.5 | Z系列罗马帘与竹帘窗饰定制报价系统 (Braun Blinds)</title>
+  <title>Braun-Z-1.6 | Z系列罗马帘与竹帘窗饰定制报价系统 (Braun Blinds)</title>
   <meta name="description" content="Custom window treatments designed for your home. Estimate costs instantly with the Braun Blinds Price Calculator. Professional installation & smart home integration.">
   
   <!-- SEO & Open Graph Metadata -->
-  <meta property="og:title" content="Braun-Z-1.5 | Premium Custom Window Treatments">
+  <meta property="og:title" content="Braun-Z-1.6 | Premium Custom Window Treatments">
   <meta property="og:description" content="Design and estimate custom window blinds instantly. Custom sizing, premium fabrics, and motorized smart controls available.">
   <meta property="og:type" content="website">
   
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="styles.css?v=20260818_v1.5">
+  <link rel="stylesheet" href="styles.css?v=20260822_v1.6">
 </head>
 <body class="bg-gradient">
 
@@ -27,7 +27,7 @@
       <nav class="nav-links" id="nav-menu">
         <a href="#hero" class="active">Home</a>
         <a href="#products">Products</a>
-        <a href="#Braun-Z-1-5" class="text-gold-highlight">Braun-Z-1.5 报价系统</a>
+        <a href="#Braun-Z-1-6" class="text-gold-highlight">Braun-Z-1.6 报价系统</a>
         <a href="#calculator">Price Calculator</a>
         <a href="#why-us">Why Us</a>
         <a href="#contact">Contact</a>
@@ -136,7 +136,7 @@
   </section>
 
   <!-- Zhenpin Roman Shades Custom Quotation System Section -->
-  <section id="Braun-Z-1-2" class="section-padding roman-section">
+  <section id="Braun-Z-1-6" class="section-padding roman-section">
     <div class="container container-wide">
       
       <!-- Section Header -->
@@ -268,6 +268,21 @@
                   <button type="button" class="tax-btn" data-tax="9.5">9.5% (LA)</button>
                   <button type="button" class="tax-btn" data-tax="10">10%</button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Credit Card Payment Fee Setting (信用卡 3.5% 手续费开启/关闭设置) -->
+            <div class="form-group form-group-full discount-config-group" style="margin-top: 0.5rem; background: rgba(217, 119, 6, 0.05); border-color: rgba(217, 119, 6, 0.25);">
+              <div class="discount-label-row">
+                <label class="form-label" style="color: #b45309;">💳 信用卡支付手续费设置 (Credit Card Payment Fee Option)</label>
+                <span class="discount-badge-val" id="cc-fee-badge-status" style="background: #fef3c7; color: #d97706; border-color: #fde68a;">未开启 3.5% 手续费 (OFF)</span>
+              </div>
+              
+              <div class="manual-discount-container" style="padding: 4px 0;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 0.85rem; color: #1e293b; user-select: none; width: 100%;">
+                  <input type="checkbox" id="main-cc-fee-checkbox" style="width: 20px; height: 20px; cursor: pointer; accent-color: #2563eb; transform: scale(1.1);">
+                  <span style="color: #1e293b;">勾选开启 💳 信用卡 3.5% 支付手续费 (Add 3.5% Credit Card Fee to Invoice Total)</span>
+                </label>
               </div>
             </div>
 
@@ -719,6 +734,9 @@
               <button type="button" class="btn-import-table" id="btn-upload-customer-excel" style="background: #2563EB; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 6px; margin-right: 6px;">
                 📂 导入并智能识别客户文件 (支持 Excel / CSV / PDF / 现场测绘照片)
               </button>
+              <button type="button" class="btn-import-table" id="btn-load-kelly-order" style="background: linear-gradient(135deg, #7c3aed, #9333ea); color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 6px; margin-right: 6px; font-size: 0.82rem; box-shadow: 0 2px 5px rgba(147,51,234,0.3);">
+                👩‍💼 加载 Kelly 客户 24 张现场图纸订单 (Kelly Order)
+              </button>
               <button type="button" class="btn-import-table" id="btn-split-hardware-lines" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-right: 6px;">
                 ⚡ 拆分电机/配件为独立报价行 (Itemize Accessories)
               </button>
@@ -727,6 +745,9 @@
               </button>
               <button type="button" class="btn-print-pdf" id="btn-print-pdf">
                 🖨️ 打印 / 导出 PDF 报价单 (Print / PDF)
+              </button>
+              <button type="button" class="btn-import-table" id="btn-export-excel" style="background: #16a34a; color: #ffffff; border: none; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-right: 6px;">
+                📊 导出 Excel 明细 (.xlsx)
               </button>
               <button type="button" id="btn-open-admin-cost-modal" style="background: #0f172a; color: #f8fafc; border: 1px solid #334155; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; margin-left: 4px; font-size: 0.78rem;">
                 🔐 成本与运费 (Admin Secret)
@@ -1632,7 +1653,7 @@
   <!-- Javascript Libraries & Modules -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="xlsx.full.min.js"></script>
-  <script src="roman_db.js?v=20260819_v1.5.2"></script>
-  <script src="script.js?v=20260819_v1.5.2"></script>
+  <script src="roman_db.js?v=20260822_v1.6.0"></script>
+  <script src="script.js?v=20260822_v1.6.0"></script>
 </body>
 </html>

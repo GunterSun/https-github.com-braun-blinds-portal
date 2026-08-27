@@ -951,7 +951,13 @@ Estimated price: ${outPriceVal.textContent}`;
               amount: Math.round(pricing.final_unit_price * qty * 100) / 100
             };
 
-            romanQuoteItems.push(newItem);
+            if (editingItemIndex !== null && romanQuoteItems[editingItemIndex]) {
+              newItem.id = romanQuoteItems[editingItemIndex].id; // preserve ID
+              romanQuoteItems[editingItemIndex] = newItem;
+              resetEditingMode();
+            } else {
+              romanQuoteItems.push(newItem);
+            }
           }
 
           renderQuoteItemsTable();
@@ -969,6 +975,111 @@ Estimated price: ${outPriceVal.textContent}`;
           console.error('Error adding item to quotation:', err);
         }
       });
+
+      const btnCancelEdit = document.getElementById('btn-cancel-edit-item');
+      if (btnCancelEdit) {
+        btnCancelEdit.addEventListener('click', () => {
+          resetEditingMode();
+        });
+      }
+    }
+
+    let editingItemIndex = null;
+
+    function resetEditingMode() {
+      editingItemIndex = null;
+      const btnAdd = document.getElementById('btn-add-roman-item');
+      const btnCancel = document.getElementById('btn-cancel-edit-item');
+      if (btnAdd) {
+        btnAdd.style.background = 'linear-gradient(135deg, #1e3a8a, #2563eb)';
+        btnAdd.textContent = '➕ 添加到报价单明细 (Add Item to Quotation)';
+      }
+      if (btnCancel) {
+        btnCancel.style.display = 'none';
+      }
+    }
+
+    function loadItemToConfiguratorForEditing(idx) {
+      const item = romanQuoteItems[idx];
+      if (!item) return;
+
+      editingItemIndex = idx;
+
+      // 1. Populate Room & Remark
+      const elRoomName = document.getElementById('roman-room-name');
+      const elItemRemark = document.getElementById('roman-item-remark');
+      if (elRoomName) elRoomName.value = item.room || '';
+      if (elItemRemark) elItemRemark.value = item.remark || '';
+
+      // 2. Populate Dimensions
+      const elWidth = document.getElementById('roman-width-input');
+      const elHeight = document.getElementById('roman-height-input');
+      if (elWidth) elWidth.value = item.width || 36;
+      if (elHeight) elHeight.value = item.height || 60;
+
+      // 3. Populate Quantity
+      const elQty = document.getElementById('roman-qty-input');
+      if (elQty) elQty.value = item.qty || 1;
+
+      // 4. Select System Card
+      if (item.sys && item.sys.code) {
+        romanSelectedSystemCode = item.sys.code;
+        const sysGrid = document.getElementById('roman-system-grid');
+        if (sysGrid) {
+          sysGrid.querySelectorAll('.option-card').forEach(card => {
+            if (card.getAttribute('data-code') === item.sys.code) {
+              card.click();
+            }
+          });
+        }
+      }
+
+      // 5. Select Fabric Card
+      if (item.fab && item.fab.code) {
+        romanSelectedFabricCode = item.fab.code;
+        const fabContainer = document.getElementById('fabric-cards-container');
+        if (fabContainer) {
+          fabContainer.querySelectorAll('.fabric-card').forEach(card => {
+            if (card.getAttribute('data-code') === item.fab.code) {
+              card.click();
+            }
+          });
+        }
+      }
+
+      // 6. Select Option Selects
+      const elMount = document.getElementById('roman-mount-select');
+      const elControl = document.getElementById('roman-control-select');
+      const elMotor = document.getElementById('roman-motor-select');
+      const elRemote = document.getElementById('roman-remote-select');
+      const elSmart = document.getElementById('roman-smart-select');
+
+      if (elMount && item.mount) elMount.value = item.mount;
+      if (elControl && item.control) elControl.value = item.control;
+
+      // 7. Update UI to Editing Mode
+      const btnAdd = document.getElementById('btn-add-roman-item');
+      const btnCancel = document.getElementById('btn-cancel-edit-item');
+      if (btnAdd) {
+        btnAdd.style.background = 'linear-gradient(135deg, #15803d, #16a34a)';
+        btnAdd.textContent = `✏️ 保存修改第 ${idx + 1} 行明细 (Update Line #${idx + 1})`;
+      }
+      if (btnCancel) {
+        btnCancel.style.display = 'block';
+      }
+
+      // 8. Recalculate Live Price
+      calculateLiveItemPrice();
+
+      // 9. Smooth Scroll back up to Configurator
+      const configurator = document.querySelector('.item-configurator-card') || document.getElementById('zhenpin-roman');
+      if (configurator) {
+        configurator.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        configurator.style.boxShadow = '0 0 0 3px #2563eb, 0 10px 25px rgba(37,99,235,0.25)';
+        setTimeout(() => {
+          configurator.style.boxShadow = '';
+        }, 2000);
+      }
     }
 
     // Render Quotation Table & Calculate Totals
@@ -1055,18 +1166,30 @@ Estimated price: ${outPriceVal.textContent}`;
             <td style="text-align: center;">
               <input type="text" class="table-inline-input inline-mount" data-idx="${index}" value="${item.mount_code_custom || mountCode}" style="width: 42px; text-align: center; font-weight: 700; border: 1px dashed #cbd5e1; border-radius: 4px; padding: 2px 2px; font-size: 0.78rem;">
             </td>
-            <td class="no-print text-center" style="text-align: center;">
-              <button type="button" class="btn-row-delete" data-id="${item.id}" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;">❌</button>
+            <td class="no-print text-center" style="text-align: center; white-space: nowrap;">
+              <button type="button" class="btn-row-edit" data-idx="${index}" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 0.76rem; font-weight: 700; margin-right: 4px; box-shadow: 0 1px 3px rgba(37,99,235,0.3);" title="在上方区域重新选择和修改此行内容">✏️ 修改</button>
+              <button type="button" class="btn-row-delete" data-id="${item.id}" style="background: none; border: none; cursor: pointer; font-size: 0.9rem;" title="删除此行">❌</button>
             </td>
           </tr>
         `;
       }).join('');
 
+      // Edit item handler -> loads item parameters back into upper configurator panel
+      quoteItemsBody.querySelectorAll('.btn-row-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          loadItemToConfiguratorForEditing(idx);
+        });
+      });
+
       // Delete item handler
       quoteItemsBody.querySelectorAll('.btn-row-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
           const id = parseInt(btn.getAttribute('data-id'), 10);
           romanQuoteItems = romanQuoteItems.filter(i => i.id !== id);
+          if (editingItemIndex !== null) resetEditingMode();
           renderQuoteItemsTable();
         });
       });
@@ -1262,10 +1385,21 @@ Estimated price: ${outPriceVal.textContent}`;
       const taxAmount = totalFinal * (romanSalesTaxRate / 100);
 
       // Credit Card Processing Fee (3.5%)
+      const mainCcCheckbox = document.getElementById('main-cc-fee-checkbox');
       const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
       const sheetCcFeeVal = document.getElementById('sheet-cc-fee-val');
       const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
-      const isCcFeeEnabled = sheetCcCheckbox ? sheetCcCheckbox.checked : false;
+      const ccBadgeStatus = document.getElementById('cc-fee-badge-status');
+
+      // Keep main-cc-fee-checkbox and sheet-cc-fee-checkbox in sync
+      const isCcFeeEnabled = (mainCcCheckbox && mainCcCheckbox.checked) || (sheetCcCheckbox && sheetCcCheckbox.checked);
+
+      if (mainCcCheckbox && mainCcCheckbox.checked !== isCcFeeEnabled) {
+        mainCcCheckbox.checked = isCcFeeEnabled;
+      }
+      if (sheetCcCheckbox && sheetCcCheckbox.checked !== isCcFeeEnabled) {
+        sheetCcCheckbox.checked = isCcFeeEnabled;
+      }
 
       const subtotalBeforeCc = totalFinal + taxAmount + shippingFee;
       const ccFeeAmount = isCcFeeEnabled ? Math.round(subtotalBeforeCc * 0.035 * 100) / 100 : 0;
@@ -1278,6 +1412,20 @@ Estimated price: ${outPriceVal.textContent}`;
         } else {
           btnToggleCcFee.style.background = '#d97706';
           btnToggleCcFee.textContent = `💳 信用卡支付 (+3.5% 手续费): 关 (OFF)`;
+        }
+      }
+
+      if (ccBadgeStatus) {
+        if (isCcFeeEnabled) {
+          ccBadgeStatus.style.background = '#dcfce7';
+          ccBadgeStatus.style.color = '#15803d';
+          ccBadgeStatus.style.borderColor = '#86efac';
+          ccBadgeStatus.textContent = `已开启 3.5% 手续费 (+$${ccFeeAmount.toFixed(2)})`;
+        } else {
+          ccBadgeStatus.style.background = '#fef3c7';
+          ccBadgeStatus.style.color = '#d97706';
+          ccBadgeStatus.style.borderColor = '#fde68a';
+          ccBadgeStatus.textContent = `未开启 3.5% 手续费 (OFF)`;
         }
       }
 
@@ -1756,13 +1904,12 @@ Estimated price: ${outPriceVal.textContent}`;
       if (btnClearInvoice) btnClearInvoice.addEventListener('click', clearCanvas);
     }
 
-    // Auto Hash Router for Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
+    // Auto Hash Router for Braun-Z-1.5, Braun-Z-1.4, Braun-Z-1.3, Braun-Z-1.2, Braun-Z-1.1 & Braun-Z-1.0
     function checkHashRoute() {
       const hash = window.location.hash.toLowerCase();
-      const href = window.location.href.toLowerCase();
       if (hash.includes('braun-z') || hash.includes('zhenpin-roman') || hash.includes('z-roman')) {
-        document.title = 'Braun-Z-1.3 | Z系列罗马帘与竹帘窗饰定制报价系统';
-        const sysElem = document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
+        document.title = 'Braun-Z-1.5 | Z系列罗马帘与竹帘窗饰定制报价系统';
+        const sysElem = document.getElementById('Braun-Z-1-5') || document.getElementById('Braun-Z-1-4') || document.getElementById('Braun-Z-1-3') || document.getElementById('Braun-Z-1-2') || document.getElementById('Braun-Z-1-1') || document.getElementById('Braun-Z-1.0') || document.getElementById('calculator');
         if (sysElem) {
           setTimeout(() => {
             sysElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2835,7 +2982,628 @@ Estimated price: ${outPriceVal.textContent}`;
     const LOCAL_SAVED_PROFILES_KEY = 'braun_saved_customer_profiles_v1';
     const LOCAL_ACTIVE_CUSTOMER_KEY = 'braun_active_customer_meta_v1';
 
-    function initCustomerProfileEngine() {
+    const KELLY_ORDER_ITEMS = [
+  {
+    "id": 1750000000001,
+    "room": "客厅 1 (Living Room #1 Main)",
+    "remark": "客厅正大窗 (图纸 f5f2)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 94,
+    "height": 58,
+    "sqm": 3.52,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 880.0,
+    "final_unit": 264.0,
+    "amount": 264.0
+  },
+  {
+    "id": 1750000000002,
+    "room": "客厅 1 侧窗 (Living Room #1 Side)",
+    "remark": "客厅左右侧窗 (图纸 f5f2)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 28,
+    "height": 58,
+    "sqm": 1.05,
+    "qty": 2,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 262.5,
+    "final_unit": 78.75,
+    "amount": 157.5
+  },
+  {
+    "id": 1750000000003,
+    "room": "主卧大窗 (Master Bedroom Main)",
+    "remark": "主卧正窗 93 7/8 (图纸 0951/de41)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 93.88,
+    "height": 58,
+    "sqm": 3.51,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 877.5,
+    "final_unit": 263.25,
+    "amount": 263.25
+  },
+  {
+    "id": 1750000000004,
+    "room": "主卧侧窗 (Master Bedroom Side)",
+    "remark": "主卧侧窗 28x58 1/8 (图纸 a08e/de41)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 28,
+    "height": 58.13,
+    "sqm": 1.05,
+    "qty": 2,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 262.5,
+    "final_unit": 78.75,
+    "amount": 157.5
+  },
+  {
+    "id": 1750000000005,
+    "room": "二楼大厅 (2F Hall)",
+    "remark": "二楼大厅正窗 (图纸 15fa)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 94,
+    "height": 58,
+    "sqm": 3.52,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 880.0,
+    "final_unit": 264.0,
+    "amount": 264.0
+  },
+  {
+    "id": 1750000000006,
+    "room": "二楼卧室一 (2F Bedroom #1)",
+    "remark": "二楼卧室一 (图纸 a214/5280)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 34,
+    "height": 58.13,
+    "sqm": 1.28,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 320.0,
+    "final_unit": 96.0,
+    "amount": 96.0
+  },
+  {
+    "id": 1750000000007,
+    "room": "二楼卧室二中窗 (2F Bedroom #2 Center)",
+    "remark": "二楼卧室二中窗 (图纸 e789)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 58,
+    "height": 58.13,
+    "sqm": 2.18,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 545.0,
+    "final_unit": 163.5,
+    "amount": 163.5
+  },
+  {
+    "id": 1750000000008,
+    "room": "二楼卧室二侧窗 (2F Bedroom #2 Sides)",
+    "remark": "二楼卧室二双侧窗 21 7/8 (图纸 e789)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 21.88,
+    "height": 58.13,
+    "sqm": 1.0,
+    "qty": 2,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 150.0
+  },
+  {
+    "id": 1750000000009,
+    "room": "一楼卧室中窗 (1F Bedroom Center)",
+    "remark": "一楼卧室中窗 (图纸 070a)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 58.25,
+    "height": 64.5,
+    "sqm": 2.42,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 605.0,
+    "final_unit": 181.5,
+    "amount": 181.5
+  },
+  {
+    "id": 1750000000010,
+    "room": "一楼卧室侧窗 (1F Bedroom Sides)",
+    "remark": "一楼卧室两侧窗 21 7/8 (图纸 070a/bf04)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 21.88,
+    "height": 58.38,
+    "sqm": 1.0,
+    "qty": 2,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 150.0
+  },
+  {
+    "id": 1750000000011,
+    "room": "卧室三落地窗 (Bedroom #3)",
+    "remark": "卧室三落地窗 28x83.5 3个同尺 (图纸 c725/aa12)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 28,
+    "height": 83.5,
+    "sqm": 1.51,
+    "qty": 3,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 377.5,
+    "final_unit": 113.25,
+    "amount": 339.75
+  },
+  {
+    "id": 1750000000012,
+    "room": "书房窗 (Study Room)",
+    "remark": "书房正窗 (图纸 a870)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 58,
+    "height": 58.13,
+    "sqm": 2.18,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 545.0,
+    "final_unit": 163.5,
+    "amount": 163.5
+  },
+  {
+    "id": 1750000000013,
+    "room": "洗衣房 (Laundry Room)",
+    "remark": "洗衣房窗 34 1/8 (图纸 5280)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 34.13,
+    "height": 58.13,
+    "sqm": 1.28,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 320.0,
+    "final_unit": 96.0,
+    "amount": 96.0
+  },
+  {
+    "id": 1750000000014,
+    "room": "储物间 (Storage Room)",
+    "remark": "储物间窗 (图纸 8ec4)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 22,
+    "height": 46,
+    "sqm": 1.0,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 75.0
+  },
+  {
+    "id": 1750000000015,
+    "room": "客房 (Guest Room)",
+    "remark": "客房窗 22 1/8 (图纸 9efad/85c3)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 22.13,
+    "height": 46,
+    "sqm": 1.0,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 75.0
+  },
+  {
+    "id": 1750000000016,
+    "room": "卫生间 #1 (Bathroom #1)",
+    "remark": "卫生间小窗 (图纸 1381)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 22,
+    "height": 40.13,
+    "sqm": 1.0,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 75.0
+  },
+  {
+    "id": 1750000000017,
+    "room": "卫生间 #2 (Bathroom #2)",
+    "remark": "卫生间 21 3/4x46 1/8 (图纸 8a36)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 21.75,
+    "height": 46.13,
+    "sqm": 1.0,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 75.0
+  },
+  {
+    "id": 1750000000018,
+    "room": "卫生间 #3 (Bathroom #3)",
+    "remark": "卫生间 22x46 1/8 (图纸 ddc0)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 22,
+    "height": 46.13,
+    "sqm": 1.0,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 250.0,
+    "final_unit": 75.0,
+    "amount": 75.0
+  },
+  {
+    "id": 1750000000019,
+    "room": "楼梯间高窗 (Stairwell High Window)",
+    "remark": "楼梯间特高窗 (图纸 dcdb)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 44.5,
+    "height": 105,
+    "sqm": 3.01,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 752.5,
+    "final_unit": 225.75,
+    "amount": 225.75
+  },
+  {
+    "id": 1750000000020,
+    "room": "客厅大侧窗 (Living Room Large Side)",
+    "remark": "客厅大侧窗 (图纸 39c9)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 100.5,
+    "height": 99,
+    "sqm": 6.42,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 1605.0,
+    "final_unit": 481.5,
+    "amount": 481.5
+  },
+  {
+    "id": 1750000000021,
+    "room": "全屋顶棚/天窗 (Ceiling Skylight #1)",
+    "remark": "全屋特大天井/顶棚天窗 (图纸 1e9e)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 200,
+    "height": 119.5,
+    "sqm": 15.42,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 3855.0,
+    "final_unit": 1156.5,
+    "amount": 1156.5
+  },
+  {
+    "id": 1750000000022,
+    "room": "全屋顶棚/天窗 (Ceiling Skylight #2)",
+    "remark": "全屋顶棚天窗 94x57 3/4 (图纸 810b)",
+    "sys": {
+      "code": "LM0002",
+      "sys_type": "Z系列 罗马帘",
+      "name_cn": "魔方电动罗马帘",
+      "image_url": "system_images/sys_0116_LM0002.png"
+    },
+    "fab": {
+      "code": "BZL01",
+      "series_cn": "黑金遮光系列",
+      "color_cn": "象牙白 (Ivory White)"
+    },
+    "width": 94,
+    "height": 57.75,
+    "sqm": 3.5,
+    "qty": 1,
+    "mount": "Inside (内装)",
+    "control": "Motorized Remote",
+    "addons": "Smart Control",
+    "discount_factor": 0.3,
+    "msrp_unit": 875.0,
+    "final_unit": 262.5,
+    "amount": 262.5
+  }
+];
+
+
+function loadKellyCustomerOrder() {
+  if (confirm('是否加载 Kelly 客户的 24 张现场测量图纸整屋窗饰订单（共 22 组区域 / 28 扇窗饰）？')) {
+    romanQuoteItems = JSON.parse(JSON.stringify(KELLY_ORDER_ITEMS));
+    
+    // Set Kelly Customer Header Metadata
+    if (elCustName) elCustName.value = 'Kelly';
+    if (elProjType) elProjType.value = '全屋窗饰测量订购项目 (24张图纸/28扇全屋定制)';
+    if (elCustAddress) elCustAddress.value = 'Beverly Hills Custom Residence, CA';
+    if (elCustPhone) elCustPhone.value = '(310) 888-9988';
+    if (elCustEmail) elCustEmail.value = 'kelly.client@example.com';
+    if (elQuoteNo) elQuoteNo.value = 'S-51006';
+    if (elSpecialNotes) elSpecialNotes.value = 'Kelly 客户桌面 24 张现场图纸 OCR 智能整理归档订单。包含全屋客厅、主卧、二楼大厅、卧室一/二/三、书房、洗衣房、储物间、卫生间及天井顶棚天窗。';
+
+    renderQuoteItemsTable();
+    autoSaveActiveCustomerMeta();
+
+    const quoteTable = document.getElementById('quote-items-table');
+    if (quoteTable) {
+      quoteTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+function initCustomerProfileEngine() {
       const selectSaved = document.getElementById('saved-customer-select');
       const btnSave = document.getElementById('btn-save-cust-profile');
       const btnLoad = document.getElementById('btn-load-saved-cust');
@@ -2859,6 +3627,11 @@ Estimated price: ${outPriceVal.textContent}`;
 
       if (btnSave) {
         btnSave.addEventListener('click', saveCustomerProfile);
+      }
+
+      const btnKelly = document.getElementById('btn-load-kelly-order');
+      if (btnKelly) {
+        btnKelly.addEventListener('click', loadKellyCustomerOrder);
       }
 
       if (selectSaved) {
@@ -4284,8 +5057,13 @@ Estimated price: ${outPriceVal.textContent}`;
       let grandCostLandedUsd = 0;
       let grandQuotedUsd = 0;
 
-      // Distribute shipping cost per item proportional to item weight/sqm
-      const totalQuoteSqm = romanQuoteItems.reduce((acc, item) => acc + (item.sqm || 1) * (item.qty || 1), 0);
+      // Distribute shipping cost per item proportional to item weight/sqm (excluding zero-freight hardware)
+      const isZeroFreight = (item) => {
+        return ROMAN_DB.isZeroFreightHardware ? ROMAN_DB.isZeroFreightHardware(item) : false;
+      };
+
+      const shadeQuoteItems = romanQuoteItems.filter(item => !isZeroFreight(item));
+      const totalShadeSqm = shadeQuoteItems.reduce((acc, item) => acc + (item.sqm || 1) * (item.qty || 1), 0);
 
       const rowsHtml = romanQuoteItems.map((item, idx) => {
         const sysCode = item.sys ? item.sys.code : 'LM0002';
@@ -4303,11 +5081,17 @@ Estimated price: ${outPriceVal.textContent}`;
         const unitRmbBase = priceObj.rmb_base_cost || priceObj.rmb_base || 163.0;
         const totalRmbBase = unitRmbBase * (item.qty || 1);
 
-        // Item proportion of shipping weight
-        const itemSqm = (item.sqm || 1) * (item.qty || 1);
-        const sqmRatio = totalQuoteSqm > 0 ? (itemSqm / totalQuoteSqm) : (1 / romanQuoteItems.length);
-        const itemFreightRmb = totalEstFreightRmb * sqmRatio;
-        const itemFreightUsd = itemFreightRmb / adminExchangeRate;
+        // Item proportion of shipping weight (Motors, Remotes & Smart Hubs have 0 freight)
+        const isHw = isZeroFreight(item);
+        let itemFreightRmb = 0;
+        let itemFreightUsd = 0;
+
+        if (!isHw) {
+          const itemSqm = (item.sqm || 1) * (item.qty || 1);
+          const sqmRatio = totalShadeSqm > 0 ? (itemSqm / totalShadeSqm) : (1 / (shadeQuoteItems.length || 1));
+          itemFreightRmb = totalEstFreightRmb * sqmRatio;
+          itemFreightUsd = itemFreightRmb / adminExchangeRate;
+        }
 
         // Total Landed Cost
         const itemLandedCostRmb = totalRmbBase + itemFreightRmb;
@@ -4385,49 +5169,49 @@ Estimated price: ${outPriceVal.textContent}`;
     migrateAndPreserveAllHistoricalData();
     initQuoteNumberSequence();
     function initCreditCardFeeEngine() {
+      const mainCcCheckbox = document.getElementById('main-cc-fee-checkbox');
       const sheetCcCheckbox = document.getElementById('sheet-cc-fee-checkbox');
       const btnToggleCcFee = document.getElementById('btn-toggle-cc-fee');
       const sheetCcFeeRow = document.getElementById('sheet-cc-fee-row');
 
-      if (!sheetCcCheckbox) return;
-
       const setCcState = (newState) => {
-        sheetCcCheckbox.checked = !!newState;
+        const boolState = !!newState;
+        if (mainCcCheckbox) mainCcCheckbox.checked = boolState;
+        if (sheetCcCheckbox) sheetCcCheckbox.checked = boolState;
         updateQuoteTotalsSummary();
         autoSaveActiveCustomerMeta();
       };
 
-      if (!sheetCcCheckbox.hasAttribute('data-bound')) {
+      if (mainCcCheckbox && !mainCcCheckbox.hasAttribute('data-bound')) {
+        mainCcCheckbox.setAttribute('data-bound', 'true');
+        mainCcCheckbox.addEventListener('change', () => {
+          setCcState(mainCcCheckbox.checked);
+        });
+      }
+
+      if (sheetCcCheckbox && !sheetCcCheckbox.hasAttribute('data-bound')) {
         sheetCcCheckbox.setAttribute('data-bound', 'true');
-        sheetCcCheckbox.addEventListener('change', (e) => {
-          if (e) e.stopPropagation();
-          updateQuoteTotalsSummary();
-          autoSaveActiveCustomerMeta();
+        sheetCcCheckbox.addEventListener('change', () => {
+          setCcState(sheetCcCheckbox.checked);
         });
       }
 
       if (btnToggleCcFee && !btnToggleCcFee.hasAttribute('data-bound')) {
         btnToggleCcFee.setAttribute('data-bound', 'true');
-        const handleBtnToggle = (e) => {
-          if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-          setCcState(!sheetCcCheckbox.checked);
-        };
-        btnToggleCcFee.addEventListener('click', handleBtnToggle);
-        btnToggleCcFee.addEventListener('touchstart', handleBtnToggle);
+        btnToggleCcFee.addEventListener('click', (e) => {
+          e.preventDefault();
+          const currentState = (sheetCcCheckbox && sheetCcCheckbox.checked) || (mainCcCheckbox && mainCcCheckbox.checked);
+          setCcState(!currentState);
+        });
       }
 
       if (sheetCcFeeRow && !sheetCcFeeRow.hasAttribute('data-bound')) {
         sheetCcFeeRow.setAttribute('data-bound', 'true');
         sheetCcFeeRow.addEventListener('click', (e) => {
           if (e.target !== sheetCcCheckbox && e.target.tagName !== 'INPUT') {
-            if (e) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-            setCcState(!sheetCcCheckbox.checked);
+            e.preventDefault();
+            const currentState = (sheetCcCheckbox && sheetCcCheckbox.checked) || (mainCcCheckbox && mainCcCheckbox.checked);
+            setCcState(!currentState);
           }
         });
       }
