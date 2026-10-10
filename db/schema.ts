@@ -60,6 +60,8 @@ export const customerQuoteSignatures = sqliteTable("customer_quote_signatures", 
 }, table => ({ userIdx: index("customer_quote_signatures_user_idx").on(table.userId) }));
 
 export const customerBillingInvoices = sqliteTable("customer_billing_invoices", {
+  // These nullable fields already exist in 0037_stripe_hosted_invoices.sql.
+  stripeCustomerId:text("stripe_customer_id"), stripeInvoiceId:text("stripe_invoice_id").unique(), stripeHostedInvoiceUrl:text("stripe_hosted_invoice_url"), stripeInvoicePdf:text("stripe_invoice_pdf"),
   id: integer("id").primaryKey({ autoIncrement: true }), invoiceNumber: text("invoice_number").notNull().unique(), quoteVersionId: integer("quote_version_id").notNull(), customerId: integer("customer_id").notNull(), propertyId: integer("property_id").notNull(), version: integer("version").notNull().default(1), currency: text("currency").notNull(), total: real("total").notNull(), depositRequired: real("deposit_required").notNull().default(0), dueDate: text("due_date").notNull(), status: text("status").notNull().default("issued"), customerSnapshotJson: text("customer_snapshot_json").notNull(), documentSha256: text("document_sha256").notNull(), createdBy: integer("created_by").notNull(), issuedAt: text("issued_at").notNull(), createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, table => ({ propertyIdx: index("customer_billing_invoices_property_idx").on(table.propertyId), quoteIdx: index("customer_billing_invoices_quote_idx").on(table.quoteVersionId) }));
 
