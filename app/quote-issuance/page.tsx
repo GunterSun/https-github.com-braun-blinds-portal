@@ -66,7 +66,7 @@ export default function Page() {
   };
 
   return <main className="page">
-    <header><div><small>SPRINT 9 · QUOTE ISSUANCE #149</small><h1>{t("签发客户报价", "Issue customer Quote")}</h1><p>{t("从权威 Handoff 建立客户可见版本；产品、税、安装和运输费用分别保存。", "Create a customer-visible version from the authoritative Handoff; product, tax, installation and shipping are stored separately.")}</p></div><nav><button type="button" onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/workflow-handoff">{t("业务交接", "Handoff")}</Link><Link href="/hub">{t("工作台", "Hub")}</Link></nav></header>
+    <header><div><small>SPRINT 9 · QUOTE ISSUANCE #149</small><h1>{t("签发客户报价", "Issue customer Quote")}</h1><p>{t("从权威 Handoff 建立客户可见版本；产品、税、安装和运输费用分别保存。", "Create a customer-visible version from the authoritative Handoff; product, tax, installation and shipping are stored separately.")}</p></div><nav><button type="button" onClick={() => setLang(lang === "zh" ? "en" : "zh")}>{lang === "zh" ? "English" : "中文"}</button><Link href="/z-series-issue">Z 系列多行报价 / Multi-line Z Quote</Link><Link href="/workflow-handoff">{t("业务交接", "Handoff")}</Link><Link href="/hub">{t("工作台", "Hub")}</Link></nav></header>
     <form className="card form" onSubmit={issue}>
       <h2>{t("新建不可变报价版本", "New immutable Quote version")}</h2>
       <p className="notice">{t("每次签发都会建立新版本。运输费不会混入产品价或安装费；已签署版本不可修改。", "Each issuance creates a new version. Shipping is never hidden inside product or installation pricing; signed versions remain immutable.")}</p>
