@@ -1,26 +1,28 @@
 'use client';
 import {useState} from 'react';
 import {requestJson} from '@/lib/request-json';
-import type {buildOrderPreview} from '@/lib/v5-order-preview';
-type Result=ReturnType<typeof buildOrderPreview>;
-const labels={linked:'明确关联',review:'待人工审核',conflict:'冲突',orphan:'孤立／缺失引用'};
-export default function OrderPreviewPage(){
- const [result,setResult]=useState<Result|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[filter,setFilter]=useState('all'),[legacy,setLegacy]=useState(''),[order,setOrder]=useState('');
- async function load(){setBusy(true);setError('');setResult(null);try{const pairs=legacy||order?[{legacyOrderId:Number(legacy),orderId:Number(order)}]:[];setResult(await requestJson<Result>('/api/v5/order-preview?pairs='+encodeURIComponent(JSON.stringify(pairs))));}catch(e){setError(e instanceof Error?e.message:'读取失败');}finally{setBusy(false);}}
- return <main style={{maxWidth:1100,margin:'auto',padding:16,overflowWrap:'anywhere'}}>
- <h1>V5.1 历史订单关联预览</h1><p>仅 Owner 可读。保留原编号、客户与金额，不自动合并，不写入数据库。当前阶段不提供确认按钮。</p>
- <p>“明确关联”仅表示记录已有直接引用，不代表已关联统一订单。缺失引用显示为孤立记录；没有可靠依据的关联交由人工审核。</p>
- <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
- <label>旧订单内部 ID（可选）<input type="number" min="1" value={legacy} onChange={e=>setLegacy(e.target.value)} style={{display:'block',width:'100%',minHeight:44}}/></label>
- <label>V4 订单内部 ID（可选）<input type="number" min="1" value={order} onChange={e=>setOrder(e.target.value)} style={{display:'block',width:'100%',minHeight:44}}/></label>
- <button disabled={busy} onClick={load} style={{minHeight:44,padding:'8px 20px'}}>{busy?'正在只读检查…':'读取／重新预览'}</button></div>
- <p>候选 ID 用于本次金额和客户比较，刷新后不会保存。单表超过 5000 条时会停止并提示分批，避免截断数据造成误判。</p>
- {error&&<p role="alert">{error}</p>}
- {result&&<><p role="status">读取 {result.records.length} 条记录。跨表数据可能在读取期间变化，不能据此直接确认迁移。</p>
- {result.candidates.map((c,i)=><section key={i} style={{border:'2px solid #a36d26',padding:12,margin:'12px 0'}}><h2>候选：旧单 {c.legacyOrderId} → V4 {c.orderId}</h2><p>{c.status==='conflict'?'冲突':'待人工审核，未确认'}</p>{c.findings.map((f,j)=><p key={j}>{f.code}：{f.message}</p>)}<pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify({旧单:c.legacy,V4:c.order},null,2)}</pre></section>)}
- <label>分类筛选 <select value={filter} onChange={e=>setFilter(e.target.value)} style={{minHeight:44}}><option value="all">全部</option>{Object.entries(labels).map(([k,v])=><option key={k} value={k}>{v}（{result.records.filter(r=>r.status===k).length}）</option>)}</select></label>
- <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,320px),1fr))',gap:12,marginTop:16}}>
- {result.records.filter(r=>filter==='all'||r.status===filter).map(r=><article key={r.key} style={{border:'1px solid #aaa',borderRadius:8,padding:12,minWidth:0}}><h2 style={{fontSize:18}}>{r.key}</h2><strong>{labels[r.status]}</strong>{r.customer&&<p>客户：{r.customer.company_name||r.customer.contact_name} · {r.customer.email} · {r.customer.phone}</p>}{r.findings.map((f,i)=><p key={i}>{f.code}：{f.message}</p>)}<p>已有引用：{r.links.join('，')||'无可验证直接引用'}</p><details><summary style={{minHeight:44}}>原始字段（未修改）</summary><pre style={{whiteSpace:'pre-wrap',fontSize:13}}>{JSON.stringify(r.original,null,2)}</pre></details></article>)}
- </div></>}
+import type {readReviewPage,readCandidates} from '@/lib/v5-review-reader';
+import type {Row} from '@/lib/v5-order-preview';
+type Page=Awaited<ReturnType<typeof readReviewPage>>;type Candidates=Awaited<ReturnType<typeof readCandidates>>;
+const labels={linked:'明确引用',review:'待审核',conflict:'冲突',orphan:'缺失引用'};
+const sources={customer_orders:'旧订单',orders:'V4 订单',quotes:'旧报价',customer_quote_versions:'正式报价',customer_billing_invoices:'正式账单',invoice_versions:'旧发票版本',measure_windows:'测量窗口',manufacturing_drawings:'加工图',factory_work_orders:'生产单'};
+const style={minHeight:44,padding:8,maxWidth:'100%'};
+function Amounts({r}:{r:Row}){const fields:Record<string,string>={retail_total:'零售总额',wholesale_total:'折扣后批发总额',discount_percent:'折扣百分比',subtotal:'小计',discount_amount:'折扣金额',tax_amount:'税费',shipping_charge:'运费',shipping_fee:'运费',installation_fee:'安装费',grand_total:'V4 总额',total:'单据总额',deposit_required:'应收定金'};return <dl>{Object.entries(fields).filter(([k])=>r[k]!=null).map(([k,v])=><div key={k}><dt style={{display:'inline'}}>{v}：</dt><dd style={{display:'inline',margin:0}}>{r[k]} {k==='discount_percent'?'%':r.currency||r.payment_currency||'币种未记录'}</dd></div>)}<p>未展示的费用字段＝来源未单独记录，不视为零。</p></dl>;}
+export default function Review(){
+ const [source,setSource]=useState('customer_orders'),[q,setQ]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[filter,setFilter]=useState('all'),[page,setPage]=useState<Page|null>(null),[candidates,setCandidates]=useState<Candidates|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[history,setHistory]=useState<number[]>([]),[note,setNote]=useState('');
+ async function load(after=0,previous=false){setBusy(true);setError('');setCandidates(null);setNote('');try{const params=new URLSearchParams({source,q,from,to,after:String(after),size:'25'});const next=await requestJson<Page>('/api/v5/order-preview?'+params);setPage(next);setHistory(after===0?[]:previous?history.slice(0,-1):[...history,page?.page.after||0]);}catch(e){setPage(null);setError(e instanceof Error?e.message:'读取失败');}finally{setBusy(false);}}
+ async function compare(id:number,after=0){setBusy(true);setError('');try{setCandidates(await requestJson<Candidates>(`/api/v5/order-preview?mode=candidates&legacyId=${id}&after=${after}`));setNote('');}catch(e){setCandidates(null);setError(e instanceof Error?e.message:'读取失败');}finally{setBusy(false);}}
+ function invalidate(){setPage(null);setCandidates(null);setHistory([]);setNote('');}
+ return <main style={{maxWidth:1150,margin:'auto',padding:16,overflowWrap:'anywhere'}}><h1>V5.2 历史订单审核工作台</h1><p>Owner 专用 · 只读 · 不合并、不改价、不保存审核意见。候选只是线索，不是已确认关系。</p>
+ <form onSubmit={e=>{e.preventDefault();void load();}} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
+ <label>记录类型<select style={{...style,display:'block'}} value={source} disabled={busy} onChange={e=>{setSource(e.target.value);invalidate();}}>{Object.entries(sources).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
+ <label>订单号／客户／项目<input style={{...style,display:'block'}} value={q} maxLength={120} disabled={busy} onChange={e=>{setQ(e.target.value);invalidate();}}/></label>
+ <label>创建日期起<input type="date" style={{...style,display:'block'}} value={from} disabled={busy} onChange={e=>{setFrom(e.target.value);invalidate();}}/></label><label>创建日期止<input type="date" style={{...style,display:'block'}} value={to} disabled={busy} onChange={e=>{setTo(e.target.value);invalidate();}}/></label><button disabled={busy} style={style}>搜索／刷新</button></form>
+ <p>按记录 ID 翻页，每页 25 条。旧发票按发票号搜索，加工图按 ID，生产单按工厂名或生产单号；其余支持客户或项目线索。日期为数据库记录的创建日期。</p>
+ {busy&&<p role="status">读取中…</p>}{error&&<p role="alert">{error}</p>}
+ {page&&<><p>{page.scope}</p><p>本页 {page.records.length} 条：{Object.entries(labels).map(([k,v])=>`${v} ${page.counts[k]}`).join(' · ')}</p><label>本页分类 <select style={style} value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">全部</option>{Object.entries(labels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
+ <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,340px),1fr))',gap:12,margin:'16px 0'}}>{page.records.filter(r=>filter==='all'||r.status===filter).map(r=><article key={r.key} style={{border:'1px solid #aaa',borderRadius:8,padding:12,minWidth:0}}><h2 style={{fontSize:18}}>{r.original.order_number||r.original.quote_number||r.original.invoice_number||r.original.factory_order_number||r.original.code||r.key}</h2><p>{r.key} · {labels[r.status]} · {r.original.created_at}</p><p>客户：{r.customer?.company_name||r.customer?.contact_name||r.original.customer_email||'需沿引用核查'} {r.customer?.email}</p><Amounts r={r.original}/>{r.findings.map((f,i)=><p key={i}>{f.code}：{f.message}</p>)}<details><summary style={style}>引用与冲突详情</summary><p>{r.links.join('，')||'无可验证直接引用'}</p><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify({原始字段:r.original,引用记录:page.related.filter(x=>r.links.includes(x.key)).map(x=>({key:x.key,original:x.original,findings:x.findings}))},null,2)}</pre></details>{r.source==='customer_orders'&&<button style={style} disabled={busy} onClick={()=>compare(Number(r.original.id))}>查找候选 V4 订单</button>}</article>)}</div>
+ <button style={style} disabled={busy||!history.length} onClick={()=>load(history.at(-1)||0,true)}>上一页</button> <button style={style} disabled={busy||page.page.nextAfter===null} onClick={()=>load(page.page.nextAfter!)}>下一页</button><p>分类和统计仅针对当前页；没有记录不代表全库没有关联。</p></>}
+ {candidates&&<section style={{border:'2px solid #866',padding:12,marginTop:20}}><h2>审核预览：{candidates.legacy.order_number}</h2><p>{candidates.scope}</p><h3>旧单原始金额</h3><Amounts r={candidates.legacy}/>{!candidates.candidates.length&&<p>本批未发现候选；这不是无关联的结论。</p>}{candidates.candidates.map(c=><article key={Number(c.order.id)} style={{borderTop:'1px solid #aaa',padding:12}}><h3>V4 {c.order.order_number} · {c.order.company_name||c.order.contact_name}</h3><p>{c.order.customer_email}</p><p>匹配依据：{c.evidence.join('；')}</p>{c.warnings.map((w,i)=><p key={i}>{w}</p>)}<Amounts r={c.order}/><p>待人工审核 · 未确认</p></article>)}<button style={style} disabled={busy||candidates.nextAfter===null} onClick={()=>compare(Number(candidates.legacy.id),candidates.nextAfter!)}>更多候选</button><label style={{display:'block'}}>审核意见草稿（仅当前页面内存，刷新或切换即丢失）<textarea value={note} maxLength={2000} onChange={e=>setNote(e.target.value)} style={{display:'block',width:'100%',minHeight:100}}/></label><p>没有保存或确认操作。正式审核记录与版本核对将在下一阶段实现。</p></section>}
  </main>;
 }

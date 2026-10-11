@@ -2,12 +2,12 @@
 export type Row = Record<string, string | number | null>;
 export const previewColumns = {
   customers: 'id,email,company_name,contact_name,phone',
-  quotes: 'id,quote_number,customer_email,project_name,retail_total,wholesale_total',
-  customer_orders: 'id,order_number,customer_email,project_name,retail_total,wholesale_total,payment_currency,status',
-  orders: 'id,order_number,customer_id,project_name,project_address,grand_total,currency,status',
-  customer_quote_versions: 'id,quote_number,version,customer_id,property_id,total,currency,status,document_sha256',
+  quotes: 'id,quote_number,customer_email,project_name,retail_total,wholesale_total,discount_percent,created_at',
+  customer_orders: 'id,order_number,customer_email,project_name,retail_total,wholesale_total,payment_currency,status,discount_percent,created_at',
+  orders: 'id,order_number,customer_id,project_name,project_address,grand_total,currency,status,subtotal,discount_amount,tax_amount,shipping_charge,installation_fee,created_at',
+  customer_quote_versions: 'id,quote_number,version,customer_id,property_id,total,currency,status,document_sha256,subtotal,discount_amount,tax_amount,shipping_fee,installation_fee,deposit_required,created_at',
   customer_quote_signatures: 'id,quote_version_id,signed_document_sha256',
-  customer_billing_invoices: 'id,invoice_number,quote_version_id,customer_id,property_id,total,currency,version,document_sha256',
+  customer_billing_invoices: 'id,invoice_number,quote_version_id,customer_id,property_id,total,currency,version,document_sha256,deposit_required,issued_at,created_at',
   invoice_versions: 'id,order_id,invoice_number,version,document_sha256,snapshot_json',
   measure_properties: 'id,customer_id,name,address',
   measure_windows: 'id,property_id,room_id,code',
@@ -79,9 +79,11 @@ export function buildOrderPreview(data: Dataset, proposals: Proposal[] = []) {
         if(a&&a.drawing_id!==original.drawing_id) findings.push(issue('ISSUED_VERSION_CONFLICT','工厂分配与生产单加工图不同。'));
         if(d&&(d.window_id!==original.window_id||d.measurement_version_id!==original.measurement_version_id||d.version!==original.drawing_version||d.document_sha256!==original.drawing_sha256)) findings.push(issue('ISSUED_VERSION_CONFLICT','生产单冻结的加工图版本、窗口或哈希不一致。'));
       }
+      if(['customer_quote_versions','customer_billing_invoices','invoice_versions','manufacturing_drawings'].includes(source)&&!String(original.document_sha256||'').trim()) findings.push(issue('MISSING_DOCUMENT_EVIDENCE','文档哈希缺失，无法验证签发原件；尚未检查文件存储。'));
+      if(source==='invoice_versions') {try {const snapshot=JSON.parse(String(original.snapshot_json||''));if(!snapshot||typeof snapshot!=='object')throw Error();}catch{findings.push(issue('MISSING_DOCUMENT_EVIDENCE','旧发票快照缺失或无法解析，需人工取得原件。'));}}
       const customer=customerId?ref('customers',customerId)||null:null;
       if(customerId===0) findings.push(issue('MISSING_REFERENCE','未关联客户。'));
-      const status = findings.some(f=>!['MISSING_REFERENCE','LEGACY_IDENTITY_REVIEW'].includes(f.code))?'conflict':findings.some(f=>f.code==='MISSING_REFERENCE')?'orphan':(source==='customer_orders'||source==='quotes')?'review':links.length?'linked':'review';
+      const status = findings.some(f=>!['MISSING_REFERENCE','LEGACY_IDENTITY_REVIEW','AMOUNT_MISMATCH'].includes(f.code))?'conflict':findings.some(f=>f.code==='MISSING_REFERENCE')?'orphan':(source==='customer_orders'||source==='quotes'||findings.some(f=>f.code==='AMOUNT_MISMATCH'))?'review':links.length?'linked':'review';
       records.push({key:`${source}:${original.id}`,source,original,customer,status,links,findings});
     }
   }
