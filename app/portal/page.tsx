@@ -1,1 +1,5 @@
-export { default } from "../calculators/page";
+import { redirect } from "next/navigation";
+
+export default function LegacyPortalEntry() {
+  redirect("/");
+}
