@@ -1,0 +1,37 @@
+[
+  {
+    "width": 320,
+    "clientWidth": 305,
+    "cssLoaded": true,
+    "minControlHeight": 44,
+    "scrollWidth": 305
+  },
+  {
+    "width": 390,
+    "clientWidth": 375,
+    "cssLoaded": true,
+    "minControlHeight": 44,
+    "scrollWidth": 375
+  },
+  {
+    "width": 768,
+    "clientWidth": 768,
+    "cssLoaded": true,
+    "minControlHeight": 44,
+    "scrollWidth": 768
+  },
+  {
+    "width": 1024,
+    "clientWidth": 1024,
+    "cssLoaded": true,
+    "minControlHeight": 44,
+    "scrollWidth": 1024
+  },
+  {
+    "width": 1440,
+    "clientWidth": 1440,
+    "cssLoaded": true,
+    "minControlHeight": 44,
+    "scrollWidth": 1440
+  }
+]

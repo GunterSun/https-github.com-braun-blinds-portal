@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { requestSession } from "@/lib/request-json";
 import { UNIFIED_MODULES } from "@/lib/unified-modules";
 import commonEn from "@/locales/en/common.json";import commonZh from "@/locales/zh-CN/common.json";
 
@@ -19,13 +20,13 @@ export default function UnifiedHubPage(){
   const [lang,setLang]=useState<"zh-CN"|"en">("zh-CN");
   const [user,setUser]=useState<CurrentUser|null>(null);
   const [loading,setLoading]=useState(true);
+  const [loadError,setLoadError]=useState("");
   const [phone,setPhone]=useState("");
   const [phoneSaving,setPhoneSaving]=useState(false);
   const [phoneMessage,setPhoneMessage]=useState("");
 
   useEffect(()=>{
-    fetch("/api/v4/auth/me",{cache:"no-store"})
-      .then(async response=>response.ok?response.json():null)
+    requestSession<{authenticated:boolean;user:CurrentUser&{username?:string}}>()
       .then(data=>{
         if(data?.authenticated&&data.user?.role){
           const nextUser:CurrentUser={displayName:data.user.displayName||data.user.username||data.user.email,email:data.user.email,phone:data.user.phone||"",role:data.user.role,preferredLocale:data.user.preferredLocale==="en"?"en":"zh-CN"};
@@ -34,6 +35,7 @@ export default function UnifiedHubPage(){
           setLang(nextUser.preferredLocale);
         }
       })
+      .catch(()=>setLoadError("连接超时或服务暂不可用，请重试 / Connection failed. Please retry."))
       .finally(()=>setLoading(false));
   },[]);
 
@@ -94,7 +96,8 @@ export default function UnifiedHubPage(){
         </a>)}
       </div>}
 
-      {!user&&!loading&&<div style={{marginTop:22,background:"#fff7e4",border:"1px solid #ead39c",borderRadius:14,padding:16,display:"flex",justifyContent:"space-between",gap:14,alignItems:"center",flexWrap:"wrap"}}><span>{t("当前未登录 V4 账号，请登录后进入老板或团队工作区。","Sign in with your V4 account to open the Owner or team workspace.")}</span><a href="/login" style={{background:"#1f5b49",color:"white",padding:"10px 14px",borderRadius:9,textDecoration:"none",fontWeight:700}}>{t("登录统一门户 →","Sign in →")}</a></div>}
+      {loadError&&<div role="alert">{loadError} <button onClick={()=>location.reload()}>重新加载 / Retry</button></div>}
+      {!user&&!loading&&!loadError&&<div style={{marginTop:22,background:"#fff7e4",border:"1px solid #ead39c",borderRadius:14,padding:16,display:"flex",justifyContent:"space-between",gap:14,alignItems:"center",flexWrap:"wrap"}}><span>{t("当前未登录 V4 账号，请登录后进入老板或团队工作区。","Sign in with your V4 account to open the Owner or team workspace.")}</span><a href="/login" style={{background:"#1f5b49",color:"white",padding:"10px 14px",borderRadius:9,textDecoration:"none",fontWeight:700}}>{t("登录统一门户 →","Sign in →")}</a></div>}
     </section>
   </main>;
 }
