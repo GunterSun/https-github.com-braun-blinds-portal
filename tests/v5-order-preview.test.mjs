@@ -60,3 +60,7 @@ test('amount-only invoice differences require review rather than declaring corru
  const d=empty();d.customers=[{id:1}];d.measure_properties=[{id:1,customer_id:1}];d.customer_quote_versions=[{id:1,customer_id:1,property_id:1,total:100,currency:'USD',status:'signed',document_sha256:'hash'}];d.customer_billing_invoices=[{id:1,quote_version_id:1,customer_id:1,property_id:1,total:120,currency:'USD',document_sha256:'invoice'}];assert.equal(buildOrderPreview(d).records.find(r=>r.key==='customer_billing_invoices:1').status,'review');
 });
 test('missing document evidence is explicit',()=>{const d=empty();d.customer_orders=[{id:1}];d.invoice_versions=[{id:1,order_id:1,document_sha256:'',snapshot_json:''}];assert.ok(buildOrderPreview(d).records.find(r=>r.key==='invoice_versions:1').findings.some(f=>f.code==='MISSING_DOCUMENT_EVIDENCE'));});
+test('read observation has unique request IDs and changes fingerprint when loaded content changes',async()=>{
+ const a=await(await get()).json(),b=await(await get()).json();assert.notEqual(a.audit.requestId,b.audit.requestId);assert.equal(a.audit.contentHash,b.audit.contentHash);assert.equal(a.audit.kind,'read-observation-not-database-snapshot');
+ db.exec('UPDATE customer_orders SET wholesale_total=101 WHERE id=1');const c=await(await get()).json();assert.notEqual(a.audit.contentHash,c.audit.contentHash);db.exec('UPDATE customer_orders SET wholesale_total=100 WHERE id=1');
+});

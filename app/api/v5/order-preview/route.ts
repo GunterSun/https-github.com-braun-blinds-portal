@@ -19,7 +19,9 @@ export async function GET(request:Request) {
       if(!result.success)throw Error('Read failed');
       return result.results as Row[];
     }};
-    return reply(url.searchParams.get('mode')==='candidates'?await readCandidates(db,url):await readReviewPage(db,url));
+    const body=url.searchParams.get('mode')==='candidates'?await readCandidates(db,url):await readReviewPage(db,url);
+    const contentHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({query:url.search,body}))))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return reply({...body,audit:{requestId:crypto.randomUUID(),observedAt:new Date().toISOString(),contentHash,kind:'read-observation-not-database-snapshot'}});
   } catch(error) {if(error instanceof ReviewInputError)return reply({error:error.message},400);return reply({error:'预览读取失败，请重试；没有执行关联写入。'},503);}
 }
 // No confirmation endpoint exists in this phase, including for Owner.
