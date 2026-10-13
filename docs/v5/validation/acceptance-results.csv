@@ -1,0 +1,8 @@
+suite,case_id,device_or_environment,scale,commit,status,p50_ms,p95_ms,max_ms,errors,rows_written,evidence,notes
+device,M01-M09,iPhone Safari,,ebe4c847f366,pending,,,,,,,Physical device not tested
+device,M01-M09,iPad Safari portrait,,ebe4c847f366,pending,,,,,,,Physical device not tested
+device,M01-M09,iPad Safari landscape,,ebe4c847f366,pending,,,,,,,Physical device not tested
+device,M01-M09,Desktop full app end-to-end,,ebe4c847f366,pending,,,,,,,Synthetic component checks do not replace end-to-end
+d1,D01-D06,Isolated remote D1,10000,ebe4c847f366,pending,,,,,,,Target not yet confirmed
+d1,D01-D06,Isolated remote D1,100000,ebe4c847f366,pending,,,,,,,Target not yet confirmed
+d1,D01-D06,Isolated remote D1,500000,ebe4c847f366,pending,,,,,,,Target not yet confirmed
