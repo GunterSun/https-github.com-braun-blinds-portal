@@ -63,7 +63,7 @@ export default function AiInquiryDraftPreview(){
    "BRAUN BLINDS — REVIEW-ONLY ORDER DRAFT / 待审核订单草稿",
    "Customer / 客户: "+(customer.trim()||"未填写 / Not provided"),
    "Project / 项目: "+(project.trim()||"未填写 / Not provided"),
-   "Source / 原始询价:\\n"+source,
+   "Source / 原始询价:\n"+source,
    ...lines.map((line,i)=>[
     "Window / 窗位 "+(i+1),
     "Model: "+(line.draft.productCode??"TBD"),
@@ -74,10 +74,10 @@ export default function AiInquiryDraftPreview(){
     "Options: "+(line.draft.options.join(", ")||"TBD"),
     "Notes: "+(line.draft.notes.join("; ")||"None"),
     "Missing: "+(line.draft.missing.join(", ")||"None"),
-   ].join("\\n")),
+   ].join("\n")),
    "Warnings / 警告: "+(warnings.join("; ")||"None"),
    "NOT A QUOTE OR FACTORY ORDER. OWNER REVIEW REQUIRED / 非正式报价或生产单，须 Owner 审核",
-  ].join("\\n\\n");
+  ].join("\n\n");
   try{await navigator.clipboard.writeText(body);setNotice(en?"Review-only order draft copied. Not saved or sent.":"待审核订单草稿已复制，可粘贴到微信或备忘录；未保存或发送。");}
   catch{setNotice(en?"Clipboard unavailable. Use your browser copy function.":"浏览器不允许复制，请检查剪贴板权限。");}
  };
