@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { appUsers, customers } from "@/db/schema";
 import { orders, orderSequences, unifiedOrderAssignments } from "@/db/order-schema";
 import { getCurrentAppUser, writeAuditLog } from "@/lib/v4-auth";
+import { canAccessCustomer } from "@/lib/customer-access";
 import { hasPermission } from "@/lib/permissions";
 
 const PAGE_SIZE_DEFAULT = 25;
@@ -103,6 +104,9 @@ export async function POST(request: NextRequest) {
   }
 
   const db = await getDb();
+  if (!(await canAccessCustomer(user, customerId))) {
+    return NextResponse.json({ error: "客户不存在 / Customer not found" }, { status: 404 });
+  }
   const customer = await db.select({ id: customers.id }).from(customers).where(eq(customers.id, customerId)).limit(1);
   if (!customer[0]) return NextResponse.json({ error: "客户不存在 / Customer not found" }, { status: 404 });
 

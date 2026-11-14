@@ -1,4 +1,5 @@
-import { and, eq } from "drizzle-orm";
+import {quoteHandoffIds} from "@/lib/z-series-formal";
+import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { customerPropertyAccess, customerQuoteSignatures, customerQuoteVersions, workflowArtifacts } from "@/db/schema";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   const signature = (await db.insert(customerQuoteSignatures).values({ quoteVersionId: quote.id, userId: user.id, printedName, timezone, disclaimerVersion: "customer-quote-v1", signatureText, signedDocumentSha256: quote.documentSha256, ipAddressHash: await sha256(ip), userAgentHash: await sha256(agent), idempotencyKey: key, signedAt: now }).onConflictDoNothing().returning())[0];
   if (!signature) return NextResponse.json({ error: "报价已由另一请求签署 / Quote was already signed by another request" }, { status: 409 });
   await db.update(customerQuoteVersions).set({ status: "signed", signedAt: now }).where(and(eq(customerQuoteVersions.id, quote.id), eq(customerQuoteVersions.status, quote.status)));
-  await db.update(workflowArtifacts).set({ status: "signed", externalRecordId: String(signature.id) }).where(and(eq(workflowArtifacts.handoffId, quote.handoffId), eq(workflowArtifacts.artifactType, "customer_approval")));
+  await db.update(workflowArtifacts).set({ status: "signed", externalRecordId: String(signature.id) }).where(and(inArray(workflowArtifacts.handoffId, quoteHandoffIds(quote)), eq(workflowArtifacts.artifactType, "customer_approval")));
   await writeAuditLog({ userId: user.id, action: "customer_quote_signed", entityType: "customer_quote_version", entityId: String(quote.id), details: { signatureId: signature.id, documentSha256: quote.documentSha256 } });
   return NextResponse.json({ signature }, { status: 201 });
 }

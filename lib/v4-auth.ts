@@ -1,3 +1,5 @@
+import { env } from "cloudflare:workers";
+import { parseOwnerRecovery, ownerRecoveryStatements } from "./owner-recovery";
 import { and, eq, gt, isNull, or } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { getDb } from "@/db";
@@ -60,7 +62,17 @@ export async function createAppSession(userId: number) {
   return { token, expiresAt };
 }
 
+async function applyConfiguredOwnerRecovery() {
+  const recovery = parseOwnerRecovery(process.env.V4_OWNER_RECOVERY);
+  if (!recovery) return;
+  // D1 batch is transactional. The old credential match makes rotation one-time,
+  // and prevents a stale recovery configuration overwriting a later password.
+  await env.DB.batch(ownerRecoveryStatements(recovery, new Date().toISOString())
+    .map(statement => env.DB.prepare(statement.sql).bind(...statement.params)));
+}
+
 export async function getCurrentAppUser() {
+  await applyConfiguredOwnerRecovery();
   const token = (await cookies()).get(V4_SESSION_COOKIE)?.value;
   if (!token) return null;
   const db = await getDb();
@@ -95,6 +107,7 @@ export async function revokeCurrentAppSession() {
 }
 
 export async function findLoginUser(login: string) {
+  await applyConfiguredOwnerRecovery();
   const normalized = login.trim().toLowerCase();
   const db = await getDb();
   const rows = await db

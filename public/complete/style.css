@@ -1143,3 +1143,31 @@ body.printing-fabrication #print-quote-template {
         min-width: 0;
     }
 }
+
+/* Keep every calculator field reachable on narrow screens. */
+@media screen and (max-width: 900px) {
+ .app-container { display: block; }
+ .sidebar { position: static; width: 100%; height: auto; padding: 16px; }
+ .brand { margin-bottom: 16px; }
+ .nav-menu { flex-direction: row; flex-wrap: wrap; }
+ .sidebar-footer { margin-top: 14px; padding-top: 12px; }
+ .main-content { margin-left: 0; width: 100%; min-width: 0; padding: 16px; }
+ .grid-2-col, .form-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+ .form-group.full-width { grid-column: 1; }
+ .top-bar { flex-direction: column; align-items: flex-start; gap: 14px; }
+ .card, .form-group, .table-container { min-width: 0; max-width: 100%; }
+ .table-container { overflow-x: auto; }
+ input[type="text"], input[type="number"], select, textarea { max-width: 100%; font-size: 16px; }
+ .page-title h1 { font-size: 26px; }
+}
+
+@media screen and (max-width: 900px) {
+ .item-type-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .type-toggle-btn { min-width: 0; white-space: normal; }
+ .card-header { flex-wrap: wrap; }
+ .list-header { align-items: stretch; }
+ .list-header .header-left { width: 100%; }
+ .list-header > button { flex: 1 1 120px; height: auto; white-space: normal; }
+ .form-group input { min-width: 0; }
+ .card { padding: 20px; }
+}
