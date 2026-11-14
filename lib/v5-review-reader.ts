@@ -33,7 +33,9 @@ export async function readReviewPage(db:ReadDB,url:URL){
  const after=int(url.searchParams.get('after'),0,Number.MAX_SAFE_INTEGER),size=int(url.searchParams.get('size'),25,50);
  if(!size)throw new ReviewInputError('每页至少一条');
  const q=(url.searchParams.get('q')||'').trim();if(q.length>120)throw new ReviewInputError('搜索文字过长');
- const where=['t.id > ?'],params:(string|number)[]=[after];
+ const upper=url.searchParams.has('upper')?int(url.searchParams.get('upper'),0,Number.MAX_SAFE_INTEGER):Number((await db.all(`SELECT COALESCE(MAX(id),0) AS upper_id FROM ${source}`,[]))[0].upper_id);
+ if(after>upper)throw new ReviewInputError('分页位置超过本批次上界');
+ const where=['t.id > ?','t.id <= ?'],params:(string|number)[]=[after,upper];
  if(q){where.push(`(${search[source]})`);const literal='%'+q.replace(/[\\%_]/g,'\\$&')+'%';params.push(...Array((search[source].match(/\?/g)||[]).length).fill(literal));}
  for(const [key,op] of [['from','>='],['to','<=']] as const){const date=url.searchParams.get(key);if(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)throw new ReviewInputError('日期无效');where.push(`substr(t.${dates[source]},1,10) ${op} ?`);params.push(date);}}
  if(url.searchParams.get('from')&&url.searchParams.get('to')&&url.searchParams.get('from')!>url.searchParams.get('to')!)throw new ReviewInputError('开始日期晚于结束日期');
@@ -55,7 +57,7 @@ export async function readReviewPage(db:ReadDB,url:URL){
   if(!changed)break;if(round===9)throw Error('Incomplete reference expansion');
  }
  const model=buildOrderPreview(data);const keys=new Set(page.map(r=>`${source}:${r.id}`));const records=model.records.filter(r=>keys.has(r.key));
- return {readOnly:true,confirmationEnabled:false,records,related:model.records.filter(r=>!keys.has(r.key)),page:{source,size,after,nextAfter:selected.length>size?Number(page.at(-1)!.id):null},counts:Object.fromEntries(['linked','review','conflict','orphan'].map(k=>[k,records.filter(r=>r.status===k).length])),scope:'统计仅涵盖本页。只沿明确引用补读记录；非全库审计，跨请求不保证同一时间点快照。'};
+ return {readOnly:true,confirmationEnabled:false,records,related:model.records.filter(r=>!keys.has(r.key)),page:{source,size,after,upper,nextAfter:selected.length>size?Number(page.at(-1)!.id):null},counts:Object.fromEntries(['linked','review','conflict','orphan'].map(k=>[k,records.filter(r=>r.status===k).length])),scope:'统计仅涵盖本页。批次上界排除后续更大 ID 的新记录，但不冻结原记录修改或较小 ID 的补录；不是全库快照。'};
 }
 export async function readCandidates(db:ReadDB,url:URL){
  const id=int(url.searchParams.get('legacyId'),0,Number.MAX_SAFE_INTEGER),after=int(url.searchParams.get('after'),0,Number.MAX_SAFE_INTEGER);if(!id)throw new ReviewInputError('请选择旧订单');
