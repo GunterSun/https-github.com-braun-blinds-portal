@@ -115,3 +115,15 @@ test('zero dimensions are explicitly flagged even when a valid pair follows',()=
   assert.equal(quoteDraftGate(draft).allowed,false);
  }
 });
+
+test('unknown or TBD quantity cannot be hidden by another valid count',()=>{
+ for(const marker of ['TBD','unknown','pending','n/a','待定','未定']){
+  const draft=extractInquiryDraft(`JL3601 36 x 60 qty ${marker} quantity 2`);
+  assert.ok(draft.notes.some(n=>/Unresolved quantity statement/i.test(n)),marker);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
+test('ordinary valid quantity does not trigger unresolved quantity warning',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 2 quantity 02');
+ assert.ok(!draft.notes.some(n=>/Unresolved quantity statement/i.test(n)));
+});
