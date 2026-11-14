@@ -163,3 +163,15 @@ test('confirmed color and hardware do not trigger pending option warning',()=>{
  const draft=extractInquiryDraft('JL3601 White LF WH 36 x 60 qty 1 hardware WH color White');
  assert.ok(!draft.notes.some(n=>/Unresolved fabric or configuration statement/i.test(n)));
 });
+
+test('explicitly negated configuration cannot be silently accepted as selected',()=>{
+ for(const marker of ['not blackout','no motorized','without remote','不要遮光','不需要电动']){
+  const draft=extractInquiryDraft(`JL3601 36 x 60 qty 1 ${marker}`);
+  assert.ok(draft.notes.some(n=>/Negated configuration statement/i.test(n)),marker);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
+test('positive options do not trigger negation warning',()=>{
+ const draft=extractInquiryDraft('JL3601 White LF WH 36 x 60 qty 1 motorized remote');
+ assert.ok(!draft.notes.some(n=>/Negated configuration statement/i.test(n)));
+});
