@@ -38,9 +38,11 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   ];
   const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
+  const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)/i.test(text);
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
+  if(invalidQuantityMention)notes.push('Invalid quantity statement in source; verify the intended positive whole number');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
   const dimensionPairs=dimensionMatches.map(match=>[parseInches(match[1]),parseInches(match[2])].join('x'));
   if(new Set(dimensionPairs).size>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
