@@ -48,3 +48,10 @@ Record browser/device, tested commit SHA, tester, screenshots, date, and pass/fa
 - [ ] Warning alerts are visible, keyboard accessible, and announced by a screen reader where available.
 
 All cases use synthetic inquiries in a nonproduction environment. Record screenshots and any browser console/network errors.
+
+## Equivalent-format cases (avoid false conflicts)
+- [ ] `ML-1801`, `ML1801`, and `ML 1801` in the same window refer to one model and do not trigger a mixed-model alert.
+- [ ] `qty 02` and `quantity 2` in the same window do not trigger a quantity-conflict alert.
+- [ ] `39 5/8 x 40 5/8` and `39.625 x 40.625` in the same window do not trigger a multiple-size alert.
+- [ ] A truly different model, quantity or dimension in that same window **does** trigger a review alert, even when an earlier equivalent value was repeated.
+- [ ] English mode displays the quote-issuance safety gate in English for missing data, conflicting data and unverified pricing/catalog evidence.
