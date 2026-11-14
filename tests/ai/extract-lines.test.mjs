@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {extractInquiryLines} from '../../lib/ai/extract-lines.ts';
+test('two numbered windows remain separate review drafts',()=>{
+ const result=extractInquiryLines('1. JL3601 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized');
+ assert.equal(result.lines.length,2);
+ assert.equal(result.lines[0].draft.productCode,'JL3601');
+ assert.equal(result.lines[1].draft.productCode,'ML-1801');
+ assert.equal(result.lines[1].draft.quantity,2);
+ assert.equal(result.status,'needs_review');
+});
+test('ambiguous message remains one draft with warning',()=>{
+ const result=extractInquiryLines('JL3601 36 x 60\nML-1801 40 x 70');
+ assert.equal(result.lines.length,1);
+ assert.ok(result.warnings.length);
+});
+test('unnumbered context is never silently assigned to a window',()=>{
+ const result=extractInquiryLines('Customer wants installation\n1. JL3601 36 x 60 qty 1');
+ assert.equal(result.lines.length,1);
+ assert.ok(result.warnings.some(w=>w.includes('Unnumbered')));
+});
