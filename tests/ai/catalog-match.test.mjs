@@ -21,3 +21,12 @@ test('missing or ambiguous catalog blocks match',()=>{
  assert.equal(matchCatalogCandidate(verified,[...catalog,...catalog]).status,'unverified');
  assert.equal(matchCatalogCandidate(verified,[]).status,'unverified');
 });
+
+test('option token cannot become fabric even if supplied by caller and catalog',()=>{
+ const extracted=extractInquiryDraft('JL3601 LF WH 36 x 60 qty 1');
+ for(const token of ['LF','BO','BK','WH']){
+  const spoofed={...extracted,fabricCode:token};
+  const fakeCatalog=[{catalogId:'z',catalogVersion:'fake',fabricCode:token,productCode:'JL3601',currency:'USD'}];
+  assert.equal(matchCatalogCandidate(spoofed,fakeCatalog).status,'unverified');
+ }
+});
