@@ -95,3 +95,9 @@ test('leading-zero positive quantities remain valid source statements',()=>{
  assert.equal(draft.quantity,2);
  assert.ok(!draft.notes.some(n=>/Invalid quantity statement/i.test(n)));
 });
+
+test('unsafe integer quantity is flagged even alongside valid quantity',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 9007199254740993 quantity 2');
+ assert.ok(draft.notes.some(n=>/Invalid quantity statement/i.test(n)));
+ assert.equal(quoteDraftGate(draft).allowed,false);
+});
