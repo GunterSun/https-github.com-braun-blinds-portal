@@ -14,6 +14,9 @@ export function extractInquiryLines(sourceText:string):MultiLineResult {
   lineNumber:index+1,source:row.replace(/^(?:line\s*)?\d{1,3}\s*[).:：-]\s*/i,''),
   draft:extractInquiryDraft(row.replace(/^(?:line\s*)?\d{1,3}\s*[).:：-]\s*/i,''))
  }));
+ const sourceNumbers=numbered.slice(0,100).map(row=>Number(row.match(/^(?:line\\s*)?(\\d{1,3})/i)?.[1]));
+ if(new Set(sourceNumbers).size!==sourceNumbers.length)warnings.push('Duplicate window line numbers detected; verify each window manually');
+ if(sourceNumbers.some((n,i)=>i>0&&n!==sourceNumbers[i-1]+1))warnings.push('Window line numbering is out of sequence; check for omitted or reordered windows');
  if(numbered.length>100)warnings.push('More than 100 lines; only first 100 parsed');
  if(rows.length!==numbered.length)warnings.push('Unnumbered context was not assigned to any line; review manually');
  return {lines,warnings,status:'needs_review'};
