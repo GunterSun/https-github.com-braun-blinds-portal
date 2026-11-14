@@ -34,3 +34,10 @@ test('Chinese-first and English switch are both present',()=>{
 test('editing inquiry source clears stale drafts, field edits, warnings and prior status',()=>{
  assert.match(ui,/onChange=\{e=>\{setSource\(e\.target\.value\);setLines\(\[\]\);setFieldEdits\(\{\}\);setWarnings\(\[\]\);setNotice\(""\);\}\}/);
 });
+
+test('safety warnings are localized for Chinese-first owner review',()=>{
+ assert.match(ui,/warningZh:Record<string,string>/);
+ assert.match(ui,/发现重复窗位编号/);
+ assert.match(ui,/内容已截断/);
+ assert.match(ui,/en\?warning:\(warningZh\[warning\]\?\?warning\)/);
+});
