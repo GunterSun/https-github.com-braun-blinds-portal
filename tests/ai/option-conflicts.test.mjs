@@ -101,3 +101,9 @@ test('unsafe integer quantity is flagged even alongside valid quantity',()=>{
  assert.ok(draft.notes.some(n=>/Invalid quantity statement/i.test(n)));
  assert.equal(quoteDraftGate(draft).allowed,false);
 });
+
+test('out-of-range dimensions cannot hide behind another valid size',()=>{
+ const draft=extractInquiryDraft('JL3601 1200 x 60 or 36 x 60 qty 1');
+ assert.ok(draft.notes.some(n=>/Invalid dimension pair/i.test(n)));
+ assert.equal(quoteDraftGate(draft).allowed,false);
+});
