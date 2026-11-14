@@ -41,6 +41,8 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)(?!\d)/i.test(text);
   const unresolvedQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:tbd\b|unknown\b|pending\b|n\/a\b|待定|未定)/i.test(text);
   const notes:string[]=[];
+  const unresolvedModelMention=/(?:\b(?:model|product(?:\s+code)?)\b|型号|产品型号)\s*[:：]?\s*(?:tbd\b|unknown\b|pending\b|n\/a\b|待定|未定)/i.test(text);
+  if(unresolvedModelMention)notes.push('Unresolved product model statement in source; confirm model with customer');
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
   if(invalidQuantityMention||quantities.some(value=>!Number.isSafeInteger(Number(value))||Number(value)<=0))notes.push('Invalid quantity statement in source; verify the intended positive whole number');
