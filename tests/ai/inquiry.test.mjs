@@ -27,3 +27,9 @@ test('missing fields block approval',()=>{
  assert.deepEqual(d.missing,['widthInches','heightInches','quantity']);
  assert.equal(d.status,'needs_review');
 });
+
+test('LF and WH are not verified fabric codes',()=>{
+ const d=extractInquiryDraft('JL3601 White LF WH 39 5/8 x 40 5/8 qty 1');
+ assert.equal(d.fabricCode,null);
+ assert.equal(d.status,'needs_review');
+});
