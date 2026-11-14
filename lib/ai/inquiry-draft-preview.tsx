@@ -7,6 +7,7 @@ import {quoteDraftGate} from "./quote-adapter";
 export default function AiInquiryDraftPreview(){
  const [source,setSource]=useState("");
  const [lines,setLines]=useState<InquiryLine[]>([]);
+ const [fieldEdits,setFieldEdits]=useState<Record<string,string>>({});
  const [warnings,setWarnings]=useState<string[]>([]);
  const [notice,setNotice]=useState("");
  const [locale,setLocale]=useState<"zh"|"en">("zh");
@@ -14,10 +15,11 @@ export default function AiInquiryDraftPreview(){
  const extract=()=>{
   if(!source.trim()){setNotice(en?"Enter an inquiry first.":"请先粘贴客户询价。");return;}
   const result=extractInquiryLines(source);
-  setLines(result.lines);setWarnings(result.warnings);
+  setLines(result.lines);setFieldEdits({});setWarnings(result.warnings);
   setNotice(en?"Review-only drafts; nothing was saved or sent.":"仅生成待审核草稿；未保存或发送任何信息。");
  };
  const update=(index:number,field:"productCode"|"widthInches"|"heightInches"|"quantity",value:string)=>{
+  setFieldEdits(previous=>({...previous,[`${index}:${field}`]:value}));
   setLines(previous=>previous.map((line,i)=>{
    if(i!==index)return line;
    const next={...line.draft};
@@ -46,7 +48,7 @@ export default function AiInquiryDraftPreview(){
    {lines.map((line,i)=><section key={i} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:18,minWidth:0}}>
     <h2 style={{fontSize:19,fontWeight:700}}>{en?"Line":"第"} {i+1} {en?"— review required":"项 · 待审核"}</h2>
     {fields.map(([field,zh,label])=><label key={field} style={{display:"block",margin:"12px 0"}}>{en?label:zh}
-     <input type="text" inputMode={field==="productCode"?"text":"decimal"} value={line.draft[field]??""}
+     <input type="text" inputMode={field==="productCode"?"text":"decimal"} value={fieldEdits[`${i}:${field}`]??(line.draft[field]??"")}
       onChange={e=>update(i,field,e.target.value)}
       style={{boxSizing:"border-box",display:"block",width:"100%",padding:9,border:"1px solid #94a3b8",borderRadius:6}}/>
     </label>)}
