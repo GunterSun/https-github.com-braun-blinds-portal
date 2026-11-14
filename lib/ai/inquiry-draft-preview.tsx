@@ -76,7 +76,7 @@ export default function AiInquiryDraftPreview(){
     {!line.draft.fabricCode&&<p style={{color:"#92400e",fontWeight:600}}>{en?"Fabric is not verified. Confirm the correct product catalog before pricing.":"面料代码尚未核实。请先核对对应产品目录，JL 系列不得套用 Z 系列价格。"}</p>}
     {line.draft.notes.map((note,j)=><p key={`note-${j}`} role="alert" style={{color:"#b91c1c",fontWeight:600}}>⚠ {en?note:(noteZh[note]??note)}</p>)}
     <p>{en?"Missing":"缺失"}：{line.draft.missing.join(", ")||"—"}</p>
-    <p style={{color:"#92400e"}}>{quoteDraftGate(line.draft).reason}</p>
+    <p style={{color:"#92400e"}}>{en?(line.draft.notes.length?"Unresolved conflicting or ambiguous inquiry details require customer confirmation. Formal quote issuance is blocked.":line.draft.missing.length?"Required inquiry details are missing. Complete and manually verify them before quoting.":"Customer pricing, product catalog, and quote version are not verified. Formal quote issuance is blocked."):quoteDraftGate(line.draft).reason}</p>
    </section>)}
   </div>
   <p style={{fontSize:13,color:"#475569",marginTop:24}}>{en?"Never use this preview for unverified pricing or formal quote issuance.":"此预览不执行价格计算、正式签发或生产放行。"}</p>
