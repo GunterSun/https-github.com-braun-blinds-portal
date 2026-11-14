@@ -23,3 +23,11 @@ test('mobile draft can be downloaded as a local text file without backend mutati
  assert.match(ui,/braun-inquiry-review-draft\.txt/);
  assert.match(ui,/URL\.revokeObjectURL\(url\)/);
 });
+
+test('mobile share uses native share sheet and remains review-only',()=>{
+ assert.match(ui,/Share draft/);
+ assert.match(ui,/分享草稿/);
+ assert.match(ui,/navigator\.share\(/);
+ assert.match(ui,/text:buildOrderDraft\(\)/);
+ assert.match(ui,/AbortError/);
+});
