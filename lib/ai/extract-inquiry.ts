@@ -36,7 +36,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
     ...(/\bWH\b|white hardware|白色配件/i.test(text)?['white_hardware']:[]),
     ...(/\bBK\b|black hardware|黑色配件/i.test(text)?['black_hardware']:[]),
   ];
-  const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/ /g,'').toUpperCase());
+  const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
