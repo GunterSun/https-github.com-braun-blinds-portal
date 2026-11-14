@@ -33,6 +33,10 @@ jobs:
           cache: npm
       - name: Install locked dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: V5.2 read-only order preview regression
+        run: node --test tests/v5-order-preview.test.mjs
+      - name: V5.2 synthetic in-memory migration rehearsal
+        run: python3 tests/v5_order_relations_test.py -v
       - name: Check TypeScript
         run: npx tsc --noEmit
       - name: Build portal without deploying
