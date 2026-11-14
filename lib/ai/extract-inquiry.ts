@@ -45,6 +45,8 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
   if(invalidQuantityMention||quantities.some(value=>!Number.isSafeInteger(Number(value))||Number(value)<=0))notes.push('Invalid quantity statement in source; verify the intended positive whole number');
   if(unresolvedQuantityMention)notes.push('Unresolved quantity statement in source; confirm count with customer');
+  const unresolvedDimensionMention=/(?:\b(?:width|height|size|dimensions?)\b|宽度|高度|尺寸)\s*[:：]?\s*(?:tbd\b|unknown\b|pending\b|n\/a\b|待定|未定)/i.test(text);
+  if(unresolvedDimensionMention)notes.push('Unresolved dimension statement in source; confirm measurements with customer');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
   const dimensionPairs=dimensionMatches.map(match=>[parseInches(match[1]),parseInches(match[2])].join('x'));
   if(dimensionMatches.some(match=>parseInches(match[1])===null||parseInches(match[2])===null))notes.push('Invalid dimension pair in source; verify width and height');
