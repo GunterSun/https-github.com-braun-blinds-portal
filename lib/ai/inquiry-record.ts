@@ -5,10 +5,11 @@ export const measurementDimensions = ["top", "middleWidth", "bottom", "left", "m
 type Dimension = typeof measurementDimensions[number];
 export type Measurement = Record<Dimension, string> & {
   windowId: string; room: string; visitOrder: string; mount: string; notes: string;
+  sourceRef: string; kind: "field" | "design" | "budget" | "finished";
 };
 
 export const emptyMeasurement: Measurement = {
-  windowId: "", room: "", visitOrder: "", mount: "", notes: "",
+  windowId: "", room: "", visitOrder: "", mount: "", notes: "", sourceRef: "", kind: "field",
   top: "", middleWidth: "", bottom: "", left: "", middleHeight: "", right: "", depth: "",
 };
 
@@ -21,8 +22,12 @@ export function captureMeasurement(input: Measurement, recordedAt: string) {
     field, { raw: input[field], inches: parseInches(input[field]) },
   ]));
   const issues = [
-    ...(["windowId", "room", "mount"] as const).filter(field => !input[field].trim()),
-    ...measurementDimensions.filter(field => parseInches(input[field]) === null),
+    ...(["windowId", "sourceRef"] as const).filter(field => !input[field].trim()),
+    ...(input.kind === "field" ? (["room", "mount"] as const).filter(field => !input[field].trim()) : []),
+    ...measurementDimensions.filter(field =>
+      dimensions[field].inches === null &&
+      (input.kind === "field" || input[field].trim() || field === "middleWidth" || field === "middleHeight")
+    ),
   ];
   return { input: { ...input }, recordedAt, dimensions, issues };
 }
@@ -41,29 +46,44 @@ export function recordRevision(history: FieldRevision[], revision: FieldRevision
   return revision.previous === revision.next ? history : [...history, revision];
 }
 
-export function measurementConflicts(
+export function measurementDifferences(
   measurement: ReturnType<typeof captureMeasurement>,
   readings: ReturnType<typeof captureMeasurement>[],
   sources: ReturnType<typeof captureInquiry>[],
 ) {
   const id = measurement.input.windowId.trim().toUpperCase();
-  const conflicts = new Set<Dimension>();
-  for (const other of readings) {
+  const differences: {field: Dimension; current: string; other: string; source: string; kind: Measurement["kind"] | "inquiry"}[] = [];
+  for (const [index, other] of readings.entries()) {
     if (other === measurement || other.input.windowId.trim().toUpperCase() !== id) continue;
     for (const field of measurementDimensions) {
-      const a = measurement.dimensions[field].inches;
-      const b = other.dimensions[field].inches;
-      if (a !== null && b !== null && a !== b) conflicts.add(field);
-    }
-  }
-  for (const source of sources) {
-    for (const line of source.lines) {
-      if (line.originalWindowId?.trim().toUpperCase() !== id) continue;
-      for (const [field, expected] of [["middleWidth", line.draft.widthInches], ["middleHeight", line.draft.heightInches]] as const) {
-        const actual = measurement.dimensions[field].inches;
-        if (actual !== null && expected !== null && actual !== expected) conflicts.add(field);
+      const a = measurement.dimensions[field];
+      const b = other.dimensions[field];
+      if (a.inches !== null && b.inches !== null && a.inches !== b.inches) {
+        differences.push({field,current:a.raw,other:b.raw,source:other.input.sourceRef || "#" + (index+1),kind:other.input.kind});
       }
     }
   }
-  return [...conflicts];
+  for (const [index, source] of sources.entries()) {
+    for (const line of source.lines) {
+      if (line.originalWindowId?.trim().toUpperCase() !== id) continue;
+      for (const [field, expected, raw] of [
+        ["middleWidth", line.draft.widthInches, line.draft.widthRaw],
+        ["middleHeight", line.draft.heightInches, line.draft.heightRaw],
+      ] as const) {
+        const actual = measurement.dimensions[field];
+        if (actual.inches !== null && expected !== null && raw !== null && actual.inches !== expected) {
+          differences.push({field,current:actual.raw,other:raw,source:"#"+(index+1),kind:"inquiry"});
+        }
+      }
+    }
+  }
+  return differences;
+}
+
+export function measurementConflicts(
+  measurement: Parameters<typeof measurementDifferences>[0],
+  readings: Parameters<typeof measurementDifferences>[1],
+  sources: Parameters<typeof measurementDifferences>[2],
+) {
+  return [...new Set(measurementDifferences(measurement, readings, sources).map(entry=>entry.field))];
 }

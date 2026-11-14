@@ -9,10 +9,14 @@ export function extractInquiryLines(sourceText:string):MultiLineResult {
  const prefix=/^\s*(?:(?:line\s*)?(\d{1,3})\s*(?:[).:：]|-(?!\d))|((?:window\s+|W\s*|窗位\s*|窗口\s*)\d{1,3}(?:-\d{1,3})?|[a-z]{1,8}-\d{1,3}|\d{1,3}-\d{1,3}|[a-z]{1,8}\d{1,3}[a-z]{0,4})(?=\s|[).:：])\s*[).:：]?)\s*(\S.*)$/i;
  const numbered=rows.flatMap(row=>{
   const match=row.match(prefix);
-  if(!match||/^(?:LJYM|BZM|JL|ML|LM|DR)[- ]?\d/i.test(match[2]??""))return [];
-  const originalWindowId=match[1]??match[2];
+  // Spreadsheet labels may contain Chinese, digits and hyphens. Require an explicit
+  // colon so prose and unlabeled dimensions do not become window IDs.
+  const labeled=row.match(/^\s*([\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*)\s*[:：]\s*(\S.*)$/u);
+  const originalWindowId=match?.[1]??match?.[2]??labeled?.[1];
+  const detail=match?.[3]??labeled?.[2];
+  if(!originalWindowId||!detail||/^(?:LJYM|BZM|JL|ML|LM|DR)[- ]?\d/i.test(originalWindowId))return [];
   const numericLabel=originalWindowId.match(/^(?:(?:window|w|窗位|窗口)\s*)?(\d+)$/i);
-  return [{originalWindowId,originalRow:row,number:numericLabel?Number(numericLabel[1]):null,source:match[3]}];
+  return [{originalWindowId,originalRow:row,number:numericLabel?Number(numericLabel[1]):null,source:detail}];
  });
  const warnings:string[]=[];
  if(raw.length>12000)warnings.push('Inquiry exceeded 12,000 characters; truncated text requires manual review');

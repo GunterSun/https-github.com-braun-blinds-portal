@@ -4,9 +4,16 @@ import {type InquiryLine} from "./extract-lines";
 import {parseInches} from "./extract-inquiry";
 import {quoteDraftGate} from "./quote-adapter";
 
-import {captureInquiry,captureMeasurement,emptyMeasurement,measurementConflicts,measurementDimensions,recordRevision,type FieldRevision} from "./inquiry-record";
+import {captureInquiry,captureMeasurement,emptyMeasurement,measurementDifferences,measurementDimensions,recordRevision,type FieldRevision} from "./inquiry-record";
+
+const measurementKinds = {
+ field:["现场读数","Field reading"], design:["设计图读数","Design dimension"],
+ budget:["预算尺寸","Budget dimension"], finished:["加工 / 成品尺寸","Finished dimension"],
+ inquiry:["询价尺寸","Inquiry dimension"],
+} as const;
 
 const measurementLabels = {
+ sourceRef:["来源 / 表格行或 PDF 页","Source / workbook row or PDF page"],
  windowId:["原窗位编号","Original window ID"], room:["房间 / 楼层","Room / floor"],
  visitOrder:["走访顺序","Visit order"], mount:["口内 / 口外","Inside / outside mount"],
  top:["上宽","Top width"], middleWidth:["中宽","Middle width"], bottom:["下宽","Bottom width"],
@@ -63,12 +70,18 @@ export default function AiInquiryDraftPreview(){
    const next={...line.draft};
    if(field==="productCode")next.productCode=value.trim().toUpperCase()||null;
    else if(field==="quantity")next.quantity=/^[1-9]\d*$/.test(value)&&Number.isSafeInteger(Number(value))?Number(value):null;
-   else next[field]=parseInches(value);
+   else {
+    next[field]=parseInches(value);
+    next[field==="widthInches"?"widthRaw":"heightRaw"]=value;
+   }
    next.missing=(["productCode","widthInches","heightInches","quantity"] as const).filter(key=>!next[key]);
    return {...line,draft:next};
   }));
  };
- const measurementReview=measurements.map(entry=>({...entry,conflicts:measurementConflicts(entry,measurements,sources)}));
+ const measurementReview=measurements.map(entry=>{
+  const differences=measurementDifferences(entry,measurements,sources);
+  return {...entry,differences,conflicts:[...new Set(differences.map(item=>item.field))]};
+ });
  const exportRecord=()=>{
   const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,measurements:measurementReview,reviewNotes,currentLines:lines},null,2)],{type:"application/json"});
   const url=URL.createObjectURL(file);
@@ -139,19 +152,25 @@ export default function AiInquiryDraftPreview(){
     setMeasurements(previous=>[...previous,captureMeasurement(measurement,new Date().toISOString())]);
     setMeasurement(emptyMeasurement);
    }}>
+    <label>{en?"Dimension type":"尺寸用途"} <select value={measurement.kind} onChange={e=>setMeasurement({...measurement,kind:e.target.value as typeof measurement.kind})}>
+     {(["field","design","budget","finished"] as const).map(kind=><option key={kind} value={kind}>{measurementKinds[kind][en?1:0]}</option>)}
+    </select></label>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
-     {(["windowId","room","visitOrder","mount",...measurementDimensions,"notes"] as const).map(field=><label key={field}>
+     {(["windowId","sourceRef","room","visitOrder","mount",...measurementDimensions,"notes"] as const).map(field=><label key={field}>
       {measurementLabels[field][en?1:0]}
       <input required={field==="windowId"} value={measurement[field]} style={{display:"block",width:"100%"}} onChange={e=>setMeasurement({...measurement,[field]:e.target.value})}/>
      </label>)}
     </div>
     <button type="submit" style={{marginTop:12}}>{en?"Add measurement":"追加测量记录"}</button>
    </form>
-   {measurementReview.map(({input,issues,conflicts,recordedAt},i)=><details key={i} open={issues.length>0||conflicts.length>0}><summary>{input.windowId} · {input.room} · {recordedAt}</summary>
+   {measurementReview.map(({input,issues,conflicts,differences,recordedAt},i)=><details key={i} open={issues.length>0||conflicts.length>0}><summary>{input.windowId} · {measurementKinds[input.kind][en?1:0]} · {input.sourceRef} · {recordedAt}</summary>
     <p>{measurementDimensions.map(field=>`${measurementLabels[field][en?1:0]} ${input[field]||"—"}`).join(" · ")}</p>
     <p>{input.visitOrder} · {input.mount} · {input.notes}</p>
     {issues.length>0&&<p role="alert">{en?"Human review required (missing or invalid)":"待人工确认（缺失或无效）"}：{issues.map(field=>measurementLabels[field][en?1:0]).join("、")}</p>}
-    {conflicts.length>0&&<p role="alert">{en?"Human review required (different readings)":"待人工确认（与询价或其他轮次读数不同）"}：{conflicts.map(field=>measurementLabels[field][en?1:0]).join("、")}</p>}
+    {differences.length>0&&<div role="alert">
+     <p>{en?"Human review required. Verify whether the values measure the same thing.":"待人工确认：请核对两份尺寸是否属于同一测量口径。"}</p>
+     <ul>{differences.map((item,index)=><li key={index}>{measurementLabels[item.field][en?1:0]} · {item.current} / {item.other} · {measurementKinds[item.kind][en?1:0]} · {item.source}</li>)}</ul>
+    </div>}
    </details>)}
   </section>
   <button type="button" style={{marginTop:20}} onClick={exportRecord} disabled={!sources.length&&!measurements.length&&!reviewNotes.length}>{en?"Download record (JSON)":"导出记录（JSON）"}</button>

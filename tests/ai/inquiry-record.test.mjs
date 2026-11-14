@@ -71,3 +71,22 @@ test('editing a dimension records a revision without changing the source',()=>{
  assert.equal(source.lines[0].draft.heightRaw,'34 1/2');
  assert.equal(first[0].next,'34 5/8');
 });
+
+test('explicit Chinese spreadsheet labels preserve original window IDs and fractions',()=>{
+ const record=capture('书房3-2SD: 41 × 88\n2卧2-1：52 1/4 × 88 1/2\n餐厅：70 × 90');
+ assert.deepEqual(record.lines.map(line=>line.originalWindowId),['书房3-2SD','2卧2-1','餐厅']);
+ assert.equal(record.lines[1].draft.widthRaw,'52 1/4');
+ assert.equal(record.lines[1].draft.heightInches,88.5);
+ assert.deepEqual(record.warnings,[]);
+});
+
+test('design, field and finished dimensions retain separate cited comparison values',async ()=>{
+ const {measurementDifferences}=await import('../../lib/ai/inquiry-record.ts');
+ const field={...emptyMeasurement,windowId:'W8',middleHeight:'89 1/2'};
+ const original=captureMeasurement({...field,sourceRef:'Survey ref'},time);
+ const finished=captureMeasurement({...field,kind:'finished',middleWidth:'42',middleHeight:'87 1/2',sourceRef:'Sheet row 6'},time);
+ assert.deepEqual(finished.issues,[]);
+ assert.deepEqual(measurementDifferences(finished,[original,finished],[]),[
+  {field:'middleHeight',current:'87 1/2',other:'89 1/2',source:'Survey ref',kind:'field'},
+ ]);
+});
