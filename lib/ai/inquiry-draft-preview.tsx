@@ -53,7 +53,7 @@ export default function AiInquiryDraftPreview(){
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
   {notice&&<p role="status">{notice}</p>}
-  {warnings.map((warning,i)=><p key={i} style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
+  {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
    {lines.map((line,i)=><section key={i} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:18,minWidth:0}}>
     <h2 style={{fontSize:19,fontWeight:700}}>{en?"Line":"第"} {i+1} {en?"— review required":"项 · 待审核"}</h2>
