@@ -66,6 +66,7 @@ export default function AiInquiryDraftPreview(){
     <p>{en?"Color":"颜色"}：{line.draft.color??"—"} · {en?"Options":"选项"}：{line.draft.options.join(", ")||"—"}</p>
     <p>{en?"Verified fabric code":"已核实面料代码"}：{line.draft.fabricCode??"—"}</p>
     {!line.draft.fabricCode&&<p style={{color:"#92400e",fontWeight:600}}>{en?"Fabric is not verified. Confirm the correct product catalog before pricing.":"面料代码尚未核实。请先核对对应产品目录，JL 系列不得套用 Z 系列价格。"}</p>}
+    {line.draft.notes.map((note,j)=><p key={`note-${j}`} role="alert" style={{color:"#b91c1c",fontWeight:600}}>⚠ {en?note:({"Conflicting opacity options: LF and BO; verify with customer":"透光 LF 与遮光 BO 同时出现，请向客户确认。","Conflicting hardware colors: WH and BK; verify with customer":"白色配件 WH 与黑色配件 BK 同时出现，请向客户确认。","Motorized and cordless both requested; verify operating system":"电动与无绳操作同时出现，请向客户确认操作方式。"}[note]??note)}</p>)}
     <p>{en?"Missing":"缺失"}：{line.draft.missing.join(", ")||"—"}</p>
     <p style={{color:"#92400e"}}>{quoteDraftGate(line.draft).reason}</p>
    </section>)}
