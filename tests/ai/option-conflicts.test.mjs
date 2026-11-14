@@ -54,3 +54,14 @@ test('one fractional dimension pair does not falsely trigger multiple-size warni
  const draft=extractInquiryDraft('JL3601 39 5/8 x 40 5/8 qty 1');
  assert.ok(!draft.notes.some(n=>/Multiple dimension pairs/i.test(n)));
 });
+
+test('contradictory quantity statements require owner review',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 quantity 2');
+ assert.equal(draft.quantity,1);
+ assert.ok(draft.notes.some(n=>/Conflicting quantities/i.test(n)));
+ assert.equal(quoteDraftGate(draft).allowed,false);
+});
+test('repeated identical quantities do not create a false warning',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 2 quantity 2');
+ assert.ok(!draft.notes.some(n=>/Conflicting quantities/i.test(n)));
+});
