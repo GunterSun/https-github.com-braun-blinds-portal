@@ -39,10 +39,12 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
   const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)(?!\d)/i.test(text);
+  const unresolvedQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:tbd\b|unknown\b|pending\b|n\/a\b|待定|未定)/i.test(text);
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
   if(invalidQuantityMention||quantities.some(value=>!Number.isSafeInteger(Number(value))||Number(value)<=0))notes.push('Invalid quantity statement in source; verify the intended positive whole number');
+  if(unresolvedQuantityMention)notes.push('Unresolved quantity statement in source; confirm count with customer');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
   const dimensionPairs=dimensionMatches.map(match=>[parseInches(match[1]),parseInches(match[2])].join('x'));
   if(dimensionMatches.some(match=>parseInches(match[1])===null||parseInches(match[2])===null))notes.push('Invalid dimension pair in source; verify width and height');
