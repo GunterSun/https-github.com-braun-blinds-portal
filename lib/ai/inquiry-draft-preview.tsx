@@ -12,6 +12,16 @@ export default function AiInquiryDraftPreview(){
  const [notice,setNotice]=useState("");
  const [locale,setLocale]=useState<"zh"|"en">("zh");
  const en=locale==="en";
+ const warningZh:Record<string,string>={
+  "Inquiry exceeded 12,000 characters; truncated text requires manual review":"询价超过 12,000 个字符，内容已截断，请人工核对遗漏窗位。",
+  "No explicit line numbering; review whether the message contains multiple windows":"未找到明确的窗位编号，请核对是否包含多个窗位。",
+  "Window numbering does not start at 1; verify missing earlier windows":"窗位编号不是从 1 开始，请检查前面的窗位是否遗漏。",
+  "Duplicate window line numbers detected; verify each window manually":"发现重复窗位编号，请逐项人工核对。",
+  "Window line numbering is out of sequence; check for omitted or reordered windows":"窗位编号跳号或倒序，请检查遗漏或顺序错误。",
+  "More than 100 lines; only first 100 parsed":"超过 100 个窗位，仅识别前 100 项，请人工处理剩余内容。",
+  "Unnumbered context was not assigned to any line; review manually":"存在未编号的补充内容，未自动分配到任何窗位，请人工核对。"
+ };
+
  const extract=()=>{
   if(!source.trim()){setNotice(en?"Enter an inquiry first.":"请先粘贴客户询价。");return;}
   const result=extractInquiryLines(source);
@@ -43,7 +53,7 @@ export default function AiInquiryDraftPreview(){
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
   {notice&&<p role="status">{notice}</p>}
-  {warnings.map((warning,i)=><p key={i} style={{color:"#92400e"}}>⚠ {warning}</p>)}
+  {warnings.map((warning,i)=><p key={i} style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
    {lines.map((line,i)=><section key={i} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:18,minWidth:0}}>
     <h2 style={{fontSize:19,fontWeight:700}}>{en?"Line":"第"} {i+1} {en?"— review required":"项 · 待审核"}</h2>
