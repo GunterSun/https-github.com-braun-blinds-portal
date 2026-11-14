@@ -13,7 +13,7 @@ test('customer inquiry is review-only',()=>{
  assert.equal(d.widthInches,39.625);
  assert.equal(d.heightInches,40.625);
  assert.equal(d.quantity,1);
- assert.deepEqual(d.options,['square_valance']);
+ assert.deepEqual(d.options,['square_valance','light_filtering']);
  assert.equal(d.status,'needs_review');
 });
 test('motorized option is extracted but not quoted',()=>{
@@ -32,4 +32,12 @@ test('LF and WH are not verified fabric codes',()=>{
  const d=extractInquiryDraft('JL3601 White LF WH 39 5/8 x 40 5/8 qty 1');
  assert.equal(d.fabricCode,null);
  assert.equal(d.status,'needs_review');
+});
+
+test('hardware and opacity tokens are options, never verified fabrics',()=>{
+ const d=extractInquiryDraft('JL3601 LF WH 36 x 60 qty 1');
+ assert.equal(d.fabricCode,null);
+ assert.deepEqual(d.options,['light_filtering','white_hardware']);
+ const blackout=extractInquiryDraft('JL3601 BO 36 x 60 qty 1');
+ assert.deepEqual(blackout.options,['blackout']);
 });
