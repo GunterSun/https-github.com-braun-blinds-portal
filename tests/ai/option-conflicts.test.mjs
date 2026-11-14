@@ -151,3 +151,15 @@ test('ordinary product code does not trigger pending-model warning',()=>{
  const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 model JL3601');
  assert.ok(!draft.notes.some(n=>/Unresolved product model statement/i.test(n)));
 });
+
+test('pending fabric, color or hardware choice remains a review warning',()=>{
+ for(const marker of ['fabric TBD','color unknown','hardware pending','opacity n/a','布料待定','颜色未定','配件待定']){
+  const draft=extractInquiryDraft(`JL3601 White LF WH 36 x 60 qty 1 ${marker}`);
+  assert.ok(draft.notes.some(n=>/Unresolved fabric or configuration statement/i.test(n)),marker);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
+test('confirmed color and hardware do not trigger pending option warning',()=>{
+ const draft=extractInquiryDraft('JL3601 White LF WH 36 x 60 qty 1 hardware WH color White');
+ assert.ok(!draft.notes.some(n=>/Unresolved fabric or configuration statement/i.test(n)));
+});
