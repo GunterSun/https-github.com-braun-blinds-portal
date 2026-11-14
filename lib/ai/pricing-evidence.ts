@@ -11,7 +11,7 @@ export type PricingEvidence={
  validUntil:string|null;
 };
 export type PricingEvidenceResult={readyForHumanReview:boolean;missing:string[];warnings:string[]};
-export function checkPricingEvidence(e:PricingEvidence):PricingEvidenceResult {
+export function checkPricingEvidence(e:PricingEvidence, asOfDate?:string):PricingEvidenceResult {
  const missing:string[]=[];
  const warnings:string[]=[];
  if(!Number.isSafeInteger(e.customerId)||Number(e.customerId)<=0)missing.push('customerId');
@@ -21,6 +21,15 @@ export function checkPricingEvidence(e:PricingEvidence):PricingEvidenceResult {
  if(!Number.isSafeInteger(e.discountCustomerId)||e.discountCustomerId!==e.customerId)missing.push('discountCustomerMatch');
  if(!e.exchangeRateSnapshotId?.trim())missing.push('exchangeRateSnapshot');
  if(!e.validUntil||!/^\d{4}-\d{2}-\d{2}$/.test(e.validUntil)||!Number.isFinite(Date.parse(e.validUntil+'T00:00:00Z'))||new Date(e.validUntil+'T00:00:00Z').toISOString().slice(0,10)!==e.validUntil)missing.push('validUntil');
+ if(asOfDate){
+  const validAsOf=/^\d{4}-\d{2}-\d{2}$/.test(asOfDate)&&Number.isFinite(Date.parse(asOfDate+'T00:00:00Z'))&&new Date(asOfDate+'T00:00:00Z').toISOString().slice(0,10)===asOfDate;
+  if(!validAsOf)missing.push('asOfDate');
+  else if(e.validUntil&&!missing.includes('validUntil')){
+   const days=(Date.parse(e.validUntil+'T00:00:00Z')-Date.parse(asOfDate+'T00:00:00Z'))/86400000;
+   if(days<0)missing.push('quoteExpired');
+   if(days>30)missing.push('validityExceeds30Days');
+  }
+ }
  if(e.catalogCurrency==='RMB')warnings.push('RMB pricing requires approved USD conversion and rate snapshot');
  warnings.push('Human must verify measurements, surcharges, installation, tax and catalog applicability');
  return {readyForHumanReview:missing.length===0,missing,warnings};
