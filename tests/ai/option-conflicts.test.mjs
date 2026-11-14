@@ -81,3 +81,11 @@ test('same dimensions repeated in decimal and fraction formats do not falsely co
  const draft=extractInquiryDraft('JL3601 39 5/8 x 40 5/8 qty 1; confirmed 39.625 x 40.625');
  assert.ok(!draft.notes.some(n=>/Multiple dimension pairs/i.test(n)));
 });
+
+test('invalid quantity mention cannot be hidden by another valid quantity',()=>{
+ for(const source of ['JL3601 36 x 60 qty 0 quantity 2','JL3601 36 x 60 qty -1 quantity 2','JL3601 36 x 60 qty 1.5 quantity 2']){
+  const draft=extractInquiryDraft(source);
+  assert.ok(draft.notes.some(n=>/Invalid quantity statement/i.test(n)),source);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
