@@ -30,3 +30,7 @@ test('Chinese-first and English switch are both present',()=>{
  assert.match(ui,/setLocale\(en\?"zh":"en"\)/);
  assert.match(ui,/AI 询价草稿工作台/);
 });
+
+test('editing inquiry source clears stale drafts, field edits, warnings and prior status',()=>{
+ assert.match(ui,/onChange=\{e=>\{setSource\(e\.target\.value\);setLines\(\[\]\);setFieldEdits\(\{\}\);setWarnings\(\[\]\);setNotice\(""\);\}\}/);
+});
