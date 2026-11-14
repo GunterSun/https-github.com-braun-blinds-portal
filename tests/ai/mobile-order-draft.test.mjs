@@ -7,7 +7,7 @@ test('mobile workbench captures customer and project before creating a copyable 
  assert.match(ui,/const \[project,setProject\]=useState/);
  assert.match(ui,/Copy order draft/);
  assert.match(ui,/复制订单草稿/);
- assert.match(ui,/navigator\.clipboard\.writeText\(body\)/);
+ assert.match(ui,/navigator.*clipboard.*writeText.*buildOrderDraft/);
 });
 test('copied order draft is explicitly review-only and preserves source warnings',()=>{
  assert.match(ui,/REVIEW-ONLY ORDER DRAFT/);
