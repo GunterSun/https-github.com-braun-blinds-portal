@@ -41,3 +41,16 @@ test('first listed window starts after 1 and must be reviewed',()=>{
  const result=extractInquiryLines('2. JL3601 36 x 60 qty 1\n3. ML-1801 40 x 70 qty 2');
  assert.ok(result.warnings.some(w=>/does not start at 1/i.test(w)));
 });
+
+test('more than 100 windows are capped with explicit review warning',()=>{
+ const source=Array.from({length:101},(_,i)=>(i+1)+'. JL3601 36 x 60 qty 1').join('\n');
+ const result=extractInquiryLines(source);
+ assert.equal(result.lines.length,100);
+ assert.ok(result.warnings.some(w=>/More than 100 lines/i.test(w)));
+ assert.equal(result.status,'needs_review');
+});
+test('window 0 is not silently accepted as first window',()=>{
+ const result=extractInquiryLines('0. JL3601 36 x 60 qty 1\n1. ML-1801 40 x 70 qty 2');
+ assert.equal(result.lines.length,2);
+ assert.ok(result.warnings.some(w=>/does not start at 1/i.test(w)));
+});
