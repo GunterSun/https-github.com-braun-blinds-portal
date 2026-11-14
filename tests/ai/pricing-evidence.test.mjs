@@ -23,3 +23,9 @@ test('RMB source is not silently treated as USD',()=>{
  const r=checkPricingEvidence({...evidence,catalogCurrency:'RMB'});
  assert.ok(r.warnings.some(x=>x.includes('RMB')));
 });
+
+test('invalid calendar date is not accepted as a quote validity date',()=>{
+ const r=checkPricingEvidence({...evidence,validUntil:'2026-02-31'});
+ assert.equal(r.readyForHumanReview,false);
+ assert.ok(r.missing.includes('validUntil'));
+});
