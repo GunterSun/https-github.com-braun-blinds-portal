@@ -1,0 +1,209 @@
+[
+  {
+    "id": "B01",
+    "messages": [
+      "2.2/英寸，最后一个2.5/英寸",
+      "第10个是卷帘，按照50美金一个，第8和第9按照2.5/英寸"
+    ],
+    "rows": [
+      [
+        "1",
+        90
+      ],
+      [
+        "2",
+        120
+      ],
+      [
+        "3",
+        90
+      ],
+      [
+        "4",
+        47
+      ],
+      [
+        "5",
+        49
+      ],
+      [
+        "6",
+        44
+      ],
+      [
+        "7",
+        41.5
+      ],
+      [
+        "8",
+        126
+      ],
+      [
+        "9",
+        48
+      ],
+      [
+        "10",
+        29
+      ],
+      [
+        "11",
+        79
+      ],
+      [
+        "12",
+        80
+      ],
+      [
+        "14",
+        56
+      ],
+      [
+        "15",
+        56
+      ],
+      [
+        "16",
+        143
+      ],
+      [
+        "17",
+        96
+      ]
+    ],
+    "expected": {
+      "historicalTotalCents": 269510,
+      "manualChecks": [
+        "确认跳过 13 的原因"
+      ],
+      "defaultRate": null
+    }
+  },
+  {
+    "id": "B02",
+    "messages": [
+      "给前面两个窗添加布艺窗帘，布料型号是最后一张图片，宽度比窗两侧各增加10英寸，高度增加10英寸，黑色杆，制作效果图",
+      "右侧窗帘高度需要和左侧一样高",
+      "最上面褶的款式选择这种"
+    ],
+    "expected": {
+      "revisionCount": 3,
+      "rod": "black",
+      "leftExtensionInches": 10,
+      "rightExtensionInches": 10,
+      "topAligned": true,
+      "manualChecks": [
+        "核实实际面料和褶型参考",
+        "复核现场高度与齐平要求"
+      ]
+    }
+  },
+  {
+    "id": "B03",
+    "messages": [
+      "金额改为18000，定金8500"
+    ],
+    "sourceCounts": [
+      31,
+      32,
+      42
+    ],
+    "expected": {
+      "totalCents": 1800000,
+      "depositCents": 850000,
+      "balanceCents": 950000,
+      "manualChecks": [
+        "核对清单覆盖范围"
+      ]
+    }
+  },
+  {
+    "id": "B04",
+    "messages": [
+      "找到对应的位置并添加对应信息，如果找不到就问"
+    ],
+    "rows": [
+      {
+        "originalId": "K1",
+        "measuredWidth": "66",
+        "measuredHeight": "46"
+      },
+      {
+        "originalId": "K2",
+        "measuredWidth": "35",
+        "measuredHeight": "46 1/4"
+      }
+    ],
+    "expected": {
+      "manualChecks": [
+        "厨房窗位对应",
+        "客卫窗归属",
+        "家庭厅遮光"
+      ],
+      "overwriteMeasured": false
+    }
+  },
+  {
+    "id": "B05",
+    "messages": [
+      "生成Excel",
+      "增加"
+    ],
+    "sample": {
+      "widthRaw": "35 1/4",
+      "heightRaw": "65 3/8"
+    },
+    "expected": {
+      "combinedCount": 19,
+      "widthInches": 35.25,
+      "heightInches": 65.375,
+      "duplicateImport": "review_without_duplicate"
+    }
+  },
+  {
+    "id": "B06",
+    "messages": [
+      "同样的布料不加衬会优惠10%，另外还有一种纱，透光不透人，价格便宜很多，你这个客户对布料的要求是什么，比如颜色，另外发货时间加长到8周，价格还会优惠25%"
+    ],
+    "expected": {
+      "conditions": [
+        [
+          "同布不加衬",
+          10
+        ],
+        [
+          "交期八周",
+          25
+        ]
+      ],
+      "manualChecks": [
+        "折扣叠加方式",
+        "折扣基数",
+        "面料颜色"
+      ],
+      "effectiveDiscount": null
+    }
+  },
+  {
+    "id": "B07",
+    "messages": [
+      "Sidemark: Example Stair- 47\" x 34 1/2\"",
+      "按照客户要求5号分成2个电机，号码5-1和5-2.6号分成2电机，6-1和6-2"
+    ],
+    "expected": {
+      "heightRaw": "34 1/2",
+      "heightInches": 34.5,
+      "children": {
+        "5": [
+          "5-1",
+          "5-2"
+        ],
+        "6": [
+          "6-1",
+          "6-2"
+        ]
+      },
+      "unconfirmedChildWidth": null
+    }
+  }
+]

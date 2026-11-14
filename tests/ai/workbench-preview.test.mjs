@@ -3,7 +3,7 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 const preview=readFileSync('lib/ai/inquiry-draft-preview.tsx','utf8');
 test('workbench renders one editable section per extracted inquiry line',()=>{
- assert.match(preview,/extractInquiryLines\(source\)/);
+ assert.match(preview,/captureInquiry\(source,/);
  assert.match(preview,/lines\.map\(/);
  assert.match(preview,/setLines\(previous=>previous\.map/);
 });

@@ -1,10 +1,27 @@
 "use client";
-import {useState} from "react";
-import {extractInquiryLines,type InquiryLine} from "./extract-lines";
-import {parseInches,type InquiryDraft} from "./extract-inquiry";
+import {useRef,useState} from "react";
+import {type InquiryLine} from "./extract-lines";
+import {parseInches} from "./extract-inquiry";
 import {quoteDraftGate} from "./quote-adapter";
 
+import {captureInquiry,captureMeasurement,emptyMeasurement,measurementConflicts,measurementDimensions,recordRevision,type FieldRevision} from "./inquiry-record";
+
+const measurementLabels = {
+ windowId:["原窗位编号","Original window ID"], room:["房间 / 楼层","Room / floor"],
+ visitOrder:["走访顺序","Visit order"], mount:["口内 / 口外","Inside / outside mount"],
+ top:["上宽","Top width"], middleWidth:["中宽","Middle width"], bottom:["下宽","Bottom width"],
+ left:["左高","Left height"], middleHeight:["中高","Middle height"], right:["右高","Right height"],
+ depth:["窗框深度","Depth"], notes:["照片编号 / 供电 / 障碍","Photo IDs / power / obstructions"],
+} as const;
+
 export default function AiInquiryDraftPreview(){
+ const [sources,setSources]=useState<ReturnType<typeof captureInquiry>[]>([]);
+ const [history,setHistory]=useState<FieldRevision[]>([]);
+ const [measurement,setMeasurement]=useState(emptyMeasurement);
+ const [measurements,setMeasurements]=useState<ReturnType<typeof captureMeasurement>[]>([]);
+ const [reviewNote,setReviewNote]=useState("");
+ const [reviewNotes,setReviewNotes]=useState<{text:string;recordedAt:string}[]>([]);
+ const previousValue=useRef("");
  const [source,setSource]=useState("");
  const [lines,setLines]=useState<InquiryLine[]>([]);
  const [fieldEdits,setFieldEdits]=useState<Record<string,string>>({});
@@ -34,9 +51,10 @@ export default function AiInquiryDraftPreview(){
  };
  const extract=()=>{
   if(!source.trim()){setNotice(en?"Enter an inquiry first.":"请先粘贴客户询价。");return;}
-  const result=extractInquiryLines(source);
+  const result=captureInquiry(source,new Date().toISOString());
+  setSources(previous=>[...previous,result]);
   setLines(result.lines);setFieldEdits({});setWarnings(result.warnings);
-  setNotice(en?"Review-only drafts; nothing was saved or sent.":"仅生成待审核草稿；未保存或发送任何信息。");
+  setNotice(en?"Draft recorded for review in this session.":"已在当前会话记录待审核草稿。");
  };
  const update=(index:number,field:"productCode"|"widthInches"|"heightInches"|"quantity",value:string)=>{
   setFieldEdits(previous=>({...previous,[`${index}:${field}`]:value}));
@@ -50,13 +68,23 @@ export default function AiInquiryDraftPreview(){
    return {...line,draft:next};
   }));
  };
+ const measurementReview=measurements.map(entry=>({...entry,conflicts:measurementConflicts(entry,measurements,sources)}));
+ const exportRecord=()=>{
+  const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,measurements:measurementReview,reviewNotes,currentLines:lines},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(file);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="braun-inquiry-record.json";
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+ };
  const fields=[["productCode","型号","Model"],["widthInches","宽度（英寸）","Width (in)"],["heightInches","高度（英寸）","Height (in)"],["quantity","数量","Quantity"]] as const;
  return <main style={{maxWidth:1000,margin:"0 auto",padding:"24px 16px",fontFamily:"system-ui",color:"#152235"}}>
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
    <h1 style={{fontSize:26,fontWeight:700}}>Braun Blinds · {en?"Inquiry Drafts":"AI 询价草稿工作台"}</h1>
    <button type="button" onClick={()=>setLocale(en?"zh":"en")}>{en?"中文":"English"}</button>
   </div>
-  <p>{en?"Owner-only preview. No saving, email or factory orders.":"仅限 Owner 的开发预览，不保存、不发邮件、不下工厂单。"}</p>
+  <p>{en?"Owner only. Entries stay in this session until exported.":"仅限 Owner。记录暂存在本页，刷新前请导出。"}</p>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
   <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
    placeholder={"1. JL3601 White LF 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized"}
@@ -66,9 +94,15 @@ export default function AiInquiryDraftPreview(){
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
    {lines.map((line,i)=><section key={i} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:18,minWidth:0}}>
-    <h2 style={{fontSize:19,fontWeight:700}}>{en?"Line":"第"} {i+1} {en?"— review required":"项 · 待审核"}</h2>
+    <h2 style={{fontSize:19,fontWeight:700}}>{en?"Line":"第"} {line.originalWindowId??i+1} {en?"— human review required":"· 待人工确认"}</h2>
+    <details><summary>{en?"Original line":"客户原话"}</summary><p style={{whiteSpace:"pre-wrap"}}>{line.originalRow}</p></details>
     {fields.map(([field,zh,label])=><label key={field} style={{display:"block",margin:"12px 0"}}>{en?label:zh}
-     <input type="text" inputMode={field==="productCode"?"text":"decimal"} value={fieldEdits[`${i}:${field}`]??(line.draft[field]??"")}
+     <input type="text" inputMode={field==="productCode"?"text":"decimal"} value={fieldEdits[`${i}:${field}`]??(field==="widthInches"?line.draft.widthRaw:field==="heightInches"?line.draft.heightRaw:line.draft[field])??""}
+      onFocus={e=>{previousValue.current=e.target.value;}}
+      onBlur={e=>{
+       const revision={windowId:line.originalWindowId,lineIndex:i+1,sourceVersion:sources.length,field,previous:previousValue.current,next:e.target.value,recordedAt:new Date().toISOString()};
+       setHistory(previous=>recordRevision(previous,revision));
+      }}
       onChange={e=>update(i,field,e.target.value)}
       style={{boxSizing:"border-box",display:"block",width:"100%",padding:9,border:"1px solid #94a3b8",borderRadius:6}}/>
     </label>)}
@@ -81,6 +115,46 @@ export default function AiInquiryDraftPreview(){
     <p style={{color:"#92400e"}}>{en?(line.draft.notes.length?"Unresolved conflicting or ambiguous inquiry details require customer confirmation. Formal quote issuance is blocked.":line.draft.missing.length?"Required inquiry details are missing. Complete and manually verify them before quoting.":"Customer pricing, product catalog, and quote version are not verified. Formal quote issuance is blocked."):quoteDraftGate(line.draft).reason}</p>
    </section>)}
   </div>
+  <section style={{marginTop:28}}>
+   <h2>{en?"Source and revision history":"来源与修改历史"}</h2>
+   {sources.map((entry,i)=><details key={i}><summary>{en?"Source":"来源"} {i+1} · {entry.recordedAt}</summary><p style={{whiteSpace:"pre-wrap"}}>{entry.text}</p></details>)}
+   {history.map((entry,i)=><p key={i}>{entry.recordedAt} · #{entry.sourceVersion} / {entry.windowId??entry.lineIndex} · {fields.find(([field])=>field===entry.field)?.[en?2:1]} · {entry.previous||"—"} → {entry.next||"—"}</p>)}
+   <form onSubmit={event=>{
+    event.preventDefault();
+    if(!reviewNote.trim())return;
+    setReviewNotes(previous=>[...previous,{text:reviewNote,recordedAt:new Date().toISOString()}]);
+    setReviewNote("");
+   }}>
+    <label>{en?"Evidence or question for human review":"人工确认问题 / 补充证据"} <input value={reviewNote} onChange={e=>setReviewNote(e.target.value)}/></label>
+    <button type="submit">{en?"Record review note":"记录待确认事项"}</button>
+   </form>
+   {reviewNotes.map((entry,i)=><p key={i} role="status">{en?"Human review required":"待人工确认"} · {entry.text}</p>)}
+  </section>
+  <section style={{marginTop:28}}>
+   <h2>{en?"Field measurements (inches)":"现场测量（英寸）"}</h2>
+   <p>{en?"Keep the original ID when adding a new visit. Enter fractions such as 34 1/2.":"复测另加一笔，沿用原窗位编号。可直接输入 34 1/2 等分数。"}</p>
+   <form onSubmit={event=>{
+    event.preventDefault();
+    if(!measurement.windowId.trim())return;
+    setMeasurements(previous=>[...previous,captureMeasurement(measurement,new Date().toISOString())]);
+    setMeasurement(emptyMeasurement);
+   }}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
+     {(["windowId","room","visitOrder","mount",...measurementDimensions,"notes"] as const).map(field=><label key={field}>
+      {measurementLabels[field][en?1:0]}
+      <input required={field==="windowId"} value={measurement[field]} style={{display:"block",width:"100%"}} onChange={e=>setMeasurement({...measurement,[field]:e.target.value})}/>
+     </label>)}
+    </div>
+    <button type="submit" style={{marginTop:12}}>{en?"Add measurement":"追加测量记录"}</button>
+   </form>
+   {measurementReview.map(({input,issues,conflicts,recordedAt},i)=><details key={i} open={issues.length>0||conflicts.length>0}><summary>{input.windowId} · {input.room} · {recordedAt}</summary>
+    <p>{measurementDimensions.map(field=>`${measurementLabels[field][en?1:0]} ${input[field]||"—"}`).join(" · ")}</p>
+    <p>{input.visitOrder} · {input.mount} · {input.notes}</p>
+    {issues.length>0&&<p role="alert">{en?"Human review required (missing or invalid)":"待人工确认（缺失或无效）"}：{issues.map(field=>measurementLabels[field][en?1:0]).join("、")}</p>}
+    {conflicts.length>0&&<p role="alert">{en?"Human review required (different readings)":"待人工确认（与询价或其他轮次读数不同）"}：{conflicts.map(field=>measurementLabels[field][en?1:0]).join("、")}</p>}
+   </details>)}
+  </section>
+  <button type="button" style={{marginTop:20}} onClick={exportRecord} disabled={!sources.length&&!measurements.length&&!reviewNotes.length}>{en?"Download record (JSON)":"导出记录（JSON）"}</button>
   <p style={{fontSize:13,color:"#475569",marginTop:24}}>{en?"Never use this preview for unverified pricing or formal quote issuance.":"此预览不执行价格计算、正式签发或生产放行。"}</p>
  </main>;
 }
