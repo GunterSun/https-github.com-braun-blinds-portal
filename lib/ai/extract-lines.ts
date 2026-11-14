@@ -1,4 +1,4 @@
-import {extractInquiryDraft,type InquiryDraft} from './extract-inquiry';
+import {extractInquiryDraft,type InquiryDraft} from './extract-inquiry.ts';
 export type InquiryLine={lineNumber:number;source:string;draft:InquiryDraft};
 export type MultiLineResult={lines:InquiryLine[];warnings:string[];status:'needs_review'};
 /** Splits only explicit numbered lines; never invents quantity or merges products. */
