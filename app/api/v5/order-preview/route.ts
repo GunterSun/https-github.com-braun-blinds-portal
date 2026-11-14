@@ -14,12 +14,18 @@ export async function GET(request:Request) {
     if(!user) return reply({error:'登录已失效。'},401);
     if(user.role!=='owner') return reply({error:'只有 Owner 可以查看历史关联审核资料。'},403);
     const url=new URL(request.url);
+    const mode=url.searchParams.get('mode');
+    if(mode&&mode!=='candidates')throw new ReviewInputError('未知预览模式');
+    const allowed=new Set(mode==='candidates'?['mode','legacyId','after']:['source','q','from','to','after','size','upper']);
+    for(const key of url.searchParams.keys())if(!allowed.has(key)||url.searchParams.getAll(key).length!==1)throw new ReviewInputError('未知或重复查询参数；旧 pairs 接口已停用');
     const db={all:async(sql:string,params:(string|number)[])=>{
       const result=await env.DB.prepare(sql).bind(...params).all();
       if(!result.success)throw Error('Read failed');
       return result.results as Row[];
     }};
-    return reply(url.searchParams.get('mode')==='candidates'?await readCandidates(db,url):await readReviewPage(db,url));
+    const body=url.searchParams.get('mode')==='candidates'?await readCandidates(db,url):await readReviewPage(db,url);
+    const contentHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify({query:url.search,body}))))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return reply({...body,audit:{requestId:crypto.randomUUID(),observedAt:new Date().toISOString(),contentHash,kind:'read-observation-not-database-snapshot'}});
   } catch(error) {if(error instanceof ReviewInputError)return reply({error:error.message},400);return reply({error:'预览读取失败，请重试；没有执行关联写入。'},503);}
 }
 // No confirmation endpoint exists in this phase, including for Owner.
