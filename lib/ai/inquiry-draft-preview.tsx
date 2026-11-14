@@ -52,6 +52,7 @@ export default function AiInquiryDraftPreview(){
     </label>)}
     <p>{en?"Color":"颜色"}：{line.draft.color??"—"} · {en?"Options":"选项"}：{line.draft.options.join(", ")||"—"}</p>
     <p>{en?"Verified fabric code":"已核实面料代码"}：{line.draft.fabricCode??"—"}</p>
+    {!line.draft.fabricCode&&<p style={{color:"#92400e",fontWeight:600}}>{en?"Fabric is not verified. Do not apply Z-series prices to JL products.":"面料代码尚未核实。JL 系列不得直接套用 Z 系列价格。"}</p>}
     <p>{en?"Missing":"缺失"}：{line.draft.missing.join(", ")||"—"}</p>
     <p style={{color:"#92400e"}}>{quoteDraftGate(line.draft).reason}</p>
    </section>)}
