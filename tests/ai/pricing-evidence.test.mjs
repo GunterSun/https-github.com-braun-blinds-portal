@@ -29,3 +29,23 @@ test('invalid calendar date is not accepted as a quote validity date',()=>{
  assert.equal(r.readyForHumanReview,false);
  assert.ok(r.missing.includes('validUntil'));
 });
+
+test('expired quote cannot be reviewed when as-of date is supplied',()=>{
+ const r=checkPricingEvidence({...evidence,validUntil:'2026-11-12'},'2026-11-13');
+ assert.equal(r.readyForHumanReview,false);
+ assert.ok(r.missing.includes('quoteExpired'));
+});
+test('validity longer than 30 days is blocked',()=>{
+ const r=checkPricingEvidence({...evidence,validUntil:'2027-01-01'},'2026-11-13');
+ assert.equal(r.readyForHumanReview,false);
+ assert.ok(r.missing.includes('validityExceeds30Days'));
+});
+test('exactly 30 days is allowed for human review',()=>{
+ const r=checkPricingEvidence({...evidence,validUntil:'2026-12-13'},'2026-11-13');
+ assert.equal(r.readyForHumanReview,true);
+});
+test('invalid as-of date fails closed',()=>{
+ const r=checkPricingEvidence(evidence,'2026-02-31');
+ assert.equal(r.readyForHumanReview,false);
+ assert.ok(r.missing.includes('asOfDate'));
+});
