@@ -41,3 +41,9 @@ test('hardware and opacity tokens are options, never verified fabrics',()=>{
  const blackout=extractInquiryDraft('JL3601 BO 36 x 60 qty 1');
  assert.deepEqual(blackout.options,['blackout']);
 });
+
+test('BK means black hardware, not blackout',()=>{
+ const d=extractInquiryDraft('JL3601 White LF BK 36 x 60 qty 1');
+ assert.equal(d.fabricCode,null);
+ assert.deepEqual(d.options,['light_filtering','black_hardware']);
+});
