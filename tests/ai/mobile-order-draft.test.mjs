@@ -31,3 +31,14 @@ test('mobile share uses native share sheet and remains review-only',()=>{
  assert.match(ui,/text:buildOrderDraft\(\)/);
  assert.match(ui,/AbortError/);
 });
+
+test('portable editable draft exports and imports only review state with strict limits',()=>{
+ assert.match(ui,/braun-inquiry-editable-draft\.json/);
+ assert.match(ui,/Download editable draft/);
+ assert.match(ui,/导入可编辑草稿/);
+ assert.match(ui,/item\.status!=="needs_review"/);
+ assert.match(ui,/file\.size>100000/);
+ assert.match(ui,/parsed\.lines\.length!==item\.lines\.length/);
+ assert.match(ui,/row\.source!==line\.source/);
+ assert.match(ui,/setWarnings\(parsed\.warnings\)/);
+});
