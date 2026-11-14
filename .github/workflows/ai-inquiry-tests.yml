@@ -5,7 +5,6 @@ on:
       - 'lib/ai/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-inquiry-tests.yml'
-      - 'package*.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,11 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - name: Draft-only inquiry unit tests
-        run: node --test tests/ai/inquiry.test.mjs
-      - name: Existing Z-series unit tests
-        run: node --test tests/z-series-formal.test.mjs
-# No deploy, no production credentials, no D1 binding, no outbound customer messages.
+          node-version: '22.23.0'
+      - name: Dependency-free AI inquiry tests
+        run: node --experimental-strip-types --test tests/ai/inquiry.test.mjs
+# No npm install, no deploy, no D1, no customer email or production credentials.
