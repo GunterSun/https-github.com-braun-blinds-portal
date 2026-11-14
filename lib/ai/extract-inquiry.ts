@@ -32,8 +32,9 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
     ...(/\bremote\b|遥控/i.test(text)?['remote']:[]),
     ...(/square valance|方形罩盒/i.test(text)?['square_valance']:[]),
     ...(/\bLF\b|light filtering|透光/i.test(text)?['light_filtering']:[]),
-    ...(/\b(?:BO|BK)\b|blackout|遮光/i.test(text)?['blackout']:[]),
+    ...(/\bBO\b|blackout|遮光/i.test(text)?['blackout']:[]),
     ...(/\bWH\b|white hardware|白色配件/i.test(text)?['white_hardware']:[]),
+    ...(/\bBK\b|black hardware|黑色配件/i.test(text)?['black_hardware']:[]),
   ];
   const missing=[
     ...(!productCode?['productCode']:[]),...(!widthInches?['widthInches']:[]),
