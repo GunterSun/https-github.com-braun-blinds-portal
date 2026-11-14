@@ -42,7 +42,8 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
-  if(dimensionMatches.length>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
+  const dimensionPairs=dimensionMatches.map(match=>[parseInches(match[1]),parseInches(match[2])].join('x'));
+  if(new Set(dimensionPairs).size>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
 
   if(options.includes('light_filtering')&&options.includes('blackout'))notes.push('Conflicting opacity options: LF and BO; verify with customer');
   if(options.includes('white_hardware')&&options.includes('black_hardware'))notes.push('Conflicting hardware colors: WH and BK; verify with customer');
