@@ -1,0 +1,595 @@
+{
+  "environment": {
+    "node": "v24.19.0",
+    "sqlite": "3.53.3",
+    "cpu": "Apple M4",
+    "platform": "darwin",
+    "database": "in-memory synthetic SQLite; not D1; no HTTP/network/concurrency"
+  },
+  "samples": [
+    {
+      "recordsPerCoreTable": 10000,
+      "scenario": "page",
+      "p50Ms": 0.10349999999999682,
+      "p95Ms": 0.2637500000000159,
+      "maxMs": 0.3139579999999569,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 10000,
+      "scenario": "deep-page",
+      "p50Ms": 0.10108300000001691,
+      "p95Ms": 0.2633329999999887,
+      "maxMs": 0.2665420000000154,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 10000,
+      "scenario": "customer-search",
+      "p50Ms": 2.399417000000028,
+      "p95Ms": 2.5090000000000146,
+      "maxMs": 2.5250420000000418,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 2,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 15,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 19,
+              "parent": 15,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 33,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 10000,
+      "scenario": "complex-no-match",
+      "p50Ms": 2.716542000000004,
+      "p95Ms": 2.7800830000000474,
+      "maxMs": 2.8567089999999666,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 1,
+      "maxReturnedRowsIncludingReferences": 0,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) AND substr(t.created_at,1,10) >= ? AND substr(t.created_at,1,10) <= ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 21,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 25,
+              "parent": 21,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 10000,
+      "scenario": "candidate",
+      "p50Ms": 1.6593750000000114,
+      "p95Ms": 1.7903329999999755,
+      "maxMs": 2.486750000000029,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 2,
+      "plans": [
+        {
+          "sql": "SELECT id,order_number,customer_email,project_name,retail_total,wholesale_total,payment_currency,status,discount_percent,created_at FROM customer_orders WHERE id=?",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 33,
+              "detail": "SEARCH customer_orders USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT o.id,o.order_number,o.customer_id,o.project_name,o.project_address,o.grand_total,o.currency,o.status,o.subtotal,o.discount_amount,o.tax_amount,o.shipping_charge,o.installation_fee,o.created_at,c.email AS customer_email,c.company_name,c.contact_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id>? AND ((?<>'' AND lower(trim(c.email))=lower(trim(?))) OR (?<>'' AND o.project_name=?) OR o.order_number=?) ORDER BY o.id LIMIT 21",
+          "plan": [
+            {
+              "id": 5,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH o USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 7,
+              "parent": 0,
+              "notused": 45,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 100000,
+      "scenario": "page",
+      "p50Ms": 0.08066600000006474,
+      "p95Ms": 0.11004200000002129,
+      "maxMs": 0.36199999999996635,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 100000,
+      "scenario": "deep-page",
+      "p50Ms": 0.08445900000003803,
+      "p95Ms": 0.1596670000000131,
+      "maxMs": 0.28645799999992505,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 100000,
+      "scenario": "customer-search",
+      "p50Ms": 26.139582999999902,
+      "p95Ms": 26.991416000000072,
+      "maxMs": 27.003417000000127,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 22,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 15,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 19,
+              "parent": 15,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 80,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 100000,
+      "scenario": "complex-no-match",
+      "p50Ms": 29.563416999999845,
+      "p95Ms": 30.02533399999993,
+      "maxMs": 30.111417000000074,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 1,
+      "maxReturnedRowsIncludingReferences": 0,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) AND substr(t.created_at,1,10) >= ? AND substr(t.created_at,1,10) <= ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 21,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 25,
+              "parent": 21,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 100000,
+      "scenario": "candidate",
+      "p50Ms": 16.437999999999647,
+      "p95Ms": 17.102874999999585,
+      "maxMs": 17.129957999999988,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 2,
+      "plans": [
+        {
+          "sql": "SELECT id,order_number,customer_email,project_name,retail_total,wholesale_total,payment_currency,status,discount_percent,created_at FROM customer_orders WHERE id=?",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 33,
+              "detail": "SEARCH customer_orders USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT o.id,o.order_number,o.customer_id,o.project_name,o.project_address,o.grand_total,o.currency,o.status,o.subtotal,o.discount_amount,o.tax_amount,o.shipping_charge,o.installation_fee,o.created_at,c.email AS customer_email,c.company_name,c.contact_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id>? AND ((?<>'' AND lower(trim(c.email))=lower(trim(?))) OR (?<>'' AND o.project_name=?) OR o.order_number=?) ORDER BY o.id LIMIT 21",
+          "plan": [
+            {
+              "id": 5,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH o USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 7,
+              "parent": 0,
+              "notused": 45,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 500000,
+      "scenario": "page",
+      "p50Ms": 0.08287500000005821,
+      "p95Ms": 0.11366600000019389,
+      "maxMs": 0.1172500000002401,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 500000,
+      "scenario": "deep-page",
+      "p50Ms": 0.08870800000022427,
+      "p95Ms": 0.18333300000040254,
+      "maxMs": 0.8148750000000291,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 51,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 91,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 500000,
+      "scenario": "customer-search",
+      "p50Ms": 134.81629200000043,
+      "p95Ms": 141.63537499999984,
+      "maxMs": 149.98524999999972,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 22,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 15,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 19,
+              "parent": 15,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT id,email,company_name,contact_name,phone FROM customers WHERE id IN (?,?,?,?,?,?,?,?,?,?,?)",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 80,
+              "detail": "SEARCH customers USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 500000,
+      "scenario": "complex-no-match",
+      "p50Ms": 156.71783400000095,
+      "p95Ms": 169.88145900000018,
+      "maxMs": 178.41433300000062,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 1,
+      "maxReturnedRowsIncludingReferences": 0,
+      "plans": [
+        {
+          "sql": "SELECT t.id,t.order_number,t.customer_id,t.project_name,t.project_address,t.grand_total,t.currency,t.status,t.subtotal,t.discount_amount,t.tax_amount,t.shipping_charge,t.installation_fee,t.created_at FROM orders t WHERE t.id > ? AND (order_number LIKE ? ESCAPE '\\' OR project_name LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM customers c WHERE c.id=t.customer_id AND (c.email LIKE ? ESCAPE '\\' OR c.company_name LIKE ? ESCAPE '\\' OR c.contact_name LIKE ? ESCAPE '\\'))) AND substr(t.created_at,1,10) >= ? AND substr(t.created_at,1,10) <= ? ORDER BY t.id LIMIT ?",
+          "plan": [
+            {
+              "id": 6,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH t USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 21,
+              "parent": 0,
+              "notused": 0,
+              "detail": "CORRELATED SCALAR SUBQUERY 1"
+            },
+            {
+              "id": 25,
+              "parent": 21,
+              "notused": 33,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "recordsPerCoreTable": 500000,
+      "scenario": "candidate",
+      "p50Ms": 88.9875409999986,
+      "p95Ms": 107.44104100000004,
+      "maxMs": 263.6915829999998,
+      "errors": 0,
+      "totalRuns": 23,
+      "maxQueries": 2,
+      "maxReturnedRowsIncludingReferences": 2,
+      "plans": [
+        {
+          "sql": "SELECT id,order_number,customer_email,project_name,retail_total,wholesale_total,payment_currency,status,discount_percent,created_at FROM customer_orders WHERE id=?",
+          "plan": [
+            {
+              "id": 2,
+              "parent": 0,
+              "notused": 33,
+              "detail": "SEARCH customer_orders USING INTEGER PRIMARY KEY (rowid=?)"
+            }
+          ]
+        },
+        {
+          "sql": "SELECT o.id,o.order_number,o.customer_id,o.project_name,o.project_address,o.grand_total,o.currency,o.status,o.subtotal,o.discount_amount,o.tax_amount,o.shipping_charge,o.installation_fee,o.created_at,c.email AS customer_email,c.company_name,c.contact_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id>? AND ((?<>'' AND lower(trim(c.email))=lower(trim(?))) OR (?<>'' AND o.project_name=?) OR o.order_number=?) ORDER BY o.id LIMIT 21",
+          "plan": [
+            {
+              "id": 5,
+              "parent": 0,
+              "notused": 196,
+              "detail": "SEARCH o USING INTEGER PRIMARY KEY (rowid>?)"
+            },
+            {
+              "id": 7,
+              "parent": 0,
+              "notused": 45,
+              "detail": "SEARCH c USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "warmup": 3,
+  "runs": 20
+}
