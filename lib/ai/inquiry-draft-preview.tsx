@@ -38,7 +38,7 @@ export default function AiInquiryDraftPreview(){
   </div>
   <p>{en?"Owner-only preview. No saving, email or factory orders.":"仅限 Owner 的开发预览，不保存、不发邮件、不下工厂单。"}</p>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
-  <textarea id="inquiry" value={source} onChange={e=>setSource(e.target.value)} rows={7}
+  <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
    placeholder={"1. JL3601 White LF 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized"}
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
