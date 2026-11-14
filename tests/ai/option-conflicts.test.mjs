@@ -107,3 +107,11 @@ test('out-of-range dimensions cannot hide behind another valid size',()=>{
  assert.ok(draft.notes.some(n=>/Invalid dimension pair/i.test(n)));
  assert.equal(quoteDraftGate(draft).allowed,false);
 });
+
+test('zero dimensions are explicitly flagged even when a valid pair follows',()=>{
+ for(const source of ['JL3601 0 x 60 or 36 x 60 qty 1','JL3601 36 x 0 or 36 x 60 qty 1']){
+  const draft=extractInquiryDraft(source);
+  assert.ok(draft.notes.some(n=>/Invalid dimension pair/i.test(n)),source);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
