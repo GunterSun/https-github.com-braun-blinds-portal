@@ -76,3 +76,8 @@ test('equivalent quantity values with leading zeroes do not falsely conflict',()
  assert.equal(draft.quantity,2);
  assert.ok(!draft.notes.some(n=>/Conflicting quantities/i.test(n)));
 });
+
+test('same dimensions repeated in decimal and fraction formats do not falsely conflict',()=>{
+ const draft=extractInquiryDraft('JL3601 39 5/8 x 40 5/8 qty 1; confirmed 39.625 x 40.625');
+ assert.ok(!draft.notes.some(n=>/Multiple dimension pairs/i.test(n)));
+});
