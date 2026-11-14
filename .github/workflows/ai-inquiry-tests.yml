@@ -18,5 +18,5 @@ jobs:
         with:
           node-version: '22.23.0'
       - name: Dependency-free AI inquiry tests
-        run: node --experimental-strip-types --test tests/ai/inquiry.test.mjs
+        run: node --experimental-strip-types --test tests/ai/*.test.mjs
 # No npm install, no deploy, no D1, no customer email or production credentials.
