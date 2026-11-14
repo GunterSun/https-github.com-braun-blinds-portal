@@ -30,3 +30,15 @@ test('quote gate explicitly rejects contradictory options',()=>{
  assert.equal(gate.requiresOwnerReview,true);
  assert.match(gate.reason,/相互冲突/);
 });
+
+test('two distinct product models in one window cannot silently become one quote',()=>{
+ const draft=extractInquiryDraft('JL3601 and ML-1801 36 x 60 qty 1 LF WH');
+ assert.equal(draft.productCode,'JL3601');
+ assert.ok(draft.notes.some(n=>/Multiple product models/i.test(n)));
+ assert.equal(quoteDraftGate(draft).allowed,false);
+ assert.match(quoteDraftGate(draft).reason,/相互冲突/);
+});
+test('repeated identical model is not a multiple-model conflict',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 repeat JL3601');
+ assert.ok(!draft.notes.some(n=>/Multiple product models/i.test(n)));
+});
