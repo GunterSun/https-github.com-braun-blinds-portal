@@ -15,3 +15,11 @@ test('copied order draft is explicitly review-only and preserves source warnings
  assert.match(ui,/Warnings \/ 警告/);
  assert.match(ui,/Source \/ 原始询价/);
 });
+
+test('mobile draft can be downloaded as a local text file without backend mutation',()=>{
+ assert.match(ui,/Download text draft/);
+ assert.match(ui,/下载文本草稿/);
+ assert.match(ui,/new Blob\(\[buildOrderDraft\(\)\]/);
+ assert.match(ui,/braun-inquiry-review-draft\.txt/);
+ assert.match(ui,/URL\.revokeObjectURL\(url\)/);
+});
