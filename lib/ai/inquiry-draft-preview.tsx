@@ -107,6 +107,43 @@ export default function AiInquiryDraftPreview(){
   URL.revokeObjectURL(url);
   setNotice(en?"Text draft prepared for download. Not saved to portal.":"已准备下载文本草稿，未保存到门户服务器。");
  };
+ const downloadEditableDraft=()=>{
+  if(!lines.length)return;
+  const payload={format:"braun-inquiry-review-draft",version:1,status:"needs_review",customer:customer.trim().slice(0,200),project:project.trim().slice(0,500),source:source.slice(0,12000),lines:lines.map(line=>({source:line.source,productCode:line.draft.productCode,widthInches:line.draft.widthInches,heightInches:line.draft.heightInches,quantity:line.draft.quantity})),warnings};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const anchor=document.createElement("a");anchor.href=url;anchor.download="braun-inquiry-editable-draft.json";
+  document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(url);
+  setNotice(en?"Editable draft downloaded locally. No portal data was saved.":"可编辑草稿已下载到本机；未保存到门户数据库。");
+ };
+ const importEditableDraft=async(file:File|undefined)=>{
+  if(!file)return;
+  if(file.size>100000){setNotice(en?"File too large.":"文件过大，无法导入。");return;}
+  try{
+   const data:unknown=JSON.parse(await file.text());
+   if(!data||typeof data!=="object")throw Error("Invalid draft");
+   const item=data as Record<string,unknown>;
+   if(item.format!=="braun-inquiry-review-draft"||item.version!==1||item.status!=="needs_review"||typeof item.source!=="string"||item.source.length>12000||typeof item.customer!=="string"||item.customer.length>200||typeof item.project!=="string"||item.project.length>500||!Array.isArray(item.lines)||item.lines.length>100)throw Error("Invalid draft");
+   const parsed=extractInquiryLines(item.source);
+   if(parsed.lines.length!==item.lines.length)throw Error("Line mismatch");
+   const restored=parsed.lines.map((line,i)=>{
+    const raw=item.lines[i];
+    if(!raw||typeof raw!=="object"||Array.isArray(raw))throw Error("Invalid line");
+    const row=raw as Record<string,unknown>;
+    if(row.source!==line.source)throw Error("Source mismatch");
+    const model=row.productCode;
+    if(model!==null&&(typeof model!=="string"||!/^([A-Z0-9-]{2,24})$/.test(model)))throw Error("Invalid model");
+    for(const key of ["widthInches","heightInches"]){const value=row[key];if(value!==null&&(typeof value!=="number"||!Number.isFinite(value)||value<=0||value>1000))throw Error("Invalid dimension");}
+    const quantity=row.quantity;
+    if(quantity!==null&&(typeof quantity!=="number"||!Number.isSafeInteger(quantity)||quantity<=0))throw Error("Invalid quantity");
+    const draft={...line.draft,productCode:model as string|null,widthInches:row.widthInches as number|null,heightInches:row.heightInches as number|null,quantity:quantity as number|null};
+    draft.missing=(["productCode","widthInches","heightInches","quantity"] as const).filter(key=>!draft[key]);
+    return {...line,draft};
+   });
+   setCustomer(item.customer);setProject(item.project);setSource(item.source);setLines(restored);setFieldEdits({});setWarnings(parsed.warnings);
+   setNotice(en?"Draft imported for review only; no pricing or orders were issued.":"已导入待审核草稿；未计算正式价格或生成订单。");
+  }catch{setNotice(en?"Invalid draft file. No changes were imported.":"草稿文件无效，未导入任何修改。");}
+ };
  const fields=[["productCode","型号","Model"],["widthInches","宽度（英寸）","Width (in)"],["heightInches","高度（英寸）","Height (in)"],["quantity","数量","Quantity"]] as const;
  return <main style={{maxWidth:1000,margin:"0 auto",padding:"24px 16px",fontFamily:"system-ui",color:"#152235"}}>
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
@@ -126,6 +163,8 @@ export default function AiInquiryDraftPreview(){
   <button type="button" disabled={!lines.length} onClick={copyOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Copy order draft":"复制订单草稿"}</button>
   <button type="button" disabled={!lines.length} onClick={downloadOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Download text draft":"下载文本草稿"}</button>
   <button type="button" disabled={!lines.length} onClick={shareOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Share draft":"分享草稿"}</button>
+  <button type="button" disabled={!lines.length} onClick={downloadEditableDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Download editable draft":"下载可编辑草稿"}</button>
+  <label style={{display:"inline-block",marginLeft:8,marginTop:12}}>{en?"Import editable draft":"导入可编辑草稿"} <input type="file" accept=".json,application/json" onChange={e=>{void importEditableDraft(e.target.files?.[0]);e.target.value="";}}/></label>
   {notice&&<p role="status">{notice}</p>}
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
