@@ -22,7 +22,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const widthInches=dimensions?parseInches(dimensions[1]):null;
   const heightInches=dimensions?parseInches(dimensions[2]):null;
   const productCode=text.match(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/i)?.[0].replace(/ /g,'').toUpperCase()??null;
-  const fabricCode=text.match(/\b(?:LF|BO|BK|WH)\b/i)?.[0].toUpperCase()??null;
+  const fabricCode=null; // LF/BO/BK are opacity options; WH is hardware color, not a verified fabric code.
   const qty=text.match(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/i);
   const quantity=qty&&Number.isSafeInteger(Number(qty[1]))&&Number(qty[1])>0?Number(qty[1]):null;
   const color=text.match(/\b(white|beige|black|gray|grey|ivory|cream)\b/i)?.[0]??null;
