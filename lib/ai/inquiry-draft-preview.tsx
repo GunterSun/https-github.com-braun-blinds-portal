@@ -52,6 +52,7 @@ export default function AiInquiryDraftPreview(){
       onChange={e=>update(i,field,e.target.value)}
       style={{boxSizing:"border-box",display:"block",width:"100%",padding:9,border:"1px solid #94a3b8",borderRadius:6}}/>
     </label>)}
+    {fields.filter(([field])=>field!=="productCode"&&fieldEdits[`${i}:${field}`]!==undefined&&line.draft[field]===null).map(([field,zh,label])=><p key={`error-${field}`} role="alert" style={{color:"#b91c1c"}}>{en?label:zh}：{en?"Invalid value. Enter a positive number; fractions such as 39 5/8 are supported.":"输入无效。请输入正数；尺寸支持 39 5/8 等分数英寸。"}</p>)}
     <p>{en?"Color":"颜色"}：{line.draft.color??"—"} · {en?"Options":"选项"}：{line.draft.options.join(", ")||"—"}</p>
     <p>{en?"Verified fabric code":"已核实面料代码"}：{line.draft.fabricCode??"—"}</p>
     {!line.draft.fabricCode&&<p style={{color:"#92400e",fontWeight:600}}>{en?"Fabric is not verified. Confirm the correct product catalog before pricing.":"面料代码尚未核实。请先核对对应产品目录，JL 系列不得套用 Z 系列价格。"}</p>}
