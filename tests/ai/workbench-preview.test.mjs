@@ -15,3 +15,10 @@ test('workbench has language toggle and responsive layout',()=>{
  assert.match(preview,/setLocale/);
  assert.match(preview,/auto-fit/);
 });
+
+test('fractional inch typing preserves intermediate text until it becomes valid',()=>{
+ assert.match(preview,/fieldEdits\[/);
+ assert.match(preview,/setFieldEdits\(previous/);
+ assert.match(preview,/parseInches\(value\)/);
+ assert.match(preview,/setFieldEdits\(\{\}\)/);
+});
