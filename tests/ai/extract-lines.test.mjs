@@ -32,3 +32,12 @@ test('skipped or out-of-order window numbers require manual review',()=>{
  const reversed=extractInquiryLines('2. JL3601 36 x 60 qty 1\n1. ML-1801 40 x 70 qty 2');
  assert.ok(reversed.warnings.some(w=>/out of sequence/i.test(w)));
 });
+
+test('correctly sequenced windows do not get false numbering warnings',()=>{
+ const result=extractInquiryLines('1. JL3601 36 x 60 qty 1\n2. ML-1801 40 x 70 qty 2');
+ assert.deepEqual(result.warnings,[]);
+});
+test('first listed window starts after 1 and must be reviewed',()=>{
+ const result=extractInquiryLines('2. JL3601 36 x 60 qty 1\n3. ML-1801 40 x 70 qty 2');
+ assert.ok(result.warnings.some(w=>/does not start at 1/i.test(w)));
+});
