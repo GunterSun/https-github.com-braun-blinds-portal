@@ -275,14 +275,14 @@ export default function Portal({user, signOutPath, customerAuth}:{user:User;sign
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div><div className="brand-row"><div className="brand-mark small-mark">B</div><div><strong>BRAUN BLINDS</strong><span>Customer Portal</span></div></div>
+        <div><div className="brand-row"><div className="brand-mark small-mark">B</div><div><strong>{t("博朗窗饰","BRAUN BLINDS")}</strong><span>{t("客户门户","Customer Portal")}</span></div></div>
           <nav>
             {!user.isAdmin && <button className={tab==="zseries"?"active":""} onClick={()=>setTab("zseries")}>{t("Z 系列","Z Series")}</button>}
             {!user.isAdmin && <button onClick={()=>window.open("/api/downloads/product-guide","_blank","noopener,noreferrer")}>{t("产品说明书","Product Guide")}</button>}
             {!user.isAdmin && <button className={tab==="account"?"active":""} onClick={()=>setTab("account")}>{t("修改密码","Change Password")}</button>}
             {user.isAdmin && <button className={tab==="admin"?"active":""} onClick={()=>setTab("admin")}>{t("客户价格管理","Customer Pricing")}</button>}
-            {user.isAdmin && <button onClick={()=>window.open("https://braun-blinds-portal.sundagang91709.chatgpt.site","_blank","noopener,noreferrer")}>{t("Smart 业务门户","Smart Business Portal")}</button>}
-            {user.isAdmin && <button onClick={()=>window.open("https://braunblinds-private-portal.sundagang91709.chatgpt.site","_blank","noopener,noreferrer")}>{t("Private 业务工具","Private Business Tools")}</button>}
+            {user.isAdmin && <button onClick={()=>window.open("https://braun-blinds-portal.sundagang91709.chatgpt.site","_blank","noopener,noreferrer")}>{t("智能业务门户","Smart Business Portal")}</button>}
+            {user.isAdmin && <button onClick={()=>window.open("https://braunblinds-private-portal.sundagang91709.chatgpt.site","_blank","noopener,noreferrer")}>{t("内部业务工具","Private Business Tools")}</button>}
           </nav>
         </div>
         <div className="account"><span>{user.displayName}</span><small>{user.email}</small><button onClick={signOut}>{t("退出","Sign out")}</button></div>
