@@ -28,6 +28,7 @@ export default function AiInquiryDraftPreview(){
   "Invalid dimension pair in source; verify width and height":"原始询价中存在无效尺寸，请核实宽度和高度。",
   "Unresolved dimension statement in source; confirm measurements with customer":"原始询价中有待定或未知尺寸，请向客户确认测量数据。",
   "Unresolved product model statement in source; confirm model with customer":"原始询价中有待定或未知产品型号，请向客户确认具体型号。",
+  "Unresolved fabric or configuration statement in source; confirm selection with customer":"原始询价中有待定的布料、颜色或配置，请向客户确认选择。",
   "Conflicting quantities in one window; verify the intended count":"同一窗位出现不同数量，请向客户确认正确数量。",
   "Invalid quantity statement in source; verify the intended positive whole number":"原始询价中出现无效数量，请向客户确认正确的正整数数量。",
   "Unresolved quantity statement in source; confirm count with customer":"原始询价中有待定或未知数量，请向客户确认数量。",
