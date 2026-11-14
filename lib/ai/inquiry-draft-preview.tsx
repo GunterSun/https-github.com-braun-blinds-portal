@@ -25,6 +25,7 @@ export default function AiInquiryDraftPreview(){
  const noteZh:Record<string,string>={
   "Multiple product models in one window; split and verify with customer":"同一窗位出现多个不同型号，请拆分并向客户确认。",
   "Multiple dimension pairs in one window; verify which size applies":"同一窗位出现多组宽高尺寸，请向客户确认使用哪一组。",
+  "Invalid dimension pair in source; verify width and height":"原始询价中存在无效尺寸，请核实宽度和高度。",
   "Conflicting quantities in one window; verify the intended count":"同一窗位出现不同数量，请向客户确认正确数量。",
   "Invalid quantity statement in source; verify the intended positive whole number":"原始询价中出现无效数量，请向客户确认正确的正整数数量。",
   "Conflicting opacity options: LF and BO; verify with customer":"透光 LF 与遮光 BO 同时出现，请向客户确认。",
