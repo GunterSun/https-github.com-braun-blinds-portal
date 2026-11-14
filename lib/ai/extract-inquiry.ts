@@ -56,6 +56,8 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   if(dimensionMatches.some(match=>parseInches(match[1])===null||parseInches(match[2])===null))notes.push('Invalid dimension pair in source; verify width and height');
   if(new Set(dimensionPairs).size>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
 
+  const negatedOptionMention=/(?:\b(?:no|not|without)\s+(?:blackout|light filtering|motorized|motorised|motor|cordless|remote|white hardware|black hardware)\b|不要(?:遮光|透光|电动|无绳|遥控|白色配件|黑色配件)|不需要(?:遮光|透光|电动|无绳|遥控|白色配件|黑色配件))/i.test(text);
+  if(negatedOptionMention)notes.push('Negated configuration statement in source; verify selected options with customer');
   if(options.includes('light_filtering')&&options.includes('blackout'))notes.push('Conflicting opacity options: LF and BO; verify with customer');
   if(options.includes('white_hardware')&&options.includes('black_hardware'))notes.push('Conflicting hardware colors: WH and BK; verify with customer');
   if(options.includes('motorized')&&options.includes('cordless'))notes.push('Motorized and cordless both requested; verify operating system');
