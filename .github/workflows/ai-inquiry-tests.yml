@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'lib/ai/**'
+      - 'app/ai/**'
       - 'tests/ai/**'
       - '.github/workflows/ai-inquiry-tests.yml'
   workflow_dispatch:
