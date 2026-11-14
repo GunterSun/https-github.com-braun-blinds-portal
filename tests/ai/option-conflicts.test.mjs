@@ -139,3 +139,15 @@ test('valid dimensions do not create a pending-measurement warning',()=>{
  const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 width 36 height 60');
  assert.ok(!draft.notes.some(n=>/Unresolved dimension statement/i.test(n)));
 });
+
+test('explicitly pending product model requires review despite another valid model',()=>{
+ for(const marker of ['model TBD','product unknown','product code pending','型号待定','产品型号未定']){
+  const draft=extractInquiryDraft(`JL3601 36 x 60 qty 1 ${marker}`);
+  assert.ok(draft.notes.some(n=>/Unresolved product model statement/i.test(n)),marker);
+  assert.equal(quoteDraftGate(draft).allowed,false);
+ }
+});
+test('ordinary product code does not trigger pending-model warning',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 model JL3601');
+ assert.ok(!draft.notes.some(n=>/Unresolved product model statement/i.test(n)));
+});
