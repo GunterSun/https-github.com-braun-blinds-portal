@@ -19,3 +19,16 @@ test('unnumbered context is never silently assigned to a window',()=>{
  assert.equal(result.lines.length,1);
  assert.ok(result.warnings.some(w=>w.includes('Unnumbered')));
 });
+
+test('duplicate numbered windows are preserved and explicitly flagged',()=>{
+ const result=extractInquiryLines('1. JL3601 36 x 60 qty 1\n1. ML-1801 40 x 70 qty 2');
+ assert.equal(result.lines.length,2);
+ assert.ok(result.warnings.some(w=>/Duplicate/i.test(w)));
+});
+test('skipped or out-of-order window numbers require manual review',()=>{
+ const skipped=extractInquiryLines('1. JL3601 36 x 60 qty 1\n3. ML-1801 40 x 70 qty 2');
+ assert.equal(skipped.lines.length,2);
+ assert.ok(skipped.warnings.some(w=>/out of sequence/i.test(w)));
+ const reversed=extractInquiryLines('2. JL3601 36 x 60 qty 1\n1. ML-1801 40 x 70 qty 2');
+ assert.ok(reversed.warnings.some(w=>/out of sequence/i.test(w)));
+});
