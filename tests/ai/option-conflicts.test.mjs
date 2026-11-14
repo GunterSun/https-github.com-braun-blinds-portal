@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {extractInquiryDraft} from '../../lib/ai/extract-inquiry.ts';
+import {quoteDraftGate} from '../../lib/ai/quote-adapter.ts';
 
 const ui=readFileSync(new URL('../../lib/ai/inquiry-draft-preview.tsx',import.meta.url),'utf8');
 test('contradictory opacity, hardware and operation options need review',()=>{
@@ -20,4 +21,12 @@ test('owner workbench renders bilingual accessible conflict warnings',()=>{
  assert.match(ui,/noteZh:Record<string,string>/);
  assert.match(ui,/line\.draft\.notes\.map/);
  assert.match(ui,/role="alert"/);
+});
+
+test('quote gate explicitly rejects contradictory options',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 LF BO');
+ const gate=quoteDraftGate(draft);
+ assert.equal(gate.allowed,false);
+ assert.equal(gate.requiresOwnerReview,true);
+ assert.match(gate.reason,/相互冲突/);
 });
