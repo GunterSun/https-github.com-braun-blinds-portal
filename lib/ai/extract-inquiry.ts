@@ -1,7 +1,7 @@
 /** Read-only inquiry parser. Results always require human review. */
 export type InquiryDraft = {
   sourceText:string; productCode:string|null; fabricCode:string|null;
-  widthInches:number|null; heightInches:number|null; quantity:number|null;
+  widthInches:number|null; heightInches:number|null; widthRaw:string|null; heightRaw:string|null; quantity:number|null;
   color:string|null; options:string[]; notes:string[]; missing:string[]; status:'needs_review';
 };
 export function parseInches(input:string):number|null {
@@ -21,7 +21,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const dimensions=text.match(dimensionRegex);
   const widthInches=dimensions?parseInches(dimensions[1]):null;
   const heightInches=dimensions?parseInches(dimensions[2]):null;
-  const productCode=text.match(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/i)?.[0].replace(/ /g,'').toUpperCase()??null;
+  const productCode=text.match(/\b(?:LJYM|BZM|JL|ML|LM|DR)[- ]?\d{2,6}\b/i)?.[0].replace(/ /g,'').toUpperCase()??null;
   const fabricCode=null; // LF/BO/BK are opacity options; WH is hardware color, not a verified fabric code.
   const qty=text.match(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/i);
   const quantity=qty&&Number.isSafeInteger(Number(qty[1]))&&Number(qty[1])>0?Number(qty[1]):null;
@@ -36,7 +36,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
     ...(/\bWH\b|white hardware|白色配件/i.test(text)?['white_hardware']:[]),
     ...(/\bBK\b|black hardware|黑色配件/i.test(text)?['black_hardware']:[]),
   ];
-  const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
+  const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|LM|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
   const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)(?!\d)/i.test(text);
   const notes:string[]=[];
@@ -55,5 +55,5 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
     ...(!productCode?['productCode']:[]),...(!widthInches?['widthInches']:[]),
     ...(!heightInches?['heightInches']:[]),...(!quantity?['quantity']:[]),
   ];
-  return {sourceText:text,productCode,fabricCode,widthInches,heightInches,quantity,color,options,notes,missing,status:'needs_review'};
+  return {sourceText:text,productCode,fabricCode,widthInches,heightInches,widthRaw:dimensions?.[1]??null,heightRaw:dimensions?.[2]??null,quantity,color,options,notes,missing,status:'needs_review'};
 }
