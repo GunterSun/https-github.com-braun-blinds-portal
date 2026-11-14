@@ -41,3 +41,7 @@ test('safety warnings are localized for Chinese-first owner review',()=>{
  assert.match(ui,/内容已截断/);
  assert.match(ui,/en\?warning:\(warningZh\[warning\]\?\?warning\)/);
 });
+
+test('extraction safety warnings are exposed as accessible alerts',()=>{
+ assert.match(ui,/warnings\.map\(\(warning,i\)=><p key=\{i\} role="alert"/);
+});
