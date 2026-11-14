@@ -60,3 +60,17 @@ test('amount-only invoice differences require review rather than declaring corru
  const d=empty();d.customers=[{id:1}];d.measure_properties=[{id:1,customer_id:1}];d.customer_quote_versions=[{id:1,customer_id:1,property_id:1,total:100,currency:'USD',status:'signed',document_sha256:'hash'}];d.customer_billing_invoices=[{id:1,quote_version_id:1,customer_id:1,property_id:1,total:120,currency:'USD',document_sha256:'invoice'}];assert.equal(buildOrderPreview(d).records.find(r=>r.key==='customer_billing_invoices:1').status,'review');
 });
 test('missing document evidence is explicit',()=>{const d=empty();d.customer_orders=[{id:1}];d.invoice_versions=[{id:1,order_id:1,document_sha256:'',snapshot_json:''}];assert.ok(buildOrderPreview(d).records.find(r=>r.key==='invoice_versions:1').findings.some(f=>f.code==='MISSING_DOCUMENT_EVIDENCE'));});
+test('read observation has unique request IDs and changes fingerprint when loaded content changes',async()=>{
+ const a=await(await get()).json(),b=await(await get()).json();assert.notEqual(a.audit.requestId,b.audit.requestId);assert.equal(a.audit.contentHash,b.audit.contentHash);assert.equal(a.audit.kind,'read-observation-not-database-snapshot');
+ db.exec('UPDATE customer_orders SET wholesale_total=101 WHERE id=1');const c=await(await get()).json();assert.notEqual(a.audit.contentHash,c.audit.contentHash);db.exec('UPDATE customer_orders SET wholesale_total=100 WHERE id=1');
+});
+test('batch upper bound excludes new higher-ID orders without claiming snapshot isolation',async()=>{
+ const first=await(await get('source=customer_orders&size=1')).json();assert.equal(first.page.upper,9);
+ db.exec("INSERT INTO customer_orders(id,order_number,customer_email,items_json,retail_total,wholesale_total,discount_percent) VALUES(100,'NEW-AFTER-BATCH','a@example.invalid','[]',120,100,0)");
+ const next=await(await get(`source=customer_orders&size=1&after=1&upper=${first.page.upper}`)).json();assert.equal(next.records[0].original.id,9);assert.equal(next.page.nextAfter,null);
+ const refreshed=await(await get('source=customer_orders&size=1&after=9')).json();assert.equal(refreshed.records[0].original.id,100);
+ db.exec('DELETE FROM customer_orders WHERE id=100');
+});
+test('unknown mode, obsolete pairs and repeated parameters fail explicitly',async()=>{
+ for(const query of ['mode=confirm','pairs=[]','size=1&size=50','after=10&upper=9'])assert.equal((await get(query)).status,400,query);
+});
