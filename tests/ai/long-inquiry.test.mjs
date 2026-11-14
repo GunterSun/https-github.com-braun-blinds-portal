@@ -15,3 +15,10 @@ test('exactly 12,000 characters does not trigger truncation warning',()=>{
  const result=extractInquiryLines(input);
  assert.ok(!result.warnings.some(w=>/truncat/i.test(w)));
 });
+
+test('long unnumbered inquiries retain both truncation and missing-number warnings',()=>{
+ const result=extractInquiryLines('JL3601 36 x 60 qty 1 '+ 'x'.repeat(12001));
+ assert.equal(result.lines.length,1);
+ assert.ok(result.warnings.some(w=>/truncat/i.test(w)));
+ assert.ok(result.warnings.some(w=>/No explicit line numbering/i.test(w)));
+});
