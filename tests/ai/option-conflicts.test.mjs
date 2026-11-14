@@ -89,3 +89,9 @@ test('invalid quantity mention cannot be hidden by another valid quantity',()=>{
   assert.equal(quoteDraftGate(draft).allowed,false);
  }
 });
+
+test('leading-zero positive quantities remain valid source statements',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 qty 002 quantity 2');
+ assert.equal(draft.quantity,2);
+ assert.ok(!draft.notes.some(n=>/Invalid quantity statement/i.test(n)));
+});
