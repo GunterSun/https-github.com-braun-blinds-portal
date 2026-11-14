@@ -45,7 +45,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   if(invalidQuantityMention||quantities.some(value=>!Number.isSafeInteger(Number(value))||Number(value)<=0))notes.push('Invalid quantity statement in source; verify the intended positive whole number');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
   const dimensionPairs=dimensionMatches.map(match=>[parseInches(match[1]),parseInches(match[2])].join('x'));
-  if(dimensionPairs.some(pair=>pair.includes('null')))notes.push('Invalid dimension pair in source; verify width and height');
+  if(dimensionMatches.some(match=>parseInches(match[1])===null||parseInches(match[2])===null))notes.push('Invalid dimension pair in source; verify width and height');
   if(new Set(dimensionPairs).size>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
 
   if(options.includes('light_filtering')&&options.includes('blackout'))notes.push('Conflicting opacity options: LF and BO; verify with customer');
