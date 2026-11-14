@@ -38,7 +38,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   ];
   const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/[- ]/g,'').toUpperCase());
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
-  const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)/i.test(text);
+  const invalidQuantityMention=/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(?:0+(?!\d)|-\s*\d+|\d+\.\d+|\d+\s*\/\s*\d+)(?!\d)/i.test(text);
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
   if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
