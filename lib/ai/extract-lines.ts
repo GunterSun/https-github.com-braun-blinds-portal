@@ -9,7 +9,7 @@ export function extractInquiryLines(sourceText:string):MultiLineResult {
  const numbered=rows.filter(s=>/^(?:line\s*)?\d{1,3}\s*[).:：-]\s*\S/i.test(s));
  const warnings:string[]=[];
  if(raw.length>12000)warnings.push('Inquiry exceeded 12,000 characters; truncated text requires manual review');
- if(numbered.length===0)return {lines:[{lineNumber:1,source,draft:extractInquiryDraft(source)}],warnings:['No explicit line numbering; review whether the message contains multiple windows'],status:'needs_review'};
+ if(numbered.length===0)return {lines:[{lineNumber:1,source,draft:extractInquiryDraft(source)}],warnings:[...warnings,'No explicit line numbering; review whether the message contains multiple windows'],status:'needs_review'};
  const lines=numbered.slice(0,100).map((row,index)=>({
   lineNumber:index+1,source:row.replace(/^(?:line\s*)?\d{1,3}\s*[).:：-]\s*/i,''),
   draft:extractInquiryDraft(row.replace(/^(?:line\s*)?\d{1,3}\s*[).:：-]\s*/i,''))
