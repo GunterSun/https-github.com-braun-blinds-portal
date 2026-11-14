@@ -65,3 +65,8 @@ test('repeated identical quantities do not create a false warning',()=>{
  const draft=extractInquiryDraft('JL3601 36 x 60 qty 2 quantity 2');
  assert.ok(!draft.notes.some(n=>/Conflicting quantities/i.test(n)));
 });
+
+test('hyphen and whitespace variants of same model do not falsely conflict',()=>{
+ const draft=extractInquiryDraft('ML-1801 36 x 60 qty 1, also noted ML1801 and ML 1801');
+ assert.ok(!draft.notes.some(n=>/Multiple product models/i.test(n)));
+});
