@@ -84,6 +84,19 @@ export default function AiInquiryDraftPreview(){
   try{await navigator.clipboard.writeText(buildOrderDraft());setNotice(en?"Review-only order draft copied. Not saved or sent.":"待审核订单草稿已复制，可粘贴到微信或备忘录；未保存或发送。");}
   catch{setNotice(en?"Clipboard unavailable. Use your browser copy function.":"浏览器不允许复制，请检查剪贴板权限。");}
  };
+ const shareOrderDraft=async()=>{
+  if(!lines.length)return;
+  if(typeof navigator.share!=="function"){
+   setNotice(en?"Sharing is unavailable in this browser. Use Copy or Download.":"此浏览器不支持系统分享，请使用复制或下载。");return;
+  }
+  try{
+   await navigator.share({title:"Braun Blinds — Review-only order draft",text:buildOrderDraft()});
+   setNotice(en?"Share sheet closed. Portal did not save or send an order.":"系统分享操作已结束；门户未保存或发送订单。");
+  }catch(error){
+   if(error instanceof Error&&error.name==="AbortError")return;
+   setNotice(en?"Could not share. Use Copy or Download.":"分享失败，请使用复制或下载。");
+  }
+ };
  const downloadOrderDraft=()=>{
   if(!lines.length)return;
   const blob=new Blob([buildOrderDraft()],{type:"text/plain;charset=utf-8"});
@@ -112,6 +125,7 @@ export default function AiInquiryDraftPreview(){
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
   <button type="button" disabled={!lines.length} onClick={copyOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Copy order draft":"复制订单草稿"}</button>
   <button type="button" disabled={!lines.length} onClick={downloadOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Download text draft":"下载文本草稿"}</button>
+  <button type="button" disabled={!lines.length} onClick={shareOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Share draft":"分享草稿"}</button>
   {notice&&<p role="status">{notice}</p>}
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
