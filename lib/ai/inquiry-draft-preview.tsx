@@ -2,9 +2,16 @@
 import {useRef,useState} from "react";
 import {type InquiryLine} from "./extract-lines";
 import {parseInches} from "./extract-inquiry";
+import {isDrapery,reviewDrapery} from "./drapery-review";
 import {quoteDraftGate} from "./quote-adapter";
 
 import {captureInquiry,captureMeasurement,emptyMeasurement,measurementDifferences,measurementDimensions,recordRevision,type FieldRevision} from "./inquiry-record";
+
+const draperyLabels = {
+ dimensions:["轨道 / 杆宽与成品高度","Track / rod width and finished height"],
+ mount:["口内 / 口外","Mount"], draw:["开合方式","Draw"],
+ lining:["衬布","Lining"], pleat:["褶型","Pleat"], hardware:["杆 / 轨道颜色","Hardware color"],
+} as const;
 
 const measurementKinds = {
  field:["现场读数","Field reading"], design:["设计图读数","Design dimension"],
@@ -22,6 +29,7 @@ const measurementLabels = {
 } as const;
 
 export default function AiInquiryDraftPreview(){
+ const [draperySelection,setDraperySelection]=useState<Record<number,boolean>>({});
  const [sources,setSources]=useState<ReturnType<typeof captureInquiry>[]>([]);
  const [history,setHistory]=useState<FieldRevision[]>([]);
  const [measurement,setMeasurement]=useState(emptyMeasurement);
@@ -60,6 +68,7 @@ export default function AiInquiryDraftPreview(){
   if(!source.trim()){setNotice(en?"Enter an inquiry first.":"请先粘贴客户询价。");return;}
   const result=captureInquiry(source,new Date().toISOString());
   setSources(previous=>[...previous,result]);
+  setDraperySelection({});
   setLines(result.lines);setFieldEdits({});setWarnings(result.warnings);
   setNotice(en?"Draft recorded for review in this session.":"已在当前会话记录待审核草稿。");
  };
@@ -82,8 +91,11 @@ export default function AiInquiryDraftPreview(){
   const differences=measurementDifferences(entry,measurements,sources);
   return {...entry,differences,conflicts:[...new Set(differences.map(item=>item.field))]};
  });
+ const draperyReviews=lines.map((line,index)=>
+  (draperySelection[index]??isDrapery(line.source)) ? reviewDrapery(line.source) : null
+ );
  const exportRecord=()=>{
-  const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,measurements:measurementReview,reviewNotes,currentLines:lines},null,2)],{type:"application/json"});
+  const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,measurements:measurementReview,reviewNotes,currentLines:lines,draperyReviews},null,2)],{type:"application/json"});
   const url=URL.createObjectURL(file);
   const link=document.createElement("a");
   link.href=url;
@@ -120,6 +132,19 @@ export default function AiInquiryDraftPreview(){
       style={{boxSizing:"border-box",display:"block",width:"100%",padding:9,border:"1px solid #94a3b8",borderRadius:6}}/>
     </label>)}
     {fields.filter(([field])=>field!=="productCode"&&fieldEdits[`${i}:${field}`]!==undefined&&line.draft[field]===null).map(([field,zh,label])=><p key={`error-${field}`} role="alert" style={{color:"#b91c1c"}}>{en?label:zh}：{en?"Invalid value. Enter a positive number; fractions such as 39 5/8 are supported.":"输入无效。请输入正数；尺寸支持 39 5/8 等分数英寸。"}</p>)}
+    <label style={{display:"block",marginTop:12}}>
+     <input type="checkbox" checked={draperySelection[i]??isDrapery(line.source)} onChange={event=>{
+      const checked=event.target.checked;
+      setDraperySelection(previous=>({...previous,[i]:checked}));
+     }}/>
+     {en?"Drapery checklist":"布艺帘审单清单"}
+    </label>
+    {draperyReviews[i]&&<ul aria-label={en?"Drapery review":"布艺帘审单结果"}>
+     {draperyReviews[i]?.map(item=><li key={item.field}>
+      {draperyLabels[item.field][en?1:0]} · {item.status==="present"?(en?"Found in source":"原文已提供"):item.status==="conflict"?(en?"Conflict — human review required":"冲突 · 待人工确认"):(en?"Missing or uncertain — human review required":"缺失或不明确 · 待人工确认")}
+      {item.evidence.length>0&&<> · {item.evidence.join(" / ")}</>}
+     </li>)}
+    </ul>}
     <p>{en?"Color":"颜色"}：{line.draft.color??"—"} · {en?"Options":"选项"}：{line.draft.options.join(", ")||"—"}</p>
     <p>{en?"Verified fabric code":"已核实面料代码"}：{line.draft.fabricCode??"—"}</p>
     {!line.draft.fabricCode&&<p style={{color:"#92400e",fontWeight:600}}>{en?"Fabric is not verified. Confirm the correct product catalog before pricing.":"面料代码尚未核实。请先核对对应产品目录，JL 系列不得套用 Z 系列价格。"}</p>}
