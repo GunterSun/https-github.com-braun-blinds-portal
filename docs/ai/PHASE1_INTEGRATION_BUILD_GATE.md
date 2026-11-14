@@ -15,3 +15,6 @@
 
 ## Safety
 No merges, production deploys, D1 writes, customer messages, or supplier orders are authorized by this document.
+
+## Manual verification workflow
+A workflow at `.github/workflows/ai-phase1-build-verification.yml` is available for manual execution only. It attempts `npm ci --ignore-scripts`, `npx tsc --noEmit`, isolated AI tests and `npm run build`. Creating the workflow does **not** mean it ran or passed. Its install step may expose the stale lockfile in this branch. Do not merge or deploy on the strength of the isolated tests alone.
