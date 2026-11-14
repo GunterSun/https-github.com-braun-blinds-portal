@@ -6,6 +6,8 @@ import {quoteDraftGate} from "./quote-adapter";
 
 export default function AiInquiryDraftPreview(){
  const [source,setSource]=useState("");
+ const [customer,setCustomer]=useState("");
+ const [project,setProject]=useState("");
  const [lines,setLines]=useState<InquiryLine[]>([]);
  const [fieldEdits,setFieldEdits]=useState<Record<string,string>>({});
  const [warnings,setWarnings]=useState<string[]>([]);
@@ -55,6 +57,30 @@ export default function AiInquiryDraftPreview(){
    return {...line,draft:next};
   }));
  };
+ const copyOrderDraft=async()=>{
+  if(!lines.length){setNotice(en?"Extract the inquiry before copying.":"请先识别询价再复制订单草稿。");return;}
+  const body=[
+   "BRAUN BLINDS — REVIEW-ONLY ORDER DRAFT / 待审核订单草稿",
+   "Customer / 客户: "+(customer.trim()||"未填写 / Not provided"),
+   "Project / 项目: "+(project.trim()||"未填写 / Not provided"),
+   "Source / 原始询价:\\n"+source,
+   ...lines.map((line,i)=>[
+    "Window / 窗位 "+(i+1),
+    "Model: "+(line.draft.productCode??"TBD"),
+    "Width (in): "+(line.draft.widthInches??"TBD"),
+    "Height (in): "+(line.draft.heightInches??"TBD"),
+    "Quantity: "+(line.draft.quantity??"TBD"),
+    "Color: "+(line.draft.color??"TBD"),
+    "Options: "+(line.draft.options.join(", ")||"TBD"),
+    "Notes: "+(line.draft.notes.join("; ")||"None"),
+    "Missing: "+(line.draft.missing.join(", ")||"None"),
+   ].join("\\n")),
+   "Warnings / 警告: "+(warnings.join("; ")||"None"),
+   "NOT A QUOTE OR FACTORY ORDER. OWNER REVIEW REQUIRED / 非正式报价或生产单，须 Owner 审核",
+  ].join("\\n\\n");
+  try{await navigator.clipboard.writeText(body);setNotice(en?"Review-only order draft copied. Not saved or sent.":"待审核订单草稿已复制，可粘贴到微信或备忘录；未保存或发送。");}
+  catch{setNotice(en?"Clipboard unavailable. Use your browser copy function.":"浏览器不允许复制，请检查剪贴板权限。");}
+ };
  const fields=[["productCode","型号","Model"],["widthInches","宽度（英寸）","Width (in)"],["heightInches","高度（英寸）","Height (in)"],["quantity","数量","Quantity"]] as const;
  return <main style={{maxWidth:1000,margin:"0 auto",padding:"24px 16px",fontFamily:"system-ui",color:"#152235"}}>
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
@@ -62,11 +88,16 @@ export default function AiInquiryDraftPreview(){
    <button type="button" onClick={()=>setLocale(en?"zh":"en")}>{en?"中文":"English"}</button>
   </div>
   <p>{en?"Owner-only preview. No saving, email or factory orders.":"仅限 Owner 的开发预览，不保存、不发邮件、不下工厂单。"}</p>
+  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:12,marginTop:16}}>
+   <label>{en?"Customer name":"客户姓名"}<input aria-label={en?"Customer name":"客户姓名"} value={customer} onChange={e=>setCustomer(e.target.value)} placeholder={en?"e.g. Kit":"例如 Kit"} style={{display:"block",width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/></label>
+   <label>{en?"Project / address note":"项目 / 地址备注"}<input aria-label={en?"Project / address note":"项目 / 地址备注"} value={project} onChange={e=>setProject(e.target.value)} placeholder={en?"e.g. living room":"例如 客厅"} style={{display:"block",width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/></label>
+  </div>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
   <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
    placeholder={"1. JL3601 White LF 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized"}
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
+  <button type="button" disabled={!lines.length} onClick={copyOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Copy order draft":"复制订单草稿"}</button>
   {notice&&<p role="status">{notice}</p>}
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
