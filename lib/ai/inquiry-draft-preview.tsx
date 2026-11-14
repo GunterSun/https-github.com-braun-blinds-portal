@@ -26,6 +26,7 @@ export default function AiInquiryDraftPreview(){
   "Multiple product models in one window; split and verify with customer":"同一窗位出现多个不同型号，请拆分并向客户确认。",
   "Multiple dimension pairs in one window; verify which size applies":"同一窗位出现多组宽高尺寸，请向客户确认使用哪一组。",
   "Conflicting quantities in one window; verify the intended count":"同一窗位出现不同数量，请向客户确认正确数量。",
+  "Invalid quantity statement in source; verify the intended positive whole number":"原始询价中出现无效数量，请向客户确认正确的正整数数量。",
   "Conflicting opacity options: LF and BO; verify with customer":"透光 LF 与遮光 BO 同时出现，请向客户确认。",
   "Conflicting hardware colors: WH and BK; verify with customer":"白色配件 WH 与黑色配件 BK 同时出现，请向客户确认。",
   "Motorized and cordless both requested; verify operating system":"电动与无绳操作同时出现，请向客户确认操作方式。"
