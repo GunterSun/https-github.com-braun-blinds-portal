@@ -36,9 +36,13 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
     ...(/\bWH\b|white hardware|白色配件/i.test(text)?['white_hardware']:[]),
     ...(/\bBK\b|black hardware|黑色配件/i.test(text)?['black_hardware']:[]),
   ];
+  const notes:string[]=[];
+  if(options.includes('light_filtering')&&options.includes('blackout'))notes.push('Conflicting opacity options: LF and BO; verify with customer');
+  if(options.includes('white_hardware')&&options.includes('black_hardware'))notes.push('Conflicting hardware colors: WH and BK; verify with customer');
+  if(options.includes('motorized')&&options.includes('cordless'))notes.push('Motorized and cordless both requested; verify operating system');
   const missing=[
     ...(!productCode?['productCode']:[]),...(!widthInches?['widthInches']:[]),
     ...(!heightInches?['heightInches']:[]),...(!quantity?['quantity']:[]),
   ];
-  return {sourceText:text,productCode,fabricCode,widthInches,heightInches,quantity,color,options,notes:[],missing,status:'needs_review'};
+  return {sourceText:text,productCode,fabricCode,widthInches,heightInches,quantity,color,options,notes,missing,status:'needs_review'};
 }
