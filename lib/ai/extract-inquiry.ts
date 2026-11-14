@@ -40,7 +40,7 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const quantities=[...text.matchAll(/(?:\b(?:qty|quantity)\b|数量)\s*[:：]?\s*(\d+)\b/gi)].map(match=>match[1]);
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
-  if(new Set(quantities).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
+  if(new Set(quantities.map(value=>Number(value))).size>1)notes.push('Conflicting quantities in one window; verify the intended count');
   const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
   if(dimensionMatches.length>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
 
