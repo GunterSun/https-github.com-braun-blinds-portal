@@ -36,3 +36,13 @@ GitHub Actions https://github.com/GunterSun/https-github.com-braun-blinds-portal
 Comparing AI branch against PR #301 commit `ebe4c847f366` showed diverged history: PR #301 is 3 commits ahead of the AI branch and 65 behind (relative to the comparison direction). The file-level comparison includes newer V5.2 API/page/reader/tests, validation artifacts, V5.2 workflow, and package-lock.json. **Do not treat the passing AI-branch V5.2 tests as proof that PR #301's latest fixes are included.**
 
 Before integration, review these changes and reconcile PR #301 into the AI branch through an explicitly reviewed integration change; rerun all checks. This document does not authorize merging either PR.
+
+## Updated integration evidence — 2026-11-13 (later CI)
+
+The earlier blockers above are retained as historical observations, **not current statements** about file parity or CI coverage.
+
+- The 13 reviewed V5.2 code/test/workflow/validation files were subsequently checked to have identical content on this AI branch and PR #301 at `ebe4c847f366`; Git ancestry still differs. Neither PR was merged.
+- `.github/workflows/ai-inquiry-tests.yml` now includes an AI unit job and a full integration job running locked dependency installation, V5.2 read-only regression, synthetic in-memory migration rehearsal, TypeScript, and portal build without deploying.
+- AI run https://github.com/GunterSun/https-github.com-braun-blinds-portal/actions/runs/43570995692 and V5.2 read-only run https://github.com/GunterSun/https-github.com-braun-blinds-portal/actions/runs/43570995698 both completed successfully at `a80af6ea5f6c79b891e2fa2184581f6ef522be08`.
+- Subsequent commits require their own CI results; passing an older commit does not validate later edits.
+- Remaining pre-merge work: owner/non-owner browser login acceptance, mobile/keyboard checks, staging R2 binding verification, review of Git history divergence, and explicit owner approval. No production deploy, D1 migration, formal quote or supplier order is authorized.
