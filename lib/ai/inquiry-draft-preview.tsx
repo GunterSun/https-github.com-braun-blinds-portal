@@ -57,8 +57,7 @@ export default function AiInquiryDraftPreview(){
    return {...line,draft:next};
   }));
  };
- const copyOrderDraft=async()=>{
-  if(!lines.length){setNotice(en?"Extract the inquiry before copying.":"请先识别询价再复制订单草稿。");return;}
+ const buildOrderDraft=()=>{
   const body=[
    "BRAUN BLINDS — REVIEW-ONLY ORDER DRAFT / 待审核订单草稿",
    "Customer / 客户: "+(customer.trim()||"未填写 / Not provided"),
@@ -78,8 +77,22 @@ export default function AiInquiryDraftPreview(){
    "Warnings / 警告: "+(warnings.join("; ")||"None"),
    "NOT A QUOTE OR FACTORY ORDER. OWNER REVIEW REQUIRED / 非正式报价或生产单，须 Owner 审核",
   ].join("\n\n");
-  try{await navigator.clipboard.writeText(body);setNotice(en?"Review-only order draft copied. Not saved or sent.":"待审核订单草稿已复制，可粘贴到微信或备忘录；未保存或发送。");}
+  return body;
+ };
+ const copyOrderDraft=async()=>{
+  if(!lines.length)return;
+  try{await navigator.clipboard.writeText(buildOrderDraft());setNotice(en?"Review-only order draft copied. Not saved or sent.":"待审核订单草稿已复制，可粘贴到微信或备忘录；未保存或发送。");}
   catch{setNotice(en?"Clipboard unavailable. Use your browser copy function.":"浏览器不允许复制，请检查剪贴板权限。");}
+ };
+ const downloadOrderDraft=()=>{
+  if(!lines.length)return;
+  const blob=new Blob([buildOrderDraft()],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const anchor=document.createElement("a");
+  anchor.href=url;anchor.download="braun-inquiry-review-draft.txt";
+  document.body.appendChild(anchor);anchor.click();anchor.remove();
+  URL.revokeObjectURL(url);
+  setNotice(en?"Text draft prepared for download. Not saved to portal.":"已准备下载文本草稿，未保存到门户服务器。");
  };
  const fields=[["productCode","型号","Model"],["widthInches","宽度（英寸）","Width (in)"],["heightInches","高度（英寸）","Height (in)"],["quantity","数量","Quantity"]] as const;
  return <main style={{maxWidth:1000,margin:"0 auto",padding:"24px 16px",fontFamily:"system-ui",color:"#152235"}}>
@@ -98,6 +111,7 @@ export default function AiInquiryDraftPreview(){
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
   <button type="button" disabled={!lines.length} onClick={copyOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Copy order draft":"复制订单草稿"}</button>
+  <button type="button" disabled={!lines.length} onClick={downloadOrderDraft} style={{marginLeft:8,marginTop:12,padding:"10px 18px",border:"1px solid #123d5a",borderRadius:8,opacity:lines.length?1:0.5}}>{en?"Download text draft":"下载文本草稿"}</button>
   {notice&&<p role="status">{notice}</p>}
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
