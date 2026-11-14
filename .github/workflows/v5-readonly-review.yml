@@ -1,0 +1,35 @@
+name: V5 Read-only Review Checks
+
+on:
+  pull_request:
+    paths:
+      - 'app/api/v5/**'
+      - 'app/v5/**'
+      - 'lib/v5-*.ts'
+      - 'db/**'
+      - 'drizzle/**'
+      - 'tests/v5*'
+      - 'docs/v5/proposals/**'
+      - 'package*.json'
+      - '.github/workflows/v5-readonly-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Owner access, read-only queries, pagination and conflicts
+        run: node --test tests/v5-order-preview.test.mjs
+      - name: Proposal constraints on synthetic in-memory SQLite
+        run: python3 tests/v5_order_relations_test.py -v
+      # No deploy step, D1 binding, production credentials, or real customer data.
