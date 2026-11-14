@@ -42,3 +42,15 @@ test('repeated identical model is not a multiple-model conflict',()=>{
  const draft=extractInquiryDraft('JL3601 36 x 60 qty 1 repeat JL3601');
  assert.ok(!draft.notes.some(n=>/Multiple product models/i.test(n)));
 });
+
+test('two dimension pairs in one window require human review',()=>{
+ const draft=extractInquiryDraft('JL3601 36 x 60 or 40 x 70 qty 1');
+ assert.equal(draft.widthInches,36);
+ assert.equal(draft.heightInches,60);
+ assert.ok(draft.notes.some(n=>/Multiple dimension pairs/i.test(n)));
+ assert.equal(quoteDraftGate(draft).allowed,false);
+});
+test('one fractional dimension pair does not falsely trigger multiple-size warning',()=>{
+ const draft=extractInquiryDraft('JL3601 39 5/8 x 40 5/8 qty 1');
+ assert.ok(!draft.notes.some(n=>/Multiple dimension pairs/i.test(n)));
+});
