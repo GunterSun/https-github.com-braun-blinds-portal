@@ -1,6 +1,16 @@
 "use client";
 
 import { type ChangeEvent, useEffect, useMemo, useState } from "react";
+import {
+  CompanyBookkeepingPage,
+  loadLocalList,
+  RetailWorkflowPage,
+  saveLocalList,
+  SmartAgentWorkbench,
+  type SmartReminder,
+  WholesaleWorkflowPage,
+} from "@/lib/smart-agent-workspace";
+import { PhotoVoiceMeasureApp } from "@/lib/photo-voice-measure-app";
 
 type SheetCell = string | number | boolean | null;
 type XlsxApi = { read:(data:ArrayBuffer)=>{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json:(sheet:unknown,options:{header:number;defval:null;raw?:boolean})=>SheetCell[][]} };
@@ -11,22 +21,30 @@ type NavGroup = { title: string; items: NavItem[] };
 type ModuleRow = {id:string;client:string;product:string;owner:string;value:string;status:string;tone:string;date:string;manual?:boolean};
 
 const en: Record<string,string> = {
-  "工作台":"Workspace","经营总览":"Overview","待办与提醒":"Tasks & Alerts","客户与销售":"Sales & CRM","客户与订单":"Customers & Orders","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare","数据中心":"Data Center","现场运营中心":"Field Operations","采购财务中心":"Purchasing & Finance","真实经营分析":"Business Analytics",
+  "工作台":"Workspace","经营总览":"Overview","智能体工作台":"AI Agent","待办与提醒":"Tasks & Alerts","批发与零售":"Wholesale & Retail","批发业务管理":"Wholesale","零售定制管理":"Retail","客户与销售":"Sales & CRM","客户与订单":"Customers & Orders","销售线索":"Leads","客户管理":"Customers","项目管理":"Projects","上门测量":"Measurements","报价管理":"Quotes","销售订单":"Sales Orders","售后服务":"Aftercare","数据中心":"Data Center","现场运营中心":"Field Operations","安装排期":"Installations","财务与记账":"Finance & Bookkeeping","公司日常记账":"Company Bookkeeping","采购财务中心":"Purchasing & Finance","真实经营分析":"Business Analytics",
   "现场与运营":"Field & Operations","团队日历":"Calendar","安装工单":"Work Orders","生产进度":"Production","采购入库":"Receiving","照片资料":"Photos","采购与财务":"Purchasing & Finance","采购订单":"Purchase Orders","供应商管理":"Vendors","供应商账单":"Vendor Bills","应收账款":"Receivables","收付款":"Payments","分析与管理":"Insights & Admin","经营报表":"Reports","利润分析":"Profitability","产品与文档":"Resources","系统设置":"Settings"
 };
 
 const nav: NavGroup[] = [
   { title: "工作台", items: [
-    { label: "经营总览", icon: "⌂" }, { label: "待办与提醒", icon: "◌", badge: 8 },
+    { label: "经营总览", icon: "⌂" },
+    { label: "智能体工作台", icon: "✦" },
+    { label: "待办与提醒", icon: "◌", badge: 8 },
   ]},
-  { title: "客户与销售", items: [
-    { label: "客户与订单", icon: "▣" }, { label: "项目管理", icon: "▤" },
-    { label: "上门测量", icon: "⌁" }, { label: "报价管理", icon: "□" }, { label: "售后服务", icon: "✦" },
+  { title: "批发与零售", items: [
+    { label: "批发业务管理", icon: "▤" },
+    { label: "零售定制管理", icon: "▥" },
+    { label: "客户与订单", icon: "▣" },
+    { label: "上门测量", icon: "⌁" },
+    { label: "报价管理", icon: "□" },
+    { label: "售后服务", icon: "✦" },
   ]},
   { title: "现场与运营", items: [
     { label: "现场运营中心", icon: "▦" },
+    { label: "安装排期", icon: "📅" },
   ]},
-  { title: "采购与财务", items: [
+  { title: "财务与记账", items: [
+    { label: "公司日常记账", icon: "¥" },
     { label: "采购财务中心", icon: "▧" },
   ]},
   { title: "分析与管理", items: [
@@ -92,8 +110,8 @@ function realRowsFor(name:string,data:RealWorkbookData):ModuleRow[]{
 
 function RealOverview({go}:{go:(name:string)=>void}){
   const {data,loading}=useRealWorkbookData(),total=data.commerce.reduce((s,r)=>s+r.settlement,0),paid=data.commerce.filter(r=>r.remittance.includes('已汇款')).length,dealers=new Set(data.commerce.map(r=>r.dealer).filter(x=>x&&x!=="未填写")).size;
-  const cards=[['真实订单',String(data.commerce.length),'来自 jin汇总(1).xlsx'],['结算金额',`$${total.toLocaleString(undefined,{minimumFractionDigits:2})}`,'Excel结算金额合计'],['已汇款',String(paid),`${Math.max(0,data.commerce.length-paid)}笔未标记`],['真实客户',String(dealers),'按Dealer名称去重']];
-  return <><section className="hero-card"><div><span className="eyebrow">REAL DATA WORKSPACE / 真实数据工作台</span><h1>Braun Blinds 业务中心</h1><p>只显示真实 Excel 与您手工建立的记录；演示订单已删除。</p></div><div className="hero-actions"><button className="secondary" onClick={()=>go('数据中心')}>更新Excel数据</button><button className="primary" onClick={()=>go('上门测量')}>现场测量</button></div><div className="fabric-orb one"/><div className="fabric-orb two"/></section><section className="kpi-grid">{cards.map(x=><article className="kpi" key={x[0]}><span>{x[0]}</span><strong>{loading?'…':x[1]}</strong><small>{x[2]}</small></article>)}</section><section className="panel real-home"><div className="panel-head"><div><span className="eyebrow">BUSINESS AREAS</span><h2>业务模块状态</h2></div></div><div className="area-grid">{[['客户与销售','客户与订单',`${data.commerce.length}笔真实订单`],['现场与运营','现场运营中心','等待录入现场记录'],['采购与财务','采购财务中心',`${data.commerce.length}笔CWF记录`],['分析与管理','真实经营分析','基于真实Excel统计']].map(x=><button key={x[0]} onClick={()=>go(x[1])}><b>{x[0]}</b><span>{x[2]}</span><em>打开 →</em></button>)}</div></section></>;
+  const cards=[['真实订单',String(data.commerce.length),'来自 jin汇总.xlsx'],['结算金额',`$${total.toLocaleString(undefined,{minimumFractionDigits:2})}`,'Excel结算金额合计'],['已汇款',String(paid),`${Math.max(0,data.commerce.length-paid)}笔未标记`],['真实客户',String(dealers),'按客户名称去重']];
+  return <><section className="hero-card"><div><span className="eyebrow">真实数据与智能体工作台</span><h1>博朗窗饰业务中心</h1><p>批发报价下厂、零售预约测量安装、拍照画线语音测量、待办提醒与公司日常记账一体化管理。</p></div><div className="hero-actions"><button className="secondary" onClick={()=>go('上门测量')}>📱 拍照画线测量</button><button className="secondary" onClick={()=>go('公司日常记账')}>公司日常记账</button><button className="primary" onClick={()=>go('智能体工作台')}>✦ 打开智能体助手</button></div><div className="fabric-orb one"/><div className="fabric-orb two"/></section><section className="kpi-grid">{cards.map(x=><article className="kpi" key={x[0]}><span>{x[0]}</span><strong>{loading?'…':x[1]}</strong><small>{x[2]}</small></article>)}</section><section className="panel real-home"><div className="panel-head"><div><span className="eyebrow">核心业务入口</span><h2>业务模块状态</h2></div></div><div className="area-grid">{[['上门测量','上门测量','手机/平板拍照+画线标尺寸+语音/手写+选型号'],['智能体工作台','智能体工作台','粘贴微信消息自动录单/记账'],['批发业务管理','批发业务管理','型号尺寸→报价标注→收款下厂→取货/安装'],['零售定制管理','零售定制管理','预约测量→选品报价→收款下厂→上门安装'],['公司日常记账','公司日常记账','订单收支 + 房租/油费/水电/工资日常账'],['待办与提醒','待办与提醒','测量/到货通知/安装/尾款提醒'],['客户与订单','客户与订单',`${data.commerce.length}笔Excel历史订单`],['采购与财务','采购财务中心',`${data.commerce.length}笔CWF对账记录`]].map(x=><button key={x[0]} onClick={()=>go(x[1])}><b>{x[0]}</b><span>{x[2]}</span><em>打开 →</em></button>)}</div></section></>;
 }
 
 function Overview({ go }: { onOpen: (id: string) => void; go:(name:string)=>void; onNew:()=>void }) { return <RealOverview go={go}/> }
@@ -135,15 +153,49 @@ const initialTasks:WorkTask[]=[];
 
 function TasksPage(){
  const [tasks,setTasks]=useState<WorkTask[]>(()=>{if(typeof window==="undefined")return initialTasks;try{return JSON.parse(localStorage.getItem("braun-work-tasks-real-v2")||"")||initialTasks}catch{return initialTasks}}),[filter,setFilter]=useState("未完成"),[selected,setSelected]=useState<WorkTask|null>(null);
+ const [smartReminders,setSmartReminders]=useState<SmartReminder[]>(()=>loadLocalList<SmartReminder>("braun-smart-reminders-v1"));
+ const [newTitle,setNewTitle]=useState(""),[newDue,setNewDue]=useState("今天 16:00"),[newType,setNewType]=useState<WorkTask["type"]>("测量");
  useEffect(()=>localStorage.setItem("braun-work-tasks-real-v2",JSON.stringify(tasks)),[tasks]);
+ const addQuickTask=()=>{if(!newTitle.trim())return;const item:WorkTask={id:`TASK-${Date.now().toString().slice(-6)}`,type:newType,order:"日常提醒",customer:"内部待办",title:newTitle.trim(),detail:newTitle.trim(),owner:"管理员",created:new Date().toLocaleString("zh-CN",{hour12:false}),due:newDue||"今天",priority:"紧急",status:"待处理"};setTasks(x=>[item,...x]);setNewTitle("")};
+ const toggleSmart=(id:string)=>{const next=smartReminders.map(r=>r.id===id?{...r,done:!r.done}:r);setSmartReminders(next);saveLocalList("braun-smart-reminders-v1",next)};
+ const removeSmart=(id:string)=>{const next=smartReminders.filter(r=>r.id!==id);setSmartReminders(next);saveLocalList("braun-smart-reminders-v1",next)};
  const visible=tasks.filter(t=>filter==="全部"||(filter==="未完成"?t.status!=="已完成":t.type===filter));
  const update=(id:string,patch:Partial<WorkTask>)=>{setTasks(all=>all.map(t=>t.id===id?{...t,...patch}:t));if(selected?.id===id)setSelected({...selected,...patch})};
- const counts={urgent:tasks.filter(t=>t.priority==="紧急"&&t.status!=="已完成").length,today:tasks.filter(t=>t.due.includes("今天")&&t.status!=="已完成").length,active:tasks.filter(t=>t.status==="处理中").length,done:tasks.filter(t=>t.status==="已完成").length};
- return <><div className="module-head tasks-head"><div><span className="eyebrow">WORK QUEUE / TASKS & ALERTS</span><h1>待办与提醒 <small className="en-title">Tasks & Alerts</small></h1><p>由收款、采购、测量、生产、安装和售后业务产生；每项均关联订单号和截止时间。</p></div></div>
-  <section className="task-kpis"><div><span>紧急事项</span><b>{counts.urgent}</b><small>优先处理</small></div><div><span>今天到期</span><b>{counts.today}</b><small>含逾期任务</small></div><div><span>处理中</span><b>{counts.active}</b><small>已有人负责</small></div><div><span>已完成</span><b>{counts.done}</b><small>本设备记录</small></div></section>
+ const openSmartCount=smartReminders.filter(r=>!r.done).length;
+ const counts={urgent:tasks.filter(t=>t.priority==="紧急"&&t.status!=="已完成").length+openSmartCount,today:tasks.filter(t=>t.due.includes("今天")&&t.status!=="已完成").length+openSmartCount,active:tasks.filter(t=>t.status==="处理中").length,done:tasks.filter(t=>t.status==="已完成").length+smartReminders.filter(r=>r.done).length};
+ return <><div className="module-head tasks-head"><div><span className="eyebrow">智能提醒与工作队列</span><h1>待办与提醒</h1><p>自动汇总批发到货取货通知、零售预约测量、上门安装、催收尾款及日常待办事项。</p></div></div>
+  <section className="task-kpis"><div><span>待办提醒合计</span><b>{counts.urgent}</b><small>含智能体自动提醒</small></div><div><span>近期/今天到期</span><b>{counts.today}</b><small>含预约测量与安装</small></div><div><span>处理中</span><b>{counts.active}</b><small>正在跟进</small></div><div><span>已完成</span><b>{counts.done}</b><small>本机历史记录</small></div></section>
+  <section className="panel" style={{marginBottom:14}}>
+   <h2>＋ 快速添加提醒事项</h2>
+   <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:8}}>
+    <select value={newType} onChange={e=>setNewType(e.target.value as WorkTask["type"])} style={{padding:"8px 10px",borderRadius:8,border:"1px solid #cbd5cf"}}>
+     {["测量","安装","收款","采购","生产","售后"].map(x=><option key={x} value={x}>{x}提醒</option>)}
+    </select>
+    <input value={newDue} onChange={e=>setNewDue(e.target.value)} placeholder="时间，如：明天下午2点" style={{padding:"8px 10px",borderRadius:8,border:"1px solid #cbd5cf",width:180}}/>
+    <input value={newTitle} onChange={e=>setNewTitle(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addQuickTask()} placeholder="输入提醒内容，例如：通知李总来仓库取货 / 去王女士家测量窗帘" style={{flex:"1 1 260px",padding:"8px 10px",borderRadius:8,border:"1px solid #cbd5cf"}}/>
+    <button className="primary" onClick={addQuickTask}>添加提醒</button>
+   </div>
+  </section>
+  {smartReminders.length>0&&<section className="panel" style={{marginBottom:14}}>
+   <h2>✦ 批发/零售业务自动提醒 ({openSmartCount} 项未完成)</h2>
+   <div style={{display:"grid",gap:8,marginTop:10}}>
+    {smartReminders.map(r=><div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,padding:10,borderRadius:8,background:r.done?"#f4f6f5":"#fff9eb",border:"1px solid #e5dcc5",flexWrap:"wrap"}}>
+     <div>
+      <span className={`status ${r.done?"green":"amber"}`}><i/>{r.category}</span>
+      <strong style={{marginLeft:8,textDecoration:r.done?"line-through":"none"}}>{r.title}</strong>
+      <span style={{marginLeft:10,fontSize:12,color:"#65746d"}}>⏰ {r.dueTime}</span>
+      <div style={{fontSize:11,color:"#53615b",marginTop:4}}>{r.detail}</div>
+     </div>
+     <div style={{display:"flex",gap:6}}>
+      <button className="secondary" onClick={()=>toggleSmart(r.id)}>{r.done?"恢复未完成":"标记完成 ✓"}</button>
+      <button className="secondary" onClick={()=>removeSmart(r.id)}>删除</button>
+     </div>
+    </div>)}
+   </div>
+  </section>}
   <div className="task-filters">{["未完成","全部","收款","采购","测量","安装","生产","售后"].map(x=><button className={filter===x?"active":""} key={x} onClick={()=>setFilter(x)}>{x}</button>)}</div>
   <div className="tasks-layout"><section className="panel task-list">{visible.map(t=><button key={t.id} className={`${selected?.id===t.id?"selected":""} ${t.status==="已完成"?"completed":""}`} onClick={()=>setSelected(t)}><span className={`task-type ${t.type}`}>{t.type}</span><div><div className="task-title"><b>{t.title}</b>{t.priority==="紧急"&&<em>紧急</em>}</div><p>{t.order} · {t.customer}</p><small>负责人：{t.owner}　截止：<strong>{t.due}</strong></small></div><Status tone={t.status==="已完成"?"green":t.status==="处理中"?"blue":"amber"}>{t.status}</Status></button>)}{!visible.length&&<div className="empty-search">当前筛选没有待办事项</div>}</section>
-   <aside className="panel task-detail">{selected?<><span className={`task-type ${selected.type}`}>{selected.type}</span><h2>{selected.title}</h2><p className="task-description">{selected.detail}</p><div className="task-info"><div><span>关联订单</span><b>{selected.order}</b></div><div><span>客户/项目</span><b>{selected.customer}</b></div><div><span>负责人</span><b>{selected.owner}</b></div><div><span>建立时间</span><b>{selected.created}</b></div><div><span>截止时间</span><b>{selected.due}</b></div><div><span>当前状态</span><b>{selected.status}</b></div></div><label className="task-owner">重新分配负责人<select value={selected.owner} onChange={e=>update(selected.id,{owner:e.target.value})}>{["Gunther","陈美雅","金诺亚","财务","仓库","安装一组","安装二组"].map(x=><option key={x}>{x}</option>)}</select></label><div className="task-actions"><button className="secondary" onClick={()=>update(selected.id,{due:"明天 10:00"})}>延至明天</button><button className="secondary" onClick={()=>update(selected.id,{status:"处理中"})}>开始处理</button><button className="primary" disabled={selected.status==="已完成"} onClick={()=>update(selected.id,{status:"已完成"})}>标记完成 ✓</button></div></>:<div className="empty-search">请选择一项待办</div>}</aside>
+   <aside className="panel task-detail">{selected?<><span className={`task-type ${selected.type}`}>{selected.type}</span><h2>{selected.title}</h2><p className="task-description">{selected.detail}</p><div className="task-info"><div><span>关联订单</span><b>{selected.order}</b></div><div><span>客户/项目</span><b>{selected.customer}</b></div><div><span>负责人</span><b>{selected.owner}</b></div><div><span>建立时间</span><b>{selected.created}</b></div><div><span>截止时间</span><b>{selected.due}</b></div><div><span>当前状态</span><b>{selected.status}</b></div></div><label className="task-owner">重新分配负责人<select value={selected.owner} onChange={e=>update(selected.id,{owner:e.target.value})}>{["管理员","陈美雅","金诺亚","财务","仓库","安装一组","安装二组"].map(x=><option key={x}>{x}</option>)}</select></label><div className="task-actions"><button className="secondary" onClick={()=>update(selected.id,{due:"明天 10:00"})}>延至明天</button><button className="secondary" onClick={()=>update(selected.id,{status:"处理中"})}>开始处理</button><button className="primary" disabled={selected.status==="已完成"} onClick={()=>update(selected.id,{status:"已完成"})}>标记完成 ✓</button></div></>:<div className="empty-search">请选择一项待办</div>}</aside>
   </div></>;
 }
 
@@ -209,14 +261,18 @@ function BusinessAnalyticsPage(){
   return <><div className="module-head"><div><span className="eyebrow">REAL EXCEL ANALYTICS / NO ESTIMATES</span><h1>真实经营分析 <small className="en-title">Business Analytics</small></h1><p>所有数字来自 jin 汇总；没有成本字段，因此不显示利润或毛利。</p></div></div><section className="field-kpis"><div><span>真实订单</span><b>{loading?'…':data.commerce.length}</b></div><div><span>结算金额</span><b>${total.toLocaleString(undefined,{maximumFractionDigits:2})}</b></div><div><span>产品总数量</span><b>{qty}</b></div><div><span>已汇款订单</span><b>{paid}</b></div></section><div className="task-filters analytics-tabs">{[['products','产品结构'],['customers','客户排行'],['quality','数据完整性']].map(x=><button key={x[0]} className={tab===x[0]?'active':''} onClick={()=>setTab(x[0] as typeof tab)}>{x[1]}</button>)}</div><div className="panel analytics-panel">{tab==='quality'?quality.map(x=><div className="quality-row" key={x[0]}><span>{x[0]}</span><b>{x[1]}</b><Status tone={x[1]?'amber':'green'}>{x[1]?'需要补充':'完整'}</Status></div>):list.map(x=><div className="analysis-row" key={x.name}><div><b>{x.name||'未填写'}</b><small>{x.orders}笔订单 · {x.qty}件</small></div><div className="analysis-bar"><i style={{width:`${Math.max(2,x.amount/max*100)}%`}}/></div><strong>${x.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</strong></div>)}</div><div className="finance-note profit-warning"><b>利润分析未启用：</b>jin 文件只有结算金额，没有产品成本、运费、人工和安装成本。补充成本数据后才能计算真实利润。</div></>;
 }
 
-function ModulePage({ name, onOpen, onNew, search, setSearch, go }: { name: string; onOpen: (id: string) => void; onNew:()=>void; search:string; setSearch:(v:string)=>void; go:(name:string)=>void }) {
+function ModulePage({ name, onOpen, onNew, search, setSearch, go, notify }: { name: string; onOpen: (id: string) => void; onNew:()=>void; search:string; setSearch:(v:string)=>void; go:(name:string)=>void; notify:(msg:string)=>void }) {
   const meta = pages[name] || { title: name, kicker: "管理该业务模块的记录、状态和负责人。" };
   const isCalendar = name === "团队日历";
   const isReport = ["经营报表","利润分析","应收账款"].includes(name);
   const [status,setStatus]=useState("all");
   const [compact,setCompact]=useState(false);
   const exportCsv=()=>{const rows=moduleRows[name]||orders;const csv=['编号,客户,说明,负责人,金额,状态,日期',...rows.map(x=>[x.id,x.client,x.product,x.owner,x.value,x.status,x.date].map(v=>`"${v}"`).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download=`${name}-2026-07.csv`;a.click();URL.revokeObjectURL(a.href)};
-  if(name==="上门测量") return <IntegratedTool kind="measure"/>;
+  if(name==="智能体工作台") return <SmartAgentWorkbench go={go} notify={notify}/>;
+  if(name==="批发业务管理") return <WholesaleWorkflowPage notify={notify}/>;
+  if(name==="零售定制管理") return <RetailWorkflowPage notify={notify}/>;
+  if(name==="公司日常记账") return <CompanyBookkeepingPage notify={notify}/>;
+  if(name==="上门测量") return <PhotoVoiceMeasureApp notify={notify} go={go}/>;
   if(name==="报价管理") return <IntegratedTool kind="complete"/>;
   if(name==="售后服务") return <AftercarePage/>;
   if(name==="待办与提醒") return <TasksPage/>;
@@ -229,8 +285,8 @@ function ModulePage({ name, onOpen, onNew, search, setSearch, go }: { name: stri
   if(name==="真实经营分析") return <BusinessAnalyticsPage/>;
   if(cleanedBusinessModules.includes(name)) return <RealBusinessModule name={name}/>;
   return <>
-    <div className="module-head"><div><span className="eyebrow">BRAUN BLINDS / {en[name]}</span><h1>{meta.title}<small className="en-title">{en[name]}</small></h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={exportCsv}>导出 / Export</button><button className="primary" onClick={onNew}>＋ 新建 / New</button></div></div>
-    <div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name} / Search ${en[name]}...`} /></label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">全部状态 / All</option><option value="attention">需要处理 / Attention</option><option value="active">正常进行 / Active</option></select><button onClick={()=>setSearch('SO-')}>仅销售订单 / Sales</button><button onClick={()=>setCompact(v=>!v)}>{compact?'展开字段 / Expand':'精简字段 / Compact'}</button></div>
+    <div className="module-head"><div><span className="eyebrow">博朗窗饰 / {meta.title}</span><h1>{meta.title}</h1><p>{meta.kicker}</p></div><div><button className="secondary" onClick={exportCsv}>导出 CSV</button><button className="primary" onClick={onNew}>＋ 新建记录</button></div></div>
+    <div className="toolbar"><label>⌕ <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`搜索${name}...`} /></label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">全部状态</option><option value="attention">需要处理</option><option value="active">正常进行</option></select><button onClick={()=>setSearch('SO-')}>仅销售订单</button><button onClick={()=>setCompact(v=>!v)}>{compact?'展开字段':'精简字段'}</button></div>
     {isCalendar ? <CalendarView/> : isReport ? <ReportView name={name}/> : <ListView name={name} onOpen={onOpen} search={search} status={status} compact={compact}/>}
   </>;
 }
@@ -312,9 +368,10 @@ export default function Home() {
   useEffect(()=>{const receive=(event:MessageEvent)=>{if(event.data?.type!=="BRAUN_MEASURE_TRANSFER"||!event.data?.payload)return;localStorage.setItem("braun-measure-transfer-pending",JSON.stringify(event.data.payload));setToast("测量数据已进入 Braun Complete v3.1 / Measurement transferred");setActive("报价管理");setTimeout(()=>setToast(""),3200)};window.addEventListener("message",receive);return()=>window.removeEventListener("message",receive)},[]);
   const breadcrumb = useMemo(()=> nav.find(g=>g.items.some(i=>i.label===active))?.title || "工作台",[active]);
   const go = (label:string)=>{setActive(label);setSearch("");setMobile(false);window.scrollTo({top:0,behavior:'smooth'})};
-  const saveRecord=(name:string)=>{setNewOpen(false);setToast(`${name} 已保存 / Saved`);setTimeout(()=>setToast(""),2600)};
+  const notify=(msg:string)=>{setToast(msg);setTimeout(()=>setToast(""),2800)};
+  const saveRecord=(name:string)=>{setNewOpen(false);notify(`${name} 已保存`)};
   return <div className="app-shell">
-    <aside className={`sidebar ${mobile?'open':''}`}><div className="brand"><div className="brand-mark"><i/><i/><i/></div><div><b>BRAUN</b><span>BLINDS</span></div><button className="mobile-close" onClick={()=>setMobile(false)}>×</button></div><div className="workspace"><span>当前公司 / COMPANY</span><b>Braun International</b><button onClick={()=>go('系统设置')}>⚙</button></div><nav>{nav.map(g=><div className="nav-group" key={g.title}><h3>{g.title}<small>{en[g.title]}</small></h3>{g.items.map(item=><button key={item.label} className={active===item.label?'active':''} onClick={()=>go(item.label)}><i>{item.icon}</i><span>{item.label}<small>{en[item.label]}</small></span>{item.badge&&<em>{item.badge}</em>}</button>)}</div>)}</nav><div className="help-card"><b>需要帮助？ / Need help?</b><span>查看操作说明、产品规则或联系系统支持。</span><button onClick={()=>go('产品与文档')}>打开帮助中心 / Help center →</button></div><div className="user-card"><div>GS</div><span><b>Gunther Sung</b><small>{role} · Ontario, CA</small></span><button onClick={()=>go('系统设置')}>•••</button></div></aside>
+    <aside className={`sidebar ${mobile?'open':''}`}><div className="brand"><div className="brand-mark"><i/><i/><i/></div><div><b>博朗窗饰</b><span>智能管理系统</span></div><button className="mobile-close" onClick={()=>setMobile(false)}>×</button></div><div className="workspace"><span>当前公司</span><b>博朗国际窗饰</b><button onClick={()=>go('系统设置')}>⚙</button></div><nav>{nav.map(g=><div className="nav-group" key={g.title}><h3>{g.title}</h3>{g.items.map(item=><button key={item.label} className={active===item.label?'active':''} onClick={()=>go(item.label)}><i>{item.icon}</i><span>{item.label}</span>{item.badge&&<em>{item.badge}</em>}</button>)}</div>)}</nav><div className="help-card"><b>需要帮助？</b><span>查看操作说明、产品规则或联系系统支持。</span><button onClick={()=>go('产品与文档')}>打开帮助中心 →</button></div><div className="user-card"><div>GS</div><span><b>管理员</b><small>{role.split(' / ')[0]} · 加州安大略</small></span><button onClick={()=>go('系统设置')}>•••</button></div></aside>
     <div className="mobile-overlay" onClick={()=>setMobile(false)}/>
-    <main className="main"><header className="topbar"><button className="menu" onClick={()=>setMobile(true)}>☰</button><div className="crumb"><span>{breadcrumb}</span><b>/</b><strong>{active}</strong></div><label className="global-search">⌕<input value={search} onChange={e=>{if(active==='经营总览')go('客户与订单');setSearch(e.target.value)}} placeholder="搜索订单、客户、项目、采购单… / Search"/><kbd>⌘ K</kbd></label><div className="top-actions"><select value={role} onChange={e=>{setRole(e.target.value);setToast(`已切换权限视图：${e.target.value}`)}} aria-label="角色权限预览"><option>公司管理员 / Owner</option><option>销售人员 / Sales</option><option>测量人员 / Measure</option><option>安装人员 / Installer</option><option>财务人员 / Finance</option><option>客户账户 / Client</option></select><button aria-label="通知" onClick={()=>go('待办与提醒')}>♢<em>8</em></button><div className="avatar" onClick={()=>go('系统设置')}>GS</div></div></header><div className="content">{active==='经营总览'?<Overview onOpen={setDrawer} go={go} onNew={()=>setNewOpen(true)}/>:<ModulePage name={active} onOpen={setDrawer} onNew={()=>setNewOpen(true)} search={search} setSearch={setSearch} go={go}/>}<footer><span>© 2026 Braun International, LLC</span><span>隐私政策 Privacy · 使用条款 Terms · 技术支持 Support</span></footer></div></main>{drawer&&<RecordDrawer id={drawer} close={()=>setDrawer(null)}/>} {newOpen&&<NewRecordModal module={active} close={()=>setNewOpen(false)} save={saveRecord}/>} {toast&&<div className="toast">✓ {toast}</div>}</div>;
+    <main className="main"><header className="topbar"><button className="menu" onClick={()=>setMobile(true)}>☰</button><div className="crumb"><span>{breadcrumb}</span><b>/</b><strong>{active}</strong></div><label className="global-search">⌕<input value={search} onChange={e=>{if(active==='经营总览')go('客户与订单');setSearch(e.target.value)}} placeholder="搜索订单、客户、项目、采购单…"/><kbd>⌘ K</kbd></label><div className="top-actions"><select value={role} onChange={e=>{setRole(e.target.value);notify(`已切换权限视图：${e.target.value}`)}} aria-label="角色权限预览"><option>公司管理员</option><option>销售人员</option><option>测量人员</option><option>安装人员</option><option>财务人员</option><option>客户账户</option></select><button aria-label="通知" onClick={()=>go('待办与提醒')}>♢<em>8</em></button><div className="avatar" onClick={()=>go('系统设置')}>GS</div></div></header><div className="content"><div className="source-note">此工作台已集成拍照画线测量、智能体助手、批发业务、零售定制、待办提醒与公司日常记账。<a href="/hub">进入统一门户 →</a></div>{active==='经营总览'?<Overview onOpen={setDrawer} go={go} onNew={()=>setNewOpen(true)}/>:<ModulePage name={active} onOpen={setDrawer} onNew={()=>setNewOpen(true)} search={search} setSearch={setSearch} go={go} notify={notify}/>}<footer><span>© 2026 博朗国际窗饰 (Braun International, LLC)</span><span>隐私政策 · 使用条款 · 技术支持</span></footer></div></main>{drawer&&<RecordDrawer id={drawer} close={()=>setDrawer(null)}/>} {newOpen&&<NewRecordModal module={active} close={()=>setNewOpen(false)} save={saveRecord}/>} {toast&&<div className="toast">✓ {toast}</div>}</div>;
 }
