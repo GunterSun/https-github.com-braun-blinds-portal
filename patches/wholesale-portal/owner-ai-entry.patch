@@ -1,0 +1,22 @@
+diff --git a/app/globals.css b/app/globals.css
+index 7a578bd..b12f748 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -9,3 +9,3 @@
+ .app-shell{min-height:100vh;display:grid;grid-template-columns:252px 1fr}.sidebar{background:#17372c;color:#fff;padding:28px 22px;display:flex;flex-direction:column;justify-content:space-between;position:sticky;top:0;height:100vh}.brand-row{display:flex;align-items:center;gap:12px}.small-mark{width:40px;height:40px;border-radius:12px;background:#f4efe3;color:var(--forest);margin:0;font-size:22px}.brand-row strong,.brand-row span{display:block}.brand-row span{font-size:12px;color:#b8cbc2;margin-top:3px}
+-nav{margin-top:50px}nav button{width:100%;border:0;background:transparent;color:#c7d6cf;text-align:left;padding:13px 14px;border-radius:10px;cursor:pointer}nav button.active{background:#ffffff18;color:white}.account{display:flex;flex-direction:column;padding:14px;border-top:1px solid #ffffff20}.account span{font-weight:700}.account small{color:#acc1b7;margin:5px 0 14px;overflow:hidden;text-overflow:ellipsis}.account a{color:white;font-size:13px}
++nav{margin-top:50px}nav button,nav .portal-nav-link{width:100%;border:0;background:transparent;color:#c7d6cf;text-align:left;padding:13px 14px;border-radius:10px;cursor:pointer}nav button.active{background:#ffffff18;color:white}.account{display:flex;flex-direction:column;padding:14px;border-top:1px solid #ffffff20}.account span{font-weight:700}.account small{color:#acc1b7;margin:5px 0 14px;overflow:hidden;text-overflow:ellipsis}.account a{color:white;font-size:13px}
+ .content{padding:46px clamp(24px,5vw,70px)}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}header h1{font:500 clamp(32px,4vw,46px) Georgia;margin:6px 0}.status-pill{background:var(--sage);color:var(--forest);border-radius:999px;padding:9px 14px;font-size:13px;font-weight:700}
+@@ -43 +43,4 @@ nav{margin-top:50px}nav button{width:100%;border:0;background:transparent;color:
+ .reconcile-actions{display:flex;flex-direction:column;gap:6px}.reconcile-actions .delete-small{padding:9px 10px;white-space:nowrap}
++
++.sidebar nav .portal-nav-link{display:block;box-sizing:border-box;text-decoration:none;white-space:nowrap}
++.sidebar nav .portal-nav-link:hover,.sidebar nav .portal-nav-link:focus-visible{background:#ffffff18;color:#fff}
+diff --git a/app/portal.tsx b/app/portal.tsx
+index be35502..2327a7b 100644
+--- a/app/portal.tsx
++++ b/app/portal.tsx
+@@ -363,2 +363,3 @@ export default function Portal({user, signOutPath, customerAuth}:{user:User;sign
+             {(user.isAdmin||user.permissions.orders||user.permissions.reconciliation)&&<button className={tab==="reconciliation"?"active":""} onClick={()=>{setTab("reconciliation");loadReconciliation()}}>{user.isAdmin||user.permissions.reconciliation?t("发票对账","Invoice Reconciliation"):t("订单查询","Order Search")}</button>}
++            {user.isAdmin && <a className="portal-nav-link" href="/ai">{t("AI 询价工作台","AI Inquiry Workbench")}</a>}
+             {user.isAdmin && <button onClick={()=>window.open("https://braun-blinds-portal.sundagang91709.chatgpt.site","_blank","noopener,noreferrer")}>{t("Smart 业务门户","Smart Business Portal")}</button>}
