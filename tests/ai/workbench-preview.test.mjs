@@ -22,3 +22,9 @@ test('fractional inch typing preserves intermediate text until it becomes valid'
  assert.match(preview,/parseInches\(value\)/);
  assert.match(preview,/setFieldEdits\(\{\}\)/);
 });
+
+test('invalid edited values are visible and do not silently become valid',()=>{
+ assert.match(preview,/role="alert"/);
+ assert.match(preview,/line\.draft\[field\]===null/);
+ assert.match(preview,/Invalid value/);
+});
