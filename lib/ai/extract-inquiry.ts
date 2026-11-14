@@ -39,6 +39,9 @@ export function extractInquiryDraft(sourceText:string):InquiryDraft {
   const detectedModels=[...text.matchAll(/\b(?:LJYM|BZM|JL|ML|DR)[- ]?\d{2,6}\b/gi)].map(match=>match[0].replace(/ /g,'').toUpperCase());
   const notes:string[]=[];
   if(new Set(detectedModels).size>1)notes.push('Multiple product models in one window; split and verify with customer');
+  const dimensionMatches=[...text.matchAll(new RegExp(dimensionRegex.source,'gi'))];
+  if(dimensionMatches.length>1)notes.push('Multiple dimension pairs in one window; verify which size applies');
+
   if(options.includes('light_filtering')&&options.includes('blackout'))notes.push('Conflicting opacity options: LF and BO; verify with customer');
   if(options.includes('white_hardware')&&options.includes('black_hardware'))notes.push('Conflicting hardware colors: WH and BK; verify with customer');
   if(options.includes('motorized')&&options.includes('cordless'))notes.push('Motorized and cordless both requested; verify operating system');
