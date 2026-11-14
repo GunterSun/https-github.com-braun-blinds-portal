@@ -45,3 +45,10 @@ test('safety warnings are localized for Chinese-first owner review',()=>{
 test('extraction safety warnings are exposed as accessible alerts',()=>{
  assert.match(ui,/warnings\.map\(\(warning,i\)=><p key=\{i\} role="alert"/);
 });
+
+test('English toggle also translates formal quote issuance safety gate',()=>{
+ assert.match(ui,/Unresolved conflicting or ambiguous inquiry details require customer confirmation/);
+ assert.match(ui,/Required inquiry details are missing/);
+ assert.match(ui,/Customer pricing, product catalog, and quote version are not verified/);
+ assert.match(ui,/quoteDraftGate\(line\.draft\)\.reason/);
+});
