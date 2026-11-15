@@ -64,6 +64,7 @@ export type PhotoMeasureRecord = {
   openOrControl: string; // 对开 / 单开 / 左控 / 右控 / 无拉绳
   motorOrTrack: string; // 手动 / NOVO高扭矩插电电机 / 黑色轨道 / 金色杆
   linerOrStyle: string; // 双韩褶 / 平折款 / 遮光衬 / 透光衬
+  remark?: string; // 现场测量/加工/安装特殊备注
   voiceTranscript: string; // 语音识别及手写备注汇总
   audioDataUrl?: string; // 现场原声录音 base64
   rawPhotoDataUrl: string; // 原始照片或底图
@@ -97,8 +98,8 @@ const QUICK_LOCATIONS = [
 ];
 
 const PRODUCT_CATEGORIES = [
-  "布艺窗帘 (Drapery)",
   "双层布帘+纱 (Double Layer)",
+  "布艺窗帘 (Drapery)",
   "白纱透光帘 (White Sheer)",
   "卷帘 (Roller Shade)",
   "斑马帘 (Zebra Shade)",
@@ -106,6 +107,7 @@ const PRODUCT_CATEGORIES = [
   "竹帘/编织木帘 (Woven Wood)",
   "百叶窗 (Shutters)",
   "百叶帘 (Blinds)",
+  "蜂巢帘/日夜帘 (Honeycomb)",
   "户外防风帘 (Windproof)",
 ];
 
@@ -114,13 +116,127 @@ const QUICK_MODELS: Record<string, string[]> = {
   "双层布帘+纱 (Double Layer)": ["Group B 布帘 + White Sheer 白纱", "全遮光布 + 透光金刚纱", "双轨电动布+纱"],
   "白纱透光帘 (White Sheer)": ["White Sheer Light-Filtering (整墙)", "White Sheer (左右装饰假帘 30\")"],
   "卷帘 (Roller Shade)": ["Yuma 1% Black (黑色透景)", "Yuma 5% Black", "JL1806 迷宫全遮光", "JL3601 阳光面料", "Stella 系列 (+侧轨挡光条)"],
-  "斑马帘 (Zebra Shade)": ["无拉绳斑马帘 (Cordless Zebra)", "ML-1801 遮光斑马帘", "方形包布罩壳斑马帘"],
+  "斑马帘 (Zebra Shade)": ["无拉绳斑马帘 (Cordless Zebra)", "ML-1801 遮光斑马帘", "BMY06 斑马帘", "方形包布罩壳斑马帘"],
   "罗马帘 (Roman Shade)": ["标准平折罗马帘 (Flat Fold)", "贴墙款定制罗马帘 ($10/inch起)", "全遮光衬罗马帘"],
   "竹帘/编织木帘 (Woven Wood)": ["编织木帘+薄透光衬+无绳 ($10/sq.ft)", "编织木帘+遮光衬 (+10%)", "平折电动编织木帘"],
-  "百叶窗 (Shutters)": ["3.5\" 椴木百叶窗 (Basswood)", "PVC 防水百叶窗", "隐形拉杆 (Hidden Tilt)"],
+  "百叶窗 (Shutters)": ["3.5\" 椴木百叶窗 (Basswood)", "PVC 防水百叶窗", "4.5\" 宽叶百叶窗"],
   "百叶帘 (Blinds)": ["2\" 仿木百叶帘 (Faux Wood)", "铝合金百叶帘"],
+  "蜂巢帘/日夜帘 (Honeycomb)": ["无拉绳上开下合蜂巢帘 (TDBU)", "全遮光蜂巢帘 (Blackout)", "日夜双帘合一 (Day & Night)"],
   "户外防风帘 (Windproof)": ["户外电动防风卷帘 (6-8周交期)", "重型拉链防风轨"],
 };
+
+const CATEGORY_SPECS: Record<
+  string,
+  {
+    controlLabel: string;
+    controls: string[];
+    motorLabel: string;
+    motors: string[];
+    styleLabel: string;
+    styles: string[];
+  }
+> = {
+  "双层布帘+纱 (Double Layer)": {
+    controlLabel: "布纱开合与收拢方向",
+    controls: ["对开 (Center Split / 双开)", "单开 · 往左收拢 (Stack Left)", "单开 · 往右收拢 (Stack Right)", "白纱整墙开合 + 两侧装饰布帘", "多段独立分控 (Multi-Segment)"],
+    motorLabel: "操控方式 · 轨道/罗马杆 · 电机位置",
+    motors: ["手动手拨 · 黑色双轨/窗帘杆 (Black Rod)", "手动手拨 · 金色窗帘杆 (Gold Rod)", "手拉导轨拉棒 (Baton · 双棒/左棒/右棒)", "拉绳开合轨 (Cord Traverse · 左拉/右拉)", "NOVO 插电电机 · 左置电源 (Motor Left)", "NOVO 插电电机 · 右置电源 (Motor Right)", "NOVO 锂电池电机 · 左置/右置", "配卷帘边盖同色杆"],
+    styleLabel: "褶皱款式与衬布工艺",
+    styles: ["双韩褶 (2-Prong) + 遮光衬", "双韩褶 + 透光衬", "双韩褶 + 不加衬(Unlined)", "三韩褶 (3-Prong) + 遮光衬", "S波浪帘 (Ripple Fold)", "打孔款 (Grommet)"],
+  },
+  "布艺窗帘 (Drapery)": {
+    controlLabel: "布帘开合与收拢方向",
+    controls: ["对开 (Center Split / 双开)", "单开 · 往左收拢 (Stack Left)", "单开 · 往右收拢 (Stack Right)", "固定装饰假帘 · 不开合 (Stationary)", "多段独立分控 (Multi-Segment)"],
+    motorLabel: "操控方式 · 轨道/罗马杆 · 电机位置",
+    motors: ["手动手拨 · 黑色轨道/窗帘杆 (Black Rod)", "手动手拨 · 金色窗帘杆 (Gold Rod)", "手拉导轨拉棒 (Baton · 左棒/右棒)", "拉绳开合轨 (左拉/右拉)", "NOVO 插电电机 · 左置电源 (Motor Left)", "NOVO 插电电机 · 右置电源 (Motor Right)", "NOVO 锂电池电机 · 左置/右置"],
+    styleLabel: "褶皱款式与衬布工艺",
+    styles: ["双韩褶 (2-Prong) + 遮光衬", "双韩褶 + 透光衬", "双韩褶 + 不加衬(Unlined)", "三韩褶 (3-Prong)", "S波浪帘 (Ripple Fold)", "打孔款 (Grommet)"],
+  },
+  "白纱透光帘 (White Sheer)": {
+    controlLabel: "纱帘开合与收拢方向",
+    controls: ["对开 (Center Split / 双开)", "单开 · 往左收拢 (Stack Left)", "单开 · 往右收拢 (Stack Right)", "两侧固定装饰纱 (30\" Stationary)"],
+    motorLabel: "操控方式 · 轨道/窗帘杆 · 电机位置",
+    motors: ["手动手拨 · 静音白轨/黑杆", "手拉导轨拉棒 (Baton Draw)", "NOVO 插电电机 · 左置电源", "NOVO 插电电机 · 右置电源", "NOVO 锂电池电机"],
+    styleLabel: "褶皱款式与铅坠下摆",
+    styles: ["双韩褶 (2-Prong) + 垂感铅线", "S波浪纱帘 (Ripple Fold)", "三韩褶 (3-Prong)"],
+  },
+  "卷帘 (Roller Shade)": {
+    controlLabel: "升降操控方式与左右控位置",
+    controls: ["无拉绳弹簧 (Cordless Free-Stop)", "左控金属拉珠 (Left Metal Chain)", "右控金属拉珠 (Right Metal Chain)", "左控塑胶拉珠 (Left Plastic Chain)", "右控塑胶拉珠 (Right Plastic Chain)", "电动 · 锂电池电机 (左充电口)", "电动 · 锂电池电机 (右充电口)", "电动 · 插电电机 (左出线)", "电动 · 插电电机 (右出线)", "一轨多帘分控 (左帘左控+右帘右控)"],
+    motorLabel: "出布方向与上罩壳 (Roll & Valance)",
+    motors: ["正卷 (Standard Roll · 贴窗) + 方形罩壳", "反卷 (Reverse Roll · 避把手) + 方形罩壳", "正卷 + 圆弧包布罩壳 (Curved Cassette)", "无罩壳裸装 (Open Roll) · 正卷", "无罩壳裸装 (Open Roll) · 反卷"],
+    styleLabel: "下梁款式与遮光侧轨挡光条",
+    styles: ["标配包布下梁", "铝合金外露下梁 (黑/白/灰)", "加 L型侧轨挡光条 ($6.5/yd)", "加 U型全遮光卡槽导轨 + 底槽"],
+  },
+  "斑马帘 (Zebra Shade)": {
+    controlLabel: "升降调光操控与左右位置",
+    controls: ["无拉绳弹簧 (Cordless · 标配推荐)", "左控金属拉珠 (Left Metal Chain)", "右控金属拉珠 (Right Metal Chain)", "左控塑胶拉珠 (Left Plastic Chain)", "右控塑胶拉珠 (Right Plastic Chain)", "电动 · 锂电池电机 (左充电口)", "电动 · 锂电池电机 (右充电口)", "电动 · 插电电机 (左出线/右出线)", "一轨双帘并排 (左帘左控+右帘右控)"],
+    motorLabel: "上罩壳款式与颜色",
+    motors: ["方形同色包布罩壳 (Square Fabric Valance)", "圆弧铝合金罩壳 (白/黑/香槟/灰)", "加宽遮光上罩壳"],
+    styleLabel: "底梁与并排对花要求",
+    styles: ["水滴形同色底梁", "多幅并排需水平对花对齐 (Align Stripes)", "加 L型侧边挡光条"],
+  },
+  "罗马帘 (Roman Shade)": {
+    controlLabel: "升降操控方式与左右位置",
+    controls: ["无拉绳升降 (Cordless Lift · 标配)", "左控循环拉珠 (Left Cord Loop)", "右控循环拉珠 (Right Cord Loop)", "上开下合无绳 (Top-Down Bottom-Up)", "电动管状电机 · 左控", "电动管状电机 · 右控"],
+    motorLabel: "折叠款式与安装结构",
+    motors: ["标准平折款 (Flat Fold)", "贴墙款超薄罗马帘 ($10/inch起)", "水波折/刀折款 (Soft/Hobbled Fold)", "一轨双帘并排 (2-on-1 Headrail)"],
+    styleLabel: "衬布与装饰包边",
+    styles: ["加全遮光衬 (Blackout Liner)", "加薄透光衬 (Light-Filtering Liner)", "无衬 (Unlined)", "四周定制色带包边 (Edge Banding)"],
+  },
+  "竹帘/编织木帘 (Woven Wood)": {
+    controlLabel: "升降操控方式与左右位置",
+    controls: ["无拉绳升降 (Cordless Lift · 标配)", "左控循环拉珠 (Left Cord Loop)", "右控循环拉珠 (Right Cord Loop)", "上开下合无绳 (Top-Down Bottom-Up)", "电动管状电机 · 左控", "电动管状电机 · 右控"],
+    motorLabel: "款式与帘头高度 (注:仅做平折款)",
+    motors: ["标准平折款 (Flat Fold) + 6\"一体帘头", "平折款 + 贴墙窄帘头", "一轨多帘并排 (2-on-1 / 3-on-1 Headrail)"],
+    styleLabel: "衬布与包边选配",
+    styles: ["加薄透光衬 (Privacy Liner · 含在$10/sq.ft内)", "加全遮光衬 (Blackout Liner +10%)", "无衬原生态透景 (Unlined)", "四周宽布包边 (Edge Binding)"],
+  },
+  "百叶窗 (Shutters)": {
+    controlLabel: "叶片调光拉杆方式 (Tilt Rod)",
+    controls: ["隐形拉杆 / 后置连杆 (Hidden Tilt · 最畅销)", "中置明装拉杆 (Center Front Tilt Rod)", "偏置明装拉杆 (Offset Tilt Rod)"],
+    motorLabel: "开门扇数与左右分格 (Panel Layout)",
+    motors: ["双扇对开 (LR)", "单扇左开 (L)", "单扇右开 (R)", "四扇对折对开 (LLRR)", "三扇左二右一 (LLR)", "三扇左一右二 (LRR)", "上下双段独立开合 (Double Hung)"],
+    styleLabel: "叶片宽度 · 外框型号 · 中横梁位置",
+    styles: ["3.5\" 叶片 + L框 (L-Frame)", "3.5\" 叶片 + Z框 (Z-Frame)", "4.5\" 宽叶片 + Z框", "加中横梁上下分控 (Divider Rail)", "三面框落地不带底框 (3-Sided Frame)"],
+  },
+  "百叶帘 (Blinds)": {
+    controlLabel: "升降与调光棒位置 (Lift & Tilt)",
+    controls: ["无拉绳升降 + 左转棒调光 (Cordless + Left Wand)", "无拉绳升降 + 右转棒调光 (Cordless + Right Wand)", "左转棒调光 + 右拉绳升降", "右转棒调光 + 左拉绳升降", "电动百叶调光升降"],
+    motorLabel: "叶片规格与梯带款式",
+    motors: ["2\" 仿木叶片 + 标准细梯绳 (Cord Ladder)", "2\" 仿木叶片 + 宽布梯带 (Cloth Tape)", "1\" 铝合金叶片"],
+    styleLabel: "上罩壳回折要求 (Valance Returns)",
+    styles: ["框外带两侧回折罩壳 (With Returns)", "框内平齐无侧回折罩壳 (Flush Valance)"],
+  },
+  "蜂巢帘/日夜帘 (Honeycomb)": {
+    controlLabel: "开合操控方式",
+    controls: ["无拉绳单开 · 下拉上收 (Cordless Standard)", "无拉绳上开下合 (Cordless TDBU · 上采光下遮挡)", "日夜双帘合一 (Day Sheer + Night Blackout)", "左控循环拉绳 (Left Cord Loop)", "右控循环拉绳 (Right Cord Loop)", "电动蜂巢帘"],
+    motorLabel: "蜂巢孔径与轨道颜色",
+    motors: ["3/4\" 单孔蜂巢 (Single Cell)", "1/2\" 双孔蜂巢 (Double Cell)", "白色上下铝合金轨"],
+    styleLabel: "透光度与侧轨选项",
+    styles: ["半透光柔光 (Light Filtering)", "全遮光铝箔内胆 (Blackout)", "加全遮光侧导轨"],
+  },
+  "户外防风帘 (Windproof)": {
+    controlLabel: "驱动与电源出线位置",
+    controls: ["遥控电动插电 · 左上出线 (Motor Left)", "遥控电动插电 · 右上出线 (Motor Right)", "太阳能板+锂电池电机", "重型手摇曲柄 · 左摇杆 (Manual Crank Left)", "重型手摇曲柄 · 右摇杆 (Manual Crank Right)"],
+    motorLabel: "防风边轨与罩壳规格",
+    motors: ["重型拉链防风边轨 (Zipper Track) + 加厚方罩壳", "不锈钢钢丝导向防风轨"],
+    styleLabel: "五金框体颜色与开孔率",
+    styles: ["深空灰框 + 5% 开孔防晒网", "砂纹黑框 + 1% 防窥防风网", "白色框 + 5% 开孔网"],
+  },
+};
+
+const QUICK_REMARKS = [
+  "窗户有摇把/把手，需加厚支架或反卷避开",
+  "电机插座在左上角",
+  "电机插座在右上角",
+  "窗框不方正，内装请严格按最小宽扣减",
+  "挑高窗需准备高梯作业",
+  "现场需拆旧窗帘 (Take down old blinds)",
+  "多段并排窗，两帘中间缝隙尽量做小",
+  "瓷砖/石膏线墙面，带专用膨胀螺丝",
+  "中横梁(Divider)高度距窗底: __\"",
+];
 
 const FRACTIONS = ["1/8", "1/4", "3/8", "1/2", "5/8", "3/4", "7/8", "1/16", "3/16", "5/16", "7/16", "9/16", "11/16", "13/16", "15/16"];
 
@@ -446,10 +562,12 @@ export function PhotoVoiceMeasureApp({
   const [productCategory, setProductCategory] = useState("双层布帘+纱 (Double Layer)");
   const [productModel, setProductModel] = useState("Group B 布帘 + White Sheer 白纱");
   const [mountType, setMountType] = useState<PhotoMeasureRecord["mountType"]>("口外安装 (OM)");
-  const [openOrControl, setOpenOrControl] = useState("对开 (Center Split)");
-  const [motorOrTrack, setMotorOrTrack] = useState("手动 · 黑色轨道/窗帘杆");
-  const [linerOrStyle, setLinerOrStyle] = useState("双韩褶 + 遮光衬");
+  const [openOrControl, setOpenOrControl] = useState("对开 (Center Split / 双开)");
+  const [motorOrTrack, setMotorOrTrack] = useState("手动手拨 · 黑色双轨/窗帘杆 (Black Rod)");
+  const [linerOrStyle, setLinerOrStyle] = useState("双韩褶 (2-Prong) + 遮光衬");
+  const [remark, setRemark] = useState("");
   const [addTenInchRule, setAddTenInchRule] = useState(false);
+  const currentSpec = CATEGORY_SPECS[productCategory] || CATEGORY_SPECS["双层布帘+纱 (Double Layer)"];
 
   // 3. 照片与画布标注状态
   const [rawPhoto, setRawPhoto] = useState<string>("");
@@ -570,18 +688,28 @@ export function PhotoVoiceMeasureApp({
     ctx.clearRect(0, 0, targetW, targetH);
     ctx.drawImage(img, 0, 0, targetW, targetH);
 
-    // 2. 绘制顶部半透明工程水印信息栏（方便保存图片发给客户或工厂时一眼看清窗位与型号）
-    ctx.fillStyle = "rgba(15, 23, 42, 0.78)";
-    ctx.fillRect(0, 0, targetW, 68);
+    // 2. 绘制顶部半透明工程水印信息栏（方便保存图片发给客户或工厂时一眼看清窗位与型号、操控方式和现场备注）
+    const bannerH = remark.trim() ? 116 : 90;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+    ctx.fillRect(0, 0, targetW, bannerH);
     ctx.fillStyle = "#facc15";
-    ctx.font = "bold 24px sans-serif";
-    const headerTitle = `${windowCode} · ${windowLocation}  |  客户: ${customer || "未填客户"}`;
-    ctx.fillText(headerTitle, 20, 30);
+    ctx.font = "bold 22px sans-serif";
+    const headerTitle = `${windowCode} · ${windowLocation}  |  客户: ${customer || "未填客户"}  |  ${productCategory} (${productModel || "待选"})`;
+    ctx.fillText(headerTitle, 18, 28);
 
     ctx.fillStyle = "#f8fafc";
-    ctx.font = "19px sans-serif";
-    const subTitle = `型号: ${productCategory} (${productModel || "待选"}) · ${mountType} · ${openOrControl}  |  尺寸: W ${widthRaw || "—"}" × H ${heightRaw || "—"}"`;
-    ctx.fillText(subTitle, 20, 56);
+    ctx.font = "bold 17px sans-serif";
+    ctx.fillText(`↔ 宽 W: ${widthRaw || "待测"}    ↕ 高 H: ${heightRaw || "待测"}`, 18, 55);
+
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`⚙️ 操控与配置: ${mountType} · ${openOrControl} · ${motorOrTrack} · ${linerOrStyle}`, 18, 80);
+
+    if (remark.trim()) {
+      ctx.fillStyle = "#fde047";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(`📝 现场备注: ${remark.trim()}`, 18, 105);
+    }
 
     // 3. 绘制所有手写涂鸦笔迹 (Freehand Strokes)
     const drawStroke = (pts: Array<{ x: number; y: number }>, color: string, width: number) => {
@@ -1180,6 +1308,7 @@ export function PhotoVoiceMeasureApp({
       openOrControl,
       motorOrTrack,
       linerOrStyle,
+      remark: remark.trim(),
       voiceTranscript: voiceTranscript.trim(),
       audioDataUrl,
       rawPhotoDataUrl: rawPhoto,
@@ -1207,6 +1336,7 @@ export function PhotoVoiceMeasureApp({
       setStrokes([]);
       setPins([]);
       setVoiceTranscript("");
+      setRemark("");
       setAudioDataUrl(undefined);
       setRawPhoto(createBlankWindowTemplateDataUrl(nextCode, windowLocation));
       showMsg(`✓ 已保存 ${record.windowCode}（${record.windowLocation}）！已自动切换到 ${nextCode}，可直接拍下一扇窗`);
@@ -2186,9 +2316,9 @@ export function PhotoVoiceMeasureApp({
             </div>
           </section>
 
-          {/* 模块 C：客户选择产品与型号录入 */}
+            {/* 模块 C：客户选择产品与型号录入（按窗帘品类自动切换专属操控方式 + 现场备注） */}
           <section className="panel" style={{ padding: 16 }}>
-            <h2 style={{ margin: "0 0 10px", fontSize: 17 }}>⑤ 客户选择产品型号与工艺要求</h2>
+            <h2 style={{ margin: "0 0 10px", fontSize: 17 }}>⑤ 客户选择产品型号 · 专属操控方式 · 现场备注</h2>
 
             {/* 产品大类芯片 */}
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
@@ -2200,7 +2330,12 @@ export function PhotoVoiceMeasureApp({
                     setProductCategory(cat);
                     const models = QUICK_MODELS[cat];
                     if (models?.length) setProductModel(models[0]);
-                    if (cat.includes("编织木")) setLinerOrStyle("标准平折款 (Flat Fold) + 薄透光衬");
+                    const spec = CATEGORY_SPECS[cat];
+                    if (spec) {
+                      if (spec.controls[0]) setOpenOrControl(spec.controls[0]);
+                      if (spec.motors[0]) setMotorOrTrack(spec.motors[0]);
+                      if (spec.styles[0]) setLinerOrStyle(spec.styles[0]);
+                    }
                   }}
                   style={{
                     padding: "7px 11px",
@@ -2267,47 +2402,119 @@ export function PhotoVoiceMeasureApp({
               </label>
 
               <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 700 }}>
-                开合 / 控制方向
+                {currentSpec.controlLabel}
                 <select
                   value={openOrControl}
                   onChange={(e) => setOpenOrControl(e.target.value)}
                   style={{ padding: "9px 10px", borderRadius: 9, border: "1px solid #cbd5cf", fontSize: 14 }}
                 >
-                  <option>对开 (Center Split)</option>
-                  <option>单开 (One-way Draw)</option>
-                  <option>无拉绳 (Cordless)</option>
-                  <option>左控 (Left Control)</option>
-                  <option>右控 (Right Control)</option>
-                  <option>分项报价对比 (Itemized)</option>
+                  {currentSpec.controls.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
                 </select>
               </label>
 
               <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 700 }}>
-                轨道 / 窗帘杆 / 电机选型
+                {currentSpec.motorLabel}
                 <select
                   value={motorOrTrack}
                   onChange={(e) => setMotorOrTrack(e.target.value)}
                   style={{ padding: "9px 10px", borderRadius: 9, border: "1px solid #cbd5cf", fontSize: 14 }}
                 >
-                  <option>手动 · 黑色轨道/窗帘杆 (Black Rod)</option>
-                  <option>手动 · 金色窗帘杆 (Gold Rod)</option>
-                  <option>手动 · 配卷帘边盖同色杆</option>
-                  <option>手动 · 隐形静音轨</option>
-                  <option>NOVO Q1-3E-1.3 高扭矩插电电机 (推荐)</option>
-                  <option>NOVO Q1-4E-1.2 锂电池电机 (2200mAh)</option>
-                  <option>奥科电动卷帘电机 + 15通道遥控</option>
+                  {currentSpec.motors.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
                 </select>
               </label>
 
               <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 700 }}>
-                褶皱款式 / 衬布 / 附加配件
+                {currentSpec.styleLabel}
                 <input
                   value={linerOrStyle}
                   onChange={(e) => setLinerOrStyle(e.target.value)}
-                  placeholder="如：双韩褶 + 遮光衬 / 平折款 / 侧轨挡光条"
+                  placeholder="可点下方快捷项或自由输入"
                   style={{ padding: "9px 10px", borderRadius: 9, border: "1px solid #cbd5cf", fontSize: 14 }}
                 />
               </label>
+
+              <div style={{ gridColumn: "1 / -1", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <small style={{ color: "#64748b", fontWeight: 700 }}>{currentSpec.styleLabel}快选：</small>
+                {currentSpec.styles.map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setLinerOrStyle(st)}
+                    style={{
+                      padding: "4px 9px",
+                      borderRadius: 6,
+                      border: "1px solid #cbd5cf",
+                      background: linerOrStyle === st ? "#e6f4ed" : "#f8faf9",
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+
+              {/* 专属现场测量 / 加工 / 安装备注栏 */}
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  marginTop: 4,
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  background: "#fffdf5",
+                  border: "1px solid #e5c168",
+                  display: "grid",
+                  gap: 6,
+                }}
+              >
+                <label style={{ display: "grid", gap: 4, fontSize: 13, fontWeight: 800, color: "#78350f" }}>
+                  📝 现场测量 / 加工 / 安装备注 (Remarks — 自动印在测量图与订单上)
+                  <textarea
+                    rows={2}
+                    value={remark}
+                    onChange={(e) => setRemark(e.target.value)}
+                    placeholder="输入现场特殊要求：如窗户有摇把需加厚支架、电机插座在左上角、需拆旧帘、中横梁高度距离底部36&quot;等..."
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid #d97706",
+                      fontSize: 14,
+                      background: "#fff",
+                    }}
+                  />
+                </label>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
+                  <small style={{ color: "#92400e", fontWeight: 700 }}>快捷备注点选 (可叠加)：</small>
+                  {QUICK_REMARKS.map((rem) => (
+                    <button
+                      key={rem}
+                      type="button"
+                      onClick={() => setRemark((prev) => (prev.trim() ? `${prev.trim()}；${rem}` : rem))}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        border: "1px solid #f59e0b",
+                        background: "#fff",
+                        color: "#78350f",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + {rem}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* 保存按钮组 */}
@@ -2438,9 +2645,15 @@ export function PhotoVoiceMeasureApp({
                   {r.productCategory} · <strong>{r.productModel}</strong>
                 </div>
                 <div style={{ fontSize: 12, color: "#475569" }}>
-                  <b>安装与工艺：</b>
+                  <b>操控与工艺：</b>
                   {r.mountType} · {r.openOrControl} · {r.motorOrTrack} · {r.linerOrStyle}
                 </div>
+
+                {r.remark && (
+                  <div style={{ fontSize: 12, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", padding: "6px 8px", borderRadius: 6, fontWeight: 700 }}>
+                    📝 现场备注：{r.remark}
+                  </div>
+                )}
 
                 {r.voiceTranscript && (
                   <div style={{ fontSize: 12, color: "#153f34", background: "#f0fdf4", padding: "6px 8px", borderRadius: 6 }}>
