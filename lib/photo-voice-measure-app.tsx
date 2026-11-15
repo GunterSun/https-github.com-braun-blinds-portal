@@ -39,6 +39,11 @@ export type TextPin = {
   color: string;
 };
 
+export type MeasureSegment = {
+  tag: string; // 如 "W1", "W2(中段)", "W1(上宽)", "H1(窗框高)"
+  val: string; // 如 "35 1/2"
+};
+
 export type PhotoMeasureRecord = {
   id: string;
   customer: string;
@@ -46,8 +51,10 @@ export type PhotoMeasureRecord = {
   address: string;
   windowCode: string; // 如 W1, W2
   windowLocation: string; // 如 客厅主窗 / 主卧 / 挑高大窗
-  widthRaw: string; // 如 152 1/2
-  heightRaw: string; // 如 177
+  widthRaw: string; // 汇总或单段宽，如 "W1:28\" | W2:56\" | W3:28\" (总宽 Σ:112\")"
+  heightRaw: string; // 汇总或单段高
+  widthSegments?: MeasureSegment[];
+  heightSegments?: MeasureSegment[];
   depthRaw: string; // 如 3 1/2
   finishedWidthNote: string; // 加工宽度建议（如推拉门+10"）
   finishedHeightNote: string; // 加工高度建议（如扣80mm轨道+离地）
@@ -197,12 +204,47 @@ function createBlankWindowTemplateDataUrl(windowCode: string, location: string):
   return canvas.toDataURL("image/jpeg", 0.9);
 }
 
+function parseInchValue(str: string): number {
+  if (!str) return 0;
+  const s = String(str).trim();
+  const mix = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (mix) return Number(mix[1]) + Number(mix[2]) / Number(mix[3]);
+  const frac = s.match(/^(\d+)\/(\d+)$/);
+  if (frac) return Number(frac[1]) / Number(frac[2]);
+  const num = parseFloat(s);
+  return isNaN(num) ? 0 : num;
+}
+
+function formatInchValue(n: number): string {
+  if (!n || isNaN(n)) return "0";
+  const whole = Math.floor(n + 1e-6);
+  const rem = n - whole;
+  const sixteenths = Math.round(rem * 16);
+  if (sixteenths === 0) return String(whole);
+  if (sixteenths === 16) return String(whole + 1);
+  let num = sixteenths;
+  let den = 16;
+  while (num % 2 === 0 && den % 2 === 0) {
+    num /= 2;
+    den /= 2;
+  }
+  return whole > 0 ? `${whole} ${num}/${den}` : `${num}/${den}`;
+}
+
+function extractInchListFromText(segmentStr: string): string[] {
+  if (!segmentStr) return [];
+  const matches = segmentStr.match(/\d+(?:\s+\d+\/\d+|\.\d+|\s*\/\s*\d+)?/g);
+  return matches ? matches.map((m) => m.trim()).filter(Boolean) : [];
+}
+
 /**
- * 解析中文/英文语音转写文本中的宽高尺寸、窗位、产品型号、安装方式
+ * 解析中文/英文语音转写文本中的宽高尺寸（支持多段/多数据）、窗位、产品型号、安装方式
  */
 function parseVoiceMeasureText(text: string): {
   width?: string;
   height?: string;
+  widthSegments?: MeasureSegment[];
+  heightSegments?: MeasureSegment[];
   depth?: string;
   location?: string;
   category?: string;
@@ -219,18 +261,60 @@ function parseVoiceMeasureText(text: string): {
     .replace(/又四分之(\d+)/g, " $1/4")
     .replace(/又二分之一|半/g, " 1/2");
 
-  // 识别宽与高
-  const wMatch = normalized.match(/(?:宽|width|w)\s*[:：是]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
-  const hMatch = normalized.match(/(?:高|height|h)\s*[:：是]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+  // 1. 优先识别显式命名的多点宽/高（上宽/中宽/下宽、左宽/右宽、W1/W2/W3、左高/中高/右高、窗高/杆高、H1/H2/H3）
+  const namedW: MeasureSegment[] = [];
+  const namedH: MeasureSegment[] = [];
+  const wNamedRegex = /(上宽|中宽|下宽|左宽|右宽|W\d+)\s*[:：是=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/gi;
+  const hNamedRegex = /(左高|中高|右高|上高|下高|窗高|杆高|墙高|H\d+)\s*[:：是=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = wNamedRegex.exec(normalized)) !== null) {
+    namedW.push({ tag: m[1].toUpperCase(), val: m[2].trim() });
+  }
+  while ((m = hNamedRegex.exec(normalized)) !== null) {
+    namedH.push({ tag: m[1].toUpperCase(), val: m[2].trim() });
+  }
+
+  if (namedW.length > 0) {
+    result.widthSegments = namedW;
+    result.width = namedW[0].val;
+  } else {
+    const wBlock = normalized.match(
+      /(?:宽|width|w)(?:度|三段|两段|四段)?\s*[:：是]?\s*([\d\s./+、,，-]+?)(?=\s*(?:高|height|h|深|depth|双层|布帘|白纱|卷帘|斑马|罗马|竹帘|编织|百叶|口内|口外|内装|外装|$))/i
+    );
+    if (wBlock) {
+      const list = extractInchListFromText(wBlock[1]);
+      if (list.length > 0) {
+        result.widthSegments = list.map((v, i) => ({ tag: `W${i + 1}`, val: v }));
+        result.width = list[0];
+      }
+    }
+  }
+
+  if (namedH.length > 0) {
+    result.heightSegments = namedH;
+    result.height = namedH[0].val;
+  } else {
+    const hBlock = normalized.match(
+      /(?:高|height|h)(?:度|三段|两段|四段)?\s*[:：是]?\s*([\d\s./+、,，-]+?)(?=\s*(?:深|depth|双层|布帘|白纱|卷帘|斑马|罗马|竹帘|编织|百叶|口内|口外|内装|外装|对开|单开|$))/i
+    );
+    if (hBlock) {
+      const list = extractInchListFromText(hBlock[1]);
+      if (list.length > 0) {
+        result.heightSegments = list.map((v, i) => ({ tag: `H${i + 1}`, val: v }));
+        result.height = list[0];
+      }
+    }
+  }
+
   const dMatch = normalized.match(/(?:深|depth|d)\s*[:：是]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
   const byMatch = normalized.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)\s*(?:×|x|by|乘)\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
 
-  if (wMatch) result.width = wMatch[1].trim();
-  if (hMatch) result.height = hMatch[1].trim();
   if (dMatch) result.depth = dMatch[1].trim();
-  if (!result.width && !result.height && byMatch) {
+  if (!result.widthSegments && !result.heightSegments && byMatch) {
     result.width = byMatch[1].trim();
     result.height = byMatch[2].trim();
+    result.widthSegments = [{ tag: "W1", val: byMatch[1].trim() }];
+    result.heightSegments = [{ tag: "H1", val: byMatch[2].trim() }];
   }
 
   // 识别窗位
@@ -317,11 +401,47 @@ export function PhotoVoiceMeasureApp({
   const [windowCode, setWindowCode] = useState("W1");
   const [windowLocation, setWindowLocation] = useState("客厅主窗 (Living Room)");
 
-  // 2. 尺寸与产品型号状态
-  const [widthRaw, setWidthRaw] = useState("");
-  const [heightRaw, setHeightRaw] = useState("");
+  // 2. 尺寸与产品型号状态（支持宽/高多段多数据）
+  const [widthSegments, setWidthSegments] = useState<MeasureSegment[]>([{ tag: "W1", val: "" }]);
+  const [heightSegments, setHeightSegments] = useState<MeasureSegment[]>([{ tag: "H1", val: "" }]);
   const [depthRaw, setDepthRaw] = useState("");
   const [activeDimField, setActiveDimField] = useState<"width" | "height" | "depth">("width");
+  const [activeSegIndex, setActiveSegIndex] = useState(0);
+
+  // 计算多段宽与多段高的汇总统计
+  const widthStats = (() => {
+    const filled = widthSegments.filter((s) => s.val && s.val.trim());
+    const nums = filled.map((s) => parseInchValue(s.val)).filter((n) => n > 0);
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const min = nums.length ? Math.min(...nums) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+    const is3Pt = filled.some((s) => /上|中宽|下/.test(s.tag));
+    const summaryText = !filled.length
+      ? ""
+      : filled.length === 1
+      ? filled[0].val.trim()
+      : `${filled.map((s) => `${s.tag}:${s.val.trim()}"`).join(" | ")} ${
+          is3Pt ? `(最小宽 Min:${formatInchValue(min)}")` : `(总宽 Σ:${formatInchValue(sum)}" / Min:${formatInchValue(min)}")`
+        }`;
+    return { filled, nums, sum, min, max, is3Pt, summaryText };
+  })();
+
+  const heightStats = (() => {
+    const filled = heightSegments.filter((s) => s.val && s.val.trim());
+    const nums = filled.map((s) => parseInchValue(s.val)).filter((n) => n > 0);
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const min = nums.length ? Math.min(...nums) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+    const summaryText = !filled.length
+      ? ""
+      : filled.length === 1
+      ? filled[0].val.trim()
+      : `${filled.map((s) => `${s.tag}:${s.val.trim()}"`).join(" | ")} (Max:${formatInchValue(max)}" / Min:${formatInchValue(min)}")`;
+    return { filled, nums, sum, min, max, summaryText };
+  })();
+
+  const widthRaw = widthStats.summaryText;
+  const heightRaw = heightStats.summaryText;
 
   const [productCategory, setProductCategory] = useState("双层布帘+纱 (Double Layer)");
   const [productModel, setProductModel] = useState("Group B 布帘 + White Sheer 白纱");
@@ -384,39 +504,47 @@ export function PhotoVoiceMeasureApp({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lines, strokes, pins, draftLine, draftStroke, customer, windowCode, windowLocation, productCategory, productModel, widthRaw, heightRaw]);
 
-  // 智能计算成品宽高建议（遵循博朗知识库规则）
+  // 智能计算成品宽高建议（遵循博朗知识库规则，支持多段宽与三点测宽）
   const finishedWidthNote = (() => {
-    const wNum = parseFloat(widthRaw);
-    if (!wNum) return "待输入实测宽";
+    const refW = widthStats.is3Pt ? widthStats.min : widthStats.sum;
+    if (!refW) return "待输入实测宽";
     if (addTenInchRule) {
-      return `实测 ${widthRaw}" + 外延 10" = 建议成品宽 ${wNum + 10}"`;
+      return `实测宽 ${widthRaw} + 外延 10" = 建议成品总宽 ${formatInchValue(refW + 10)}"`;
     }
     if (mountType === "口内安装 (IM)" && (productCategory.includes("卷帘") || productCategory.includes("斑马帘"))) {
-      return `内装建议扣减 1/8" ~ 1/4"（实测 ${widthRaw}"）`;
+      return `内装建议取最小宽 ${formatInchValue(widthStats.min)}" 再扣减 1/8" ~ 1/4"`;
     }
-    return `按实测宽 ${widthRaw}" 制作`;
+    return `按实测宽 ${widthRaw} 制作`;
   })();
 
   const finishedHeightNote = (() => {
-    const hNum = parseFloat(heightRaw);
-    if (!hNum) return "待输入实测高";
+    const refH = heightStats.max;
+    if (!refH) return "待输入实测高";
     if (productCategory.includes("布帘") || productCategory.includes("纱")) {
-      const deducted = Math.max(0, +(hNum - 3.15 - 1).toFixed(2));
-      return `实测 ${heightRaw}" - 轨道80mm(3.15") - 离地1" ≈ 成品布高 ${deducted}"`;
+      const deducted = Math.max(0, +(refH - 3.15 - 1).toFixed(2));
+      return `实测高 ${heightRaw} - 轨道80mm(3.15") - 离地1" ≈ 成品布高 ${deducted}"`;
     }
-    return `按实测高 ${heightRaw}" 制作`;
+    return `按实测高 ${heightRaw} 制作`;
   })();
 
-  // 竹帘/编织木帘自动批发价预估（$10/sq.ft，最低 10.76 sq.ft）
+  // 竹帘/编织木帘自动批发价预估（$10/sq.ft，每幅最低 10.76 sq.ft）
   const wovenWoodEstimate = (() => {
     if (!productCategory.includes("编织木")) return null;
-    const wNum = parseFloat(widthRaw) || 0;
-    const hNum = parseFloat(heightRaw) || 0;
-    if (!wNum || !hNum) return "编织木帘批发价：$10/sq.ft（每窗最低按 10.76 sq.ft 计费，遮光衬 +10%）";
-    const sqft = Math.max(10.76, (wNum * hNum) / 144);
+    const refW = widthStats.is3Pt ? widthStats.min : widthStats.sum;
+    const refH = heightStats.max;
+    if (!refW || !refH) return "编织木帘批发价：$10/sq.ft（每幅最低按 10.76 sq.ft 计费，遮光衬 +10%）";
+    let totalSqft = 0;
+    if (widthStats.nums.length > 1 && !widthStats.is3Pt) {
+      widthStats.nums.forEach((wn, idx) => {
+        const hn = heightStats.nums[idx] || heightStats.nums[0] || refH;
+        totalSqft += Math.max(10.76, (wn * hn) / 144);
+      });
+    } else {
+      totalSqft = Math.max(10.76, (refW * refH) / 144);
+    }
     const hasBlackout = linerOrStyle.includes("遮光");
-    const price = sqft * 10 * (hasBlackout ? 1.1 : 1);
-    return `计费面积 ${sqft.toFixed(2)} sq.ft × $10${hasBlackout ? " (+10%遮光衬)" : ""} = 预估批发价 $${price.toFixed(2)}（注：仅做平折款 Flat Fold）`;
+    const price = totalSqft * 10 * (hasBlackout ? 1.1 : 1);
+    return `计费总面积 ${totalSqft.toFixed(2)} sq.ft × $10${hasBlackout ? " (+10%遮光衬)" : ""} = 预估批发价 $${price.toFixed(2)}（注：仅做平折款 Flat Fold）`;
   })();
 
   // ==========================================
@@ -671,13 +799,22 @@ export function PhotoVoiceMeasureApp({
       const dist = Math.hypot(draftLine.x2 - draftLine.x1, draftLine.y2 - draftLine.y1);
       if (dist > 0.04) {
         const isHorizontal = Math.abs(draftLine.x2 - draftLine.x1) >= Math.abs(draftLine.y2 - draftLine.y1);
-        const defaultVal = isHorizontal
-          ? widthRaw
-            ? `W: ${widthRaw}"`
-            : "W: "
-          : heightRaw
-          ? `H: ${heightRaw}"`
-          : "H: ";
+        const existingHorizCount = lines.filter(
+          (l) => Math.abs(l.x2 - l.x1) >= Math.abs(l.y2 - l.y1) && !l.id.includes("SUM")
+        ).length;
+        const existingVertCount = lines.filter((l) => Math.abs(l.x2 - l.x1) < Math.abs(l.y2 - l.y1)).length;
+
+        let defaultVal = "";
+        if (isHorizontal) {
+          const seg = widthSegments[existingHorizCount];
+          const tag = seg ? seg.tag : `W${existingHorizCount + 1}`;
+          defaultVal = seg && seg.val ? `${tag}: ${seg.val}"` : `${tag}: `;
+        } else {
+          const seg = heightSegments[existingVertCount];
+          const tag = seg ? seg.tag : `H${existingVertCount + 1}`;
+          defaultVal = seg && seg.val ? `${tag}: ${seg.val}"` : `${tag}: `;
+        }
+
         const newId = `LINE-${Date.now()}`;
         const newLine: DimensionLine = {
           id: newId,
@@ -686,7 +823,7 @@ export function PhotoVoiceMeasureApp({
           x2: draftLine.x2,
           y2: draftLine.y2,
           label: defaultVal,
-          color: penColor,
+          color: isHorizontal ? "#facc15" : "#22c55e",
         };
         setLines((prev) => [...prev, newLine]);
         setEditingLineId(newId);
@@ -707,50 +844,151 @@ export function PhotoVoiceMeasureApp({
     }
   };
 
-  // 保存正在编辑的画线尺寸，并自动同步到下方宽高输入框
+  // 保存正在编辑的画线尺寸，并自动同步到下方多段宽/高输入框
   const confirmLineLabel = () => {
     if (!editingLineId) return;
     const trimmed = editingLineText.trim() || "未标注";
     setLines((prev) => prev.map((l) => (l.id === editingLineId ? { ...l, label: trimmed } : l)));
 
-    // 如果包含数字，自动填入对应的宽或高表单
-    const numMatch = trimmed.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)/);
-    if (numMatch) {
-      const val = numMatch[1].trim();
-      if (/^w|宽/i.test(trimmed)) setWidthRaw(val);
-      else if (/^h|高/i.test(trimmed)) setHeightRaw(val);
-      else if (/^d|深/i.test(trimmed)) setDepthRaw(val);
+    const segMatch = trimmed.match(/^([A-Za-z\u4e00-\u9fa50-9()（）]+?)\s*[:：]\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/);
+    if (segMatch) {
+      const tagRaw = segMatch[1].trim();
+      const numVal = segMatch[2].trim();
+      if (/^(w|宽|左宽|中宽|右宽|上宽|下宽)/i.test(tagRaw)) {
+        const idxMatch = tagRaw.match(/(\d+)/);
+        setWidthSegments((prev) => {
+          const next = [...prev];
+          const idx = idxMatch ? Math.max(0, Number(idxMatch[1]) - 1) : next.findIndex((s) => s.tag === tagRaw);
+          if (idx >= 0) {
+            while (next.length <= idx) next.push({ tag: `W${next.length + 1}`, val: "" });
+            next[idx] = { ...next[idx], val: numVal };
+          } else {
+            const emptyIdx = next.findIndex((s) => !s.val.trim());
+            if (emptyIdx >= 0) next[emptyIdx] = { ...next[emptyIdx], val: numVal };
+            else next.push({ tag: tagRaw, val: numVal });
+          }
+          return next;
+        });
+      } else if (/^(h|高|左高|中高|右高|窗高|杆高|墙高)/i.test(tagRaw)) {
+        const idxMatch = tagRaw.match(/(\d+)/);
+        setHeightSegments((prev) => {
+          const next = [...prev];
+          const idx = idxMatch ? Math.max(0, Number(idxMatch[1]) - 1) : next.findIndex((s) => s.tag === tagRaw);
+          if (idx >= 0) {
+            while (next.length <= idx) next.push({ tag: `H${next.length + 1}`, val: "" });
+            next[idx] = { ...next[idx], val: numVal };
+          } else {
+            const emptyIdx = next.findIndex((s) => !s.val.trim());
+            if (emptyIdx >= 0) next[emptyIdx] = { ...next[emptyIdx], val: numVal };
+            else next.push({ tag: tagRaw, val: numVal });
+          }
+          return next;
+        });
+      } else if (/^(d|深)/i.test(tagRaw)) {
+        setDepthRaw(numVal);
+      }
     }
     setEditingLineId(null);
   };
 
-  // 一键在照片上生成标准宽（W）与高（H）标尺线
-  const autoDrawWHLines = (wVal = widthRaw, hVal = heightRaw) => {
+  // 一键在照片上生成多段宽（W1, W2, W3...）与多段高（H1, H2, H3...）标尺线
+  const autoDrawWHLines = (customWSegs?: MeasureSegment[], customHSegs?: MeasureSegment[]) => {
+    const wList = (customWSegs || widthSegments).filter((s) => s.val && s.val.trim());
+    const hList = (customHSegs || heightSegments).filter((s) => s.val && s.val.trim());
     const nextLines: DimensionLine[] = [...lines.filter((l) => !l.id.startsWith("AUTO-"))];
-    if (wVal) {
+
+    if (wList.length === 1) {
       nextLines.push({
-        id: "AUTO-W",
-        x1: 0.22,
+        id: "AUTO-W1",
+        x1: 0.18,
         y1: 0.24,
-        x2: 0.78,
+        x2: 0.82,
         y2: 0.24,
-        label: `W: ${wVal}"`,
+        label: `${wList[0].tag}: ${wList[0].val}"`,
         color: "#facc15",
       });
+    } else if (wList.length > 1) {
+      const is3Pt = wList.some((s) => /上|中宽|下/.test(s.tag));
+      if (is3Pt) {
+        const yPos = [0.22, 0.48, 0.74, 0.84];
+        wList.forEach((s, idx) => {
+          const y = yPos[idx] || 0.22 + idx * 0.18;
+          nextLines.push({
+            id: `AUTO-W${idx + 1}`,
+            x1: 0.18,
+            y1: y,
+            x2: 0.82,
+            y2: y,
+            label: `${s.tag}: ${s.val}"`,
+            color: "#facc15",
+          });
+        });
+      } else {
+        const n = wList.length;
+        const startX = 0.14;
+        const endX = 0.86;
+        const span = (endX - startX) / n;
+        let sumW = 0;
+        wList.forEach((s, idx) => {
+          sumW += parseInchValue(s.val);
+          const x1 = +(startX + idx * span + 0.008).toFixed(3);
+          const x2 = +(startX + (idx + 1) * span - 0.008).toFixed(3);
+          nextLines.push({
+            id: `AUTO-W${idx + 1}`,
+            x1,
+            y1: 0.28,
+            x2,
+            y2: 0.28,
+            label: `${s.tag}: ${s.val}"`,
+            color: "#facc15",
+          });
+        });
+        nextLines.push({
+          id: "AUTO-WSUM",
+          x1: startX,
+          y1: 0.17,
+          x2: endX,
+          y2: 0.17,
+          label: `总宽 ΣW: ${formatInchValue(sumW)}"`,
+          color: "#38bdf8",
+        });
+      }
     }
-    if (hVal) {
+
+    if (hList.length === 1) {
       nextLines.push({
-        id: "AUTO-H",
-        x1: 0.82,
+        id: "AUTO-H1",
+        x1: 0.86,
         y1: 0.22,
-        x2: 0.82,
+        x2: 0.86,
         y2: 0.84,
-        label: `H: ${hVal}"`,
+        label: `${hList[0].tag}: ${hList[0].val}"`,
         color: "#22c55e",
       });
+    } else if (hList.length > 1) {
+      const n = hList.length;
+      const xPos =
+        n === 2
+          ? [0.24, 0.84]
+          : n === 3
+          ? [0.22, 0.52, 0.84]
+          : hList.map((_, i) => +(0.18 + i * (0.68 / Math.max(1, n - 1))).toFixed(2));
+      hList.forEach((s, idx) => {
+        const x = xPos[idx] || 0.84;
+        nextLines.push({
+          id: `AUTO-H${idx + 1}`,
+          x1: x,
+          y1: 0.24,
+          x2: x,
+          y2: 0.84,
+          label: `${s.tag}: ${s.val}"`,
+          color: "#22c55e",
+        });
+      });
     }
+
     setLines(nextLines);
-    showMsg("已在照片上自动生成宽/高尺寸标尺线（可直接拖动或点击修改）");
+    showMsg(`已在照片上自动生成 ${wList.length} 段宽与 ${hList.length} 段高标尺线！`);
   };
 
   // 处理手机/平板拍照或相册上传（自动压缩到适合本地存储的高清尺寸）
@@ -844,15 +1082,15 @@ export function PhotoVoiceMeasureApp({
 
   const applyVoiceParsing = (textToParse: string) => {
     const parsed = parseVoiceMeasureText(textToParse);
-    let updatedW = widthRaw;
-    let updatedH = heightRaw;
-    if (parsed.width) {
-      setWidthRaw(parsed.width);
-      updatedW = parsed.width;
+    let nextWSegs = widthSegments;
+    let nextHSegs = heightSegments;
+    if (parsed.widthSegments && parsed.widthSegments.length > 0) {
+      setWidthSegments(parsed.widthSegments);
+      nextWSegs = parsed.widthSegments;
     }
-    if (parsed.height) {
-      setHeightRaw(parsed.height);
-      updatedH = parsed.height;
+    if (parsed.heightSegments && parsed.heightSegments.length > 0) {
+      setHeightSegments(parsed.heightSegments);
+      nextHSegs = parsed.heightSegments;
     }
     if (parsed.depth) setDepthRaw(parsed.depth);
     if (parsed.location) setWindowLocation(parsed.location);
@@ -867,10 +1105,10 @@ export function PhotoVoiceMeasureApp({
     if (parsed.motor) setMotorOrTrack(parsed.motor);
     if (parsed.style) setLinerOrStyle(parsed.style);
 
-    if (parsed.width || parsed.height) {
-      autoDrawWHLines(updatedW, updatedH);
+    if (parsed.widthSegments || parsed.heightSegments) {
+      autoDrawWHLines(nextWSegs, nextHSegs);
     }
-    showMsg("✦ 已从语音/手写内容自动提取尺寸与型号，并标注在照片上！");
+    showMsg("✦ 已从语音/手写内容自动提取多段尺寸与型号，并标注在照片上！");
   };
 
   const toggleAudioMemo = async () => {
@@ -931,6 +1169,8 @@ export function PhotoVoiceMeasureApp({
       windowLocation: windowLocation.trim() || "未命名窗位",
       widthRaw: widthRaw.trim(),
       heightRaw: heightRaw.trim(),
+      widthSegments,
+      heightSegments,
       depthRaw: depthRaw.trim(),
       finishedWidthNote,
       finishedHeightNote,
@@ -960,8 +1200,8 @@ export function PhotoVoiceMeasureApp({
       const nextNum = numMatch ? Number(numMatch[1]) + 1 : next.length + 1;
       const nextCode = `W${nextNum}`;
       setWindowCode(nextCode);
-      setWidthRaw("");
-      setHeightRaw("");
+      setWidthSegments([{ tag: "W1", val: "" }]);
+      setHeightSegments([{ tag: "H1", val: "" }]);
       setDepthRaw("");
       setLines([]);
       setStrokes([]);
@@ -1068,11 +1308,21 @@ export function PhotoVoiceMeasureApp({
   // 追加分数到当前聚焦的尺寸输入框
   const appendFraction = (frac: string) => {
     if (activeDimField === "width") {
-      const base = widthRaw.replace(/\s+\d+\/\d+$/, "").trim();
-      setWidthRaw(base ? `${base} ${frac}` : frac);
+      setWidthSegments((prev) => {
+        const idx = Math.min(activeSegIndex, prev.length - 1);
+        const next = [...prev];
+        const base = (next[idx]?.val || "").replace(/\s+\d+\/\d+$/, "").trim();
+        next[idx] = { ...next[idx], val: base ? `${base} ${frac}` : frac };
+        return next;
+      });
     } else if (activeDimField === "height") {
-      const base = heightRaw.replace(/\s+\d+\/\d+$/, "").trim();
-      setHeightRaw(base ? `${base} ${frac}` : frac);
+      setHeightSegments((prev) => {
+        const idx = Math.min(activeSegIndex, prev.length - 1);
+        const next = [...prev];
+        const base = (next[idx]?.val || "").replace(/\s+\d+\/\d+$/, "").trim();
+        next[idx] = { ...next[idx], val: base ? `${base} ${frac}` : frac };
+        return next;
+      });
     } else {
       const base = depthRaw.replace(/\s+\d+\/\d+$/, "").trim();
       setDepthRaw(base ? `${base} ${frac}` : frac);
@@ -1638,53 +1888,231 @@ export function PhotoVoiceMeasureApp({
             </div>
           </section>
 
-          {/* 模块 B：宽高尺寸与快捷分数键盘 */}
+          {/* 模块 B：宽高尺寸（支持多段分幅 & 多点测框）与快捷分数键盘 */}
           <section className="panel" style={{ padding: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <h2 style={{ margin: 0, fontSize: 17 }}>④ 窗户实测尺寸（英寸 Inches）</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              <h2 style={{ margin: 0, fontSize: 17 }}>④ 实测宽/高尺寸 — 支持多段分窗 & 多点测量 (Inches)</h2>
               <button
                 type="button"
                 className="secondary"
                 style={{ padding: "5px 10px", fontSize: 12 }}
                 onClick={() => autoDrawWHLines()}
               >
-                📏 将宽高同步画到照片上
+                📏 将全部宽高分段画到照片上
               </button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
-              <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 800 }}>
-                实测宽 Width (in) *
-                <input
-                  value={widthRaw}
-                  onFocus={() => setActiveDimField("width")}
-                  onChange={(e) => setWidthRaw(e.target.value)}
-                  placeholder="如 152 1/2"
-                  style={{
-                    padding: "11px 12px",
-                    borderRadius: 9,
-                    border: activeDimField === "width" ? "2px solid #153f34" : "1px solid #cbd5cf",
-                    fontSize: 17,
-                    fontWeight: 800,
-                  }}
-                />
-              </label>
-              <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 800 }}>
-                实测高 Height (in) *
-                <input
-                  value={heightRaw}
-                  onFocus={() => setActiveDimField("height")}
-                  onChange={(e) => setHeightRaw(e.target.value)}
-                  placeholder="如 177"
-                  style={{
-                    padding: "11px 12px",
-                    borderRadius: 9,
-                    border: activeDimField === "height" ? "2px solid #153f34" : "1px solid #cbd5cf",
-                    fontSize: 17,
-                    fontWeight: 800,
-                  }}
-                />
-              </label>
+            {/* 宽度多段区 */}
+            <div style={{ background: "#f8faf9", border: "1px solid #d5e0da", borderRadius: 12, padding: 12, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                <strong style={{ fontSize: 13, color: "#153f34" }}>↔️ 宽度 Width（单段 / 多段拼接 / 上中下三点测宽）</strong>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextIdx = widthSegments.length;
+                      setWidthSegments([...widthSegments, { tag: `W${nextIdx + 1}`, val: "" }]);
+                      setActiveDimField("width");
+                      setActiveSegIndex(nextIdx);
+                    }}
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "none", background: "#153f34", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    + 加一段宽
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setWidthSegments([
+                        { tag: "W1(左段)", val: widthSegments[0]?.val || "" },
+                        { tag: "W2(中段)", val: widthSegments[1]?.val || "" },
+                        { tag: "W3(右段)", val: widthSegments[2]?.val || "" },
+                      ])
+                    }
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid #cbd5cf", background: "#fff", color: "#153f34", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    🪟 左·中·右三段窗
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setWidthSegments([
+                        { tag: "W1(上宽)", val: widthSegments[0]?.val || "" },
+                        { tag: "W2(中宽)", val: widthSegments[1]?.val || widthSegments[0]?.val || "" },
+                        { tag: "W3(下宽)", val: widthSegments[2]?.val || widthSegments[0]?.val || "" },
+                      ])
+                    }
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid #cbd5cf", background: "#fff", color: "#153f34", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    📐 上·中·下三点测宽
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: "grid", gap: 6 }}>
+                {widthSegments.map((seg, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <input
+                      value={seg.tag}
+                      onChange={(e) => {
+                        const next = [...widthSegments];
+                        next[idx] = { ...next[idx], tag: e.target.value };
+                        setWidthSegments(next);
+                      }}
+                      style={{ width: 112, padding: "8px 9px", borderRadius: 8, border: "1px solid #9ab8a8", background: "#e6f4ed", color: "#153f34", fontSize: 13, fontWeight: 800 }}
+                    />
+                    <input
+                      value={seg.val}
+                      onFocus={() => {
+                        setActiveDimField("width");
+                        setActiveSegIndex(idx);
+                      }}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (/[+,;，；]|(\s+\/\s+)/.test(v)) {
+                          const parts = v.split(/[+,;，；]|\s+\/\s+/).map((s) => s.trim()).filter(Boolean);
+                          if (parts.length > 1) {
+                            setWidthSegments(parts.map((p, k) => ({ tag: `W${k + 1}`, val: p })));
+                            return;
+                          }
+                        }
+                        const next = [...widthSegments];
+                        next[idx] = { ...next[idx], val: v };
+                        setWidthSegments(next);
+                      }}
+                      placeholder={`第 ${idx + 1} 段宽 (或填 28+56+28 自动拆分)`}
+                      style={{
+                        flex: 1,
+                        padding: "9px 11px",
+                        borderRadius: 8,
+                        border: activeDimField === "width" && activeSegIndex === idx ? "2px solid #153f34" : "1px solid #cbd5cf",
+                        fontSize: 16,
+                        fontWeight: 800,
+                      }}
+                    />
+                    {widthSegments.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setWidthSegments(widthSegments.filter((_, i) => i !== idx))}
+                        style={{ padding: "8px 10px", borderRadius: 8, border: "none", background: "#fee2e2", color: "#b91c1c", fontWeight: 800, cursor: "pointer" }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {widthStats.filled.length > 0 && (
+                <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: "#e6f4ed", color: "#153f34", fontSize: 12, fontWeight: 700 }}>
+                  📏 宽度汇总：{widthStats.summaryText}
+                </div>
+              )}
+            </div>
+
+            {/* 高度多段区 */}
+            <div style={{ background: "#f8faf9", border: "1px solid #d5e0da", borderRadius: 12, padding: 12, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                <strong style={{ fontSize: 13, color: "#153f34" }}>↕️ 高度 Height（单段 / 多段分高 / 左中右三点 / 窗高+杆高）</strong>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextIdx = heightSegments.length;
+                      setHeightSegments([...heightSegments, { tag: `H${nextIdx + 1}`, val: "" }]);
+                      setActiveDimField("height");
+                      setActiveSegIndex(nextIdx);
+                    }}
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "none", background: "#153f34", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    + 加一段高
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHeightSegments([
+                        { tag: "H1(左高)", val: heightSegments[0]?.val || "" },
+                        { tag: "H2(中高)", val: heightSegments[1]?.val || heightSegments[0]?.val || "" },
+                        { tag: "H3(右高)", val: heightSegments[2]?.val || heightSegments[0]?.val || "" },
+                      ])
+                    }
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid #cbd5cf", background: "#fff", color: "#153f34", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    📐 左·中·右三点测高
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHeightSegments([
+                        { tag: "H1(窗框高)", val: heightSegments[0]?.val || "" },
+                        { tag: "H2(装杆高)", val: heightSegments[1]?.val || "" },
+                        { tag: "H3(墙总高)", val: heightSegments[2]?.val || "" },
+                      ])
+                    }
+                    style={{ padding: "4px 10px", borderRadius: 999, border: "1px solid #cbd5cf", background: "#fff", color: "#153f34", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    🏛️ 窗框高+装杆高+墙高
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: "grid", gap: 6 }}>
+                {heightSegments.map((seg, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <input
+                      value={seg.tag}
+                      onChange={(e) => {
+                        const next = [...heightSegments];
+                        next[idx] = { ...next[idx], tag: e.target.value };
+                        setHeightSegments(next);
+                      }}
+                      style={{ width: 112, padding: "8px 9px", borderRadius: 8, border: "1px solid #9ab8a8", background: "#e6f4ed", color: "#153f34", fontSize: 13, fontWeight: 800 }}
+                    />
+                    <input
+                      value={seg.val}
+                      onFocus={() => {
+                        setActiveDimField("height");
+                        setActiveSegIndex(idx);
+                      }}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (/[+,;，；]|(\s+\/\s+)/.test(v)) {
+                          const parts = v.split(/[+,;，；]|\s+\/\s+/).map((s) => s.trim()).filter(Boolean);
+                          if (parts.length > 1) {
+                            setHeightSegments(parts.map((p, k) => ({ tag: `H${k + 1}`, val: p })));
+                            return;
+                          }
+                        }
+                        const next = [...heightSegments];
+                        next[idx] = { ...next[idx], val: v };
+                        setHeightSegments(next);
+                      }}
+                      placeholder={`第 ${idx + 1} 段高 (或填 72+84 自动拆分)`}
+                      style={{
+                        flex: 1,
+                        padding: "9px 11px",
+                        borderRadius: 8,
+                        border: activeDimField === "height" && activeSegIndex === idx ? "2px solid #153f34" : "1px solid #cbd5cf",
+                        fontSize: 16,
+                        fontWeight: 800,
+                      }}
+                    />
+                    {heightSegments.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setHeightSegments(heightSegments.filter((_, i) => i !== idx))}
+                        style={{ padding: "8px 10px", borderRadius: 8, border: "none", background: "#fee2e2", color: "#b91c1c", fontWeight: 800, cursor: "pointer" }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {heightStats.filled.length > 0 && (
+                <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: "#e6f4ed", color: "#153f34", fontSize: 12, fontWeight: 700 }}>
+                  📏 高度汇总：{heightStats.summaryText}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 10 }}>
               <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 800 }}>
                 窗框深 Depth (选填)
                 <input
@@ -1693,7 +2121,7 @@ export function PhotoVoiceMeasureApp({
                   onChange={(e) => setDepthRaw(e.target.value)}
                   placeholder="如 3 1/2"
                   style={{
-                    padding: "11px 12px",
+                    padding: "10px 12px",
                     borderRadius: 9,
                     border: activeDimField === "depth" ? "2px solid #153f34" : "1px solid #cbd5cf",
                     fontSize: 16,

@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="博朗拍照测量" />
-  <title>博朗窗饰 · 手机/平板拍照画线+语音+手写测量 App</title>
+  <title>博朗窗饰 · 手机/平板拍照画线+语音+手写测量 App (支持宽高多段多数据)</title>
   <style>
     :root {
       --bg: #f3f0e9;
@@ -24,7 +24,7 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
     }
-    .container { max-width: 1200px; margin: 0 auto; padding-bottom: 50px; }
+    .container { max-width: 1240px; margin: 0 auto; padding-bottom: 50px; }
     .header {
       background: var(--brand);
       color: #fff;
@@ -98,7 +98,7 @@
     .btn-danger { background: #fee2e2; color: #b91c1c; }
     .main-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
       gap: 14px;
       align-items: start;
     }
@@ -129,6 +129,52 @@
       user-select: none;
     }
     canvas { width: 100%; height: auto; display: block; touch-action: none; }
+    .seg-box {
+      background: #f8faf9;
+      border: 1px solid #d5e0da;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .seg-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .seg-tag {
+      width: 112px;
+      flex-shrink: 0;
+      padding: 8px 9px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand);
+      background: #e6f4ed;
+      border: 1px solid #9ab8a8;
+      border-radius: 8px;
+    }
+    .seg-val {
+      flex: 1;
+      padding: 9px 11px;
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .seg-val.focused {
+      border: 2px solid var(--brand);
+      background: #fffef7;
+    }
+    .seg-summary {
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: #e6f4ed;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
     .toast {
       position: fixed;
       bottom: 20px;
@@ -146,7 +192,7 @@
     }
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 14px;
       margin-top: 12px;
     }
@@ -158,7 +204,7 @@
       display: flex;
       flex-direction: column;
     }
-    .record-card img { width: 100%; height: 210px; object-fit: cover; background: #0f172a; }
+    .record-card img { width: 100%; height: 215px; object-fit: cover; background: #0f172a; }
     .record-body { padding: 12px; display: grid; gap: 6px; font-size: 13px; flex: 1; }
   </style>
 </head>
@@ -168,7 +214,7 @@
       <div>
         <small>BRAUN INTERNATIONAL · 手机与平板现场测量 APP</small>
         <h1>📱 拍照画线 · 语音 · 手写尺寸与选品工作台</h1>
-        <p>可添加到手机/iPad主屏幕离线使用：拍照 ➔ 画尺寸线/手写笔迹 ➔ 语音自动填宽高与产品型号</p>
+        <p>支持宽/高多段分窗 (W1/W2/W3...) 与上中下/左中右多点测量 ➔ 自动求和/取最小宽并标到照片上</p>
       </div>
       <div>
         <button class="btn btn-gold" onclick="exportAllRecordsCsv()">📊 导出全部测量单 Excel/CSV</button>
@@ -201,7 +247,7 @@
       <!-- ② 左侧：拍照 + 画线标尺寸 + 手写涂鸦 -->
       <section class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <h2 style="margin:0;">② 拍照 · 画线标注尺寸 · 手写圈注</h2>
+          <h2 style="margin:0;">② 拍照 · 画多段尺寸线 · 手写圈注</h2>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <label class="btn btn-primary" style="cursor:pointer;">
               📷 拍照窗户
@@ -216,12 +262,12 @@
         </div>
 
         <div class="toolbar">
-          <button id="modeLineBtn" class="btn btn-primary" onclick="setMode('line')">📏 画尺寸线</button>
+          <button id="modeLineBtn" class="btn btn-primary" onclick="setMode('line')">📏 画尺寸线 (支持多条)</button>
           <button id="modePenBtn" class="btn btn-secondary" onclick="setMode('pen')">✍️ 手写笔涂鸦</button>
           <button id="modePinBtn" class="btn btn-secondary" onclick="setMode('pin')">🏷️ 点图贴字</button>
           <div style="display:flex;gap:5px;margin-left:4px;" id="colorPalette"></div>
           <div style="margin-left:auto;display:flex;gap:5px;">
-            <button class="btn btn-secondary" onclick="autoDrawWH()">⚡ 自动标宽高</button>
+            <button class="btn btn-secondary" onclick="autoDrawWH()">⚡ 自动标多段宽高</button>
             <button class="btn btn-secondary" onclick="undoCanvas()">↶ 撤销</button>
             <button class="btn btn-secondary" onclick="clearAnnotations()">清空</button>
           </div>
@@ -230,8 +276,8 @@
         <!-- 画完尺寸线弹出的尺寸编辑条 -->
         <div id="lineEditorBox" style="display:none;background:#fffbeb;border:2px solid #f59e0b;padding:10px;border-radius:12px;margin-bottom:10px;">
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <strong style="font-size:13px;color:#92400e;">📏 输入该线尺寸：</strong>
-            <input id="lineLabelInput" style="flex:1;font-weight:800;" placeholder="如 W: 152 1/2&quot;" onkeydown="if(event.key==='Enter')confirmLineEdit()" />
+            <strong style="font-size:13px;color:#92400e;">📏 输入该线尺寸 (自动同步对应分段)：</strong>
+            <input id="lineLabelInput" style="flex:1;font-weight:800;" placeholder="如 W1: 35 1/2&quot; 或 H2: 84&quot;" onkeydown="if(event.key==='Enter')confirmLineEdit()" />
             <button class="btn btn-primary" onclick="confirmLineEdit()">确定 ✓</button>
             <button class="btn btn-danger" onclick="deleteEditingLine()">删除此线</button>
           </div>
@@ -242,16 +288,16 @@
           <canvas id="measureCanvas" width="1200" height="900"></canvas>
         </div>
         <p style="margin:8px 0 0;font-size:12px;color:#64748b;">
-          💡 手指或 Apple Pencil 按住画面拖动即可画带箭头的尺寸线；切换【✍️ 手写笔涂鸦】可直接在照片上手写尺寸数字或画开合方向箭头。
+          💡 在照片上画第 1、2、3 条横线会自动归入 <b>W1、W2、W3</b>；画第 1、2、3 条竖线会自动归入 <b>H1、H2、H3</b>！也可在右侧直接添加多段宽高后点【⚡ 自动标多段宽高】。
         </p>
       </section>
 
-      <!-- 右侧：语音+手写录入 + 尺寸 + 选产品型号 -->
+      <!-- 右侧：语音+手写录入 + 多段宽高尺寸 + 选产品型号 -->
       <div style="display:grid;gap:14px;">
         <!-- ③ 语音 + 手写速记 -->
         <section class="card" style="background:#f7faf8;border-color:#bdd5c8;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-            <h2 style="margin:0;">③ 拍照后语音 + 手写速记</h2>
+            <h2 style="margin:0;">③ 拍照后语音 + 手写速记 (支持多段宽高)</h2>
             <div style="display:flex;gap:6px;">
               <select id="voiceLangSelect" style="width:auto;padding:6px 8px;font-size:12px;">
                 <option value="zh-CN">中文语音</option>
@@ -260,26 +306,66 @@
               <button id="voiceBtn" class="btn btn-primary" onclick="toggleSpeech()">🎤 点此说话转尺寸</button>
             </div>
           </div>
-          <textarea id="voiceText" rows="3" placeholder="点击上方【🎤 点此说话转尺寸】，或用手机语音输入法/Apple Pencil手写：&#10;例如：“客厅大窗 宽 152 1/2 高 177 双层布帘 Group B 口外安装 对开 黑色轨道”"></textarea>
+          <textarea id="voiceText" rows="3" placeholder="点击【🎤 点此说话转尺寸】或直接手写多段数据：&#10;• 多段分窗示例：“客厅飘窗 宽 28 56 28 高 72 84 72 斑马帘 口内安装”&#10;• 三点测框示例：“主卧 上宽 35 1/2 中宽 35 1/4 下宽 35 3/8 左高 72 右高 72 1/4”"></textarea>
           <div style="margin-top:8px;">
-            <button class="btn btn-secondary" style="width:100%;" onclick="parseTextAndFill()">✦ 智能识别上方语音/手写文字，自动填入宽高与型号并标到图上</button>
+            <button class="btn btn-secondary" style="width:100%;" onclick="parseTextAndFill()">✦ 智能识别多段宽/高与产品型号，自动生成分段并标到照片上</button>
           </div>
         </section>
 
-        <!-- ④ 窗户宽高尺寸 -->
+        <!-- ④ 窗户宽高尺寸（支持多段分幅 & 上中下/左中右多点测量） -->
         <section class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <h2 style="margin:0;">④ 实测宽高尺寸 (Inches)</h2>
-            <button class="btn btn-secondary" style="padding:5px 10px;font-size:12px;" onclick="autoDrawWH()">📏 同步画到照片上</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+            <h2 style="margin:0;">④ 实测宽/高尺寸 — 支持多段分窗 & 多点测量 (Inches)</h2>
+            <button class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="autoDrawWH()">📏 将全部宽高分段画到照片上</button>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-            <label>实测宽 Width (in) *<input id="widthInput" placeholder="如 152 1/2" style="font-size:17px;font-weight:800;" onfocus="activeField='width'" oninput="renderCanvas();updateDeductionHint()" /></label>
-            <label>实测高 Height (in) *<input id="heightInput" placeholder="如 177" style="font-size:17px;font-weight:800;" onfocus="activeField='height'" oninput="renderCanvas();updateDeductionHint()" /></label>
-            <label>窗深 Depth (选填)<input id="depthInput" placeholder="如 3 1/2" onfocus="activeField='depth'" /></label>
+
+          <!-- 宽度多段区 -->
+          <div class="seg-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+              <strong style="font-size:13px;color:#153f34;">↔️ 宽度 Width (支持单段 / 多段拼接 / 上中下三点测宽)</strong>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="chip" style="background:#153f34;color:#fff;" onclick="addWidthSeg()">+ 加一段宽</button>
+                <button class="chip" onclick="applyWidthPreset('split3')">🪟 左·中·右三段窗</button>
+                <button class="chip" onclick="applyWidthPreset('3pt')">📐 上·中·下三点测宽</button>
+                <button class="chip" onclick="applyWidthPreset('single')">仅单宽</button>
+              </div>
+            </div>
+            <div id="widthSegContainer"></div>
+            <div id="widthSummaryBar" class="seg-summary"></div>
           </div>
+
+          <!-- 高度多段区 -->
+          <div class="seg-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+              <strong style="font-size:13px;color:#153f34;">↕️ 高度 Height (支持单段 / 多段分高 / 左中右三点 / 窗高+杆高)</strong>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="chip" style="background:#153f34;color:#fff;" onclick="addHeightSeg()">+ 加一段高</button>
+                <button class="chip" onclick="applyHeightPreset('split3')">🪟 左·中·右三段高</button>
+                <button class="chip" onclick="applyHeightPreset('3pt')">📐 左·中·右三点测高</button>
+                <button class="chip" onclick="applyHeightPreset('rod')">🏛️ 窗框高+装杆高+墙高</button>
+                <button class="chip" onclick="applyHeightPreset('single')">仅单高</button>
+              </div>
+            </div>
+            <div id="heightSegContainer"></div>
+            <div id="heightSummaryBar" class="seg-summary"></div>
+          </div>
+
+          <!-- 窗深与推拉门外延选项 -->
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+            <label style="flex:1;min-width:140px;">窗框深度 Depth (选填)
+              <input id="depthInput" placeholder="如 3 1/2" onfocus="setFocusTarget('depth',0)" />
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:800;color:#153f34;padding-top:16px;">
+              <input type="checkbox" id="addTenCheck" style="width:18px;height:18px;" onchange="updateDeductionHint();renderCanvas()" />
+              推拉门/框外总宽 +10"
+            </label>
+          </div>
+
+          <!-- 英寸分数快捷输入条 -->
           <div class="chips" id="dimFractionChips"></div>
-          <div id="deductionHint" style="margin-top:10px;padding:9px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;color:#78350f;">
-            📐 <b>智能尺寸核算：</b> 输入实测宽高后自动计算成品扣减/外延建议
+
+          <div id="deductionHint" style="margin-top:10px;padding:10px 12px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;color:#78350f;line-height:1.5;">
+            📐 <b>智能尺寸核算：</b> 输入单段或多段实测宽高后，自动计算总宽 ΣW、内装最小宽 Min W 及成品加工建议
           </div>
         </section>
 
@@ -304,6 +390,7 @@
                 <option>无拉绳 (Cordless)</option>
                 <option>左控 (Left Control)</option>
                 <option>右控 (Right Control)</option>
+                <option>多段独立分控 (Multi-Segment)</option>
               </select>
             </label>
             <label>轨道 / 窗帘杆 / 电机
@@ -340,26 +427,31 @@
 
   <script>
     const STORAGE_KEY = "braun-photo-voice-measures-v1";
-    const LOCATIONS = ["客厅主窗 (Living Room)","挑高大窗 (High Ceiling)","推拉门 (Sliding Door)","主卧 (Master Bedroom)","次卧 1 (Guest Room 1)","次卧 2 (Guest Room 2)","餐厅 (Dining Room)","厨房 (Kitchen)","书房 (Office)"];
+    const LOCATIONS = ["客厅主窗 (Living Room)","挑高大窗 (High Ceiling)","推拉门 (Sliding Door)","客厅飘窗/转角窗 (Bay Window)","主卧 (Master Bedroom)","次卧 1 (Guest Room 1)","次卧 2 (Guest Room 2)","餐厅 (Dining Room)","厨房 (Kitchen)","书房 (Office)"];
     const CATEGORIES = ["双层布帘+纱 (Double Layer)","布艺窗帘 (Drapery)","白纱透光帘 (White Sheer)","卷帘 (Roller Shade)","斑马帘 (Zebra Shade)","罗马帘 (Roman Shade)","竹帘/编织木帘 (Woven Wood)","百叶窗 (Shutters)","百叶帘 (Blinds)"];
     const MODELS = {
       "双层布帘+纱 (Double Layer)": ["Group B 布帘 + White Sheer 白纱","全遮光布 + 透光纱","电动双层布+纱"],
       "布艺窗帘 (Drapery)": ["Group B 面料 + 双韩褶","Group A 基础面料","定制绒布遮光帘"],
       "白纱透光帘 (White Sheer)": ["White Sheer Light-Filtering (整墙)","White Sheer (两侧30\"装饰帘)"],
       "卷帘 (Roller Shade)": ["Yuma 1% Black","Yuma 5% Black","JL1806 迷宫全遮光","JL3601 阳光面料","Stella (+挡光条 $6.5/yd)"],
-      "斑马帘 (Zebra Shade)": ["无拉绳斑马帘 (Cordless Zebra)","ML-1801 遮光斑马帘"],
+      "斑马帘 (Zebra Shade)": ["无拉绳斑马帘 (Cordless Zebra)","ML-1801 遮光斑马帘","BMY06 斑马帘"],
       "罗马帘 (Roman Shade)": ["标准平折罗马帘 (Flat Fold)","贴墙款罗马帘 ($10/inch起)"],
       "竹帘/编织木帘 (Woven Wood)": ["编织木帘+薄透光衬+无绳 ($10/sq.ft)","编织木帘+遮光衬 (+10%)"],
       "百叶窗 (Shutters)": ["3.5\" 椴木百叶窗","PVC 防水百叶窗"],
       "百叶帘 (Blinds)": ["2\" 仿木百叶帘"]
     };
     const FRACTIONS = ["1/8","1/4","3/8","1/2","5/8","3/4","7/8","1/16","3/16","5/16","7/16","9/16","11/16","13/16","15/16"];
-    const COLORS = ["#facc15","#ef4444","#22c55e","#ffffff","#0f172a"];
+    const COLORS = ["#facc15","#ef4444","#22c55e","#38bdf8","#ffffff"];
 
     let currentCategory = CATEGORIES[0];
     let toolMode = "line";
     let penColor = COLORS[0];
-    let activeField = "width";
+
+    // 多段宽与多段高核心状态
+    let widthSegments = [{ tag: "W1", val: "" }];
+    let heightSegments = [{ tag: "H1", val: "" }];
+    let focusTarget = { type: "width", index: 0 }; // 'width' | 'height' | 'depth'
+
     let lines = [];
     let strokes = [];
     let pins = [];
@@ -376,7 +468,202 @@
       const el = document.getElementById("toast");
       el.textContent = msg;
       el.style.display = "block";
-      setTimeout(() => { el.style.display = "none"; }, 2800);
+      setTimeout(() => { el.style.display = "none"; }, 3000);
+    }
+
+    // 解析带分数的英寸字符串为浮点数，如 "35 1/2" -> 35.5
+    function parseInchNum(str) {
+      if (!str) return 0;
+      const s = String(str).trim();
+      const mix = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+      if (mix) return Number(mix[1]) + Number(mix[2]) / Number(mix[3]);
+      const frac = s.match(/^(\d+)\/(\d+)$/);
+      if (frac) return Number(frac[1]) / Number(frac[2]);
+      const num = parseFloat(s);
+      return isNaN(num) ? 0 : num;
+    }
+
+    // 将浮点数转回带分数的英寸文本，如 35.5 -> "35 1/2"
+    function formatInchNum(n) {
+      if (!n || isNaN(n)) return "0";
+      const whole = Math.floor(n + 1e-6);
+      const rem = n - whole;
+      const sixteenths = Math.round(rem * 16);
+      if (sixteenths === 0) return String(whole);
+      if (sixteenths === 16) return String(whole + 1);
+      let num = sixteenths, den = 16;
+      while (num % 2 === 0 && den % 2 === 0) { num /= 2; den /= 2; }
+      return whole > 0 ? `${whole} ${num}/${den}` : `${num}/${den}`;
+    }
+
+    function setFocusTarget(type, index) {
+      focusTarget = { type, index };
+      const label = type === "width" ? (widthSegments[index]?.tag || "宽度") : type === "height" ? (heightSegments[index]?.tag || "高度") : "窗深";
+      const hintEl = document.getElementById("activeFracTargetLabel");
+      if (hintEl) hintEl.textContent = label;
+    }
+
+    // 渲染多段宽与多段高输入框
+    function renderSegmentInputs() {
+      const wWrap = document.getElementById("widthSegContainer");
+      wWrap.innerHTML = widthSegments.map((seg, i) => `
+        <div class="seg-row">
+          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('width',${i},this.value)" title="点击可改名，如 左宽/中宽/右宽 或 上宽/中宽/下宽" />
+          <input id="wSegInput_${i}" class="seg-val ${focusTarget.type==='width'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="输入第 ${i+1} 段宽 (或直接填 28+56+28 自动拆分)" onfocus="setFocusTarget('width',${i})" oninput="updateSegVal('width',${i},this.value)" />
+          ${widthSegments.length > 1 ? `<button class="btn btn-danger" style="padding:8px 10px;" onclick="removeSeg('width',${i})">×</button>` : ''}
+        </div>
+      `).join("");
+
+      const hWrap = document.getElementById("heightSegContainer");
+      hWrap.innerHTML = heightSegments.map((seg, i) => `
+        <div class="seg-row">
+          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('height',${i},this.value)" title="点击可改名，如 左高/中高/右高 或 窗高/杆高" />
+          <input id="hSegInput_${i}" class="seg-val ${focusTarget.type==='height'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="输入第 ${i+1} 段高 (或直接填 72/84 自动拆分)" onfocus="setFocusTarget('height',${i})" oninput="updateSegVal('height',${i},this.value)" />
+          ${heightSegments.length > 1 ? `<button class="btn btn-danger" style="padding:8px 10px;" onclick="removeSeg('height',${i})">×</button>` : ''}
+        </div>
+      `).join("");
+
+      updateDeductionHint();
+      renderLineQuickChips();
+    }
+
+    function updateSegTag(type, idx, val) {
+      if (type === "width") widthSegments[idx].tag = val;
+      else heightSegments[idx].tag = val;
+      updateDeductionHint();
+      renderCanvas();
+    }
+
+    function updateSegVal(type, idx, rawVal) {
+      // 如果用户在单个输入框里输入了 "+" 或 " / " 或 "," 或 ";" 分隔的多段数据（注意区分带空格的分数如 "35 1/2"）
+      if (/[+,;，；]|(\s+\/\s+)/.test(rawVal)) {
+        const parts = rawVal.split(/[+,;，；]|\s+\/\s+/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+          if (type === "width") {
+            widthSegments = parts.map((p, k) => ({ tag: `W${k + 1}`, val: p }));
+            focusTarget = { type: "width", index: parts.length - 1 };
+          } else {
+            heightSegments = parts.map((p, k) => ({ tag: `H${k + 1}`, val: p }));
+            focusTarget = { type: "height", index: parts.length - 1 };
+          }
+          renderSegmentInputs();
+          renderCanvas();
+          showToast(`⚡ 已自动拆分为 ${parts.length} 段${type === 'width' ? '宽度' : '高度'}数据！`);
+          return;
+        }
+      }
+      if (type === "width") widthSegments[idx].val = rawVal;
+      else heightSegments[idx].val = rawVal;
+      updateDeductionHint();
+      renderCanvas();
+    }
+
+    function addWidthSeg() {
+      const nextIdx = widthSegments.length + 1;
+      widthSegments.push({ tag: `W${nextIdx}`, val: "" });
+      focusTarget = { type: "width", index: widthSegments.length - 1 };
+      renderSegmentInputs();
+      setTimeout(() => document.getElementById(`wSegInput_${widthSegments.length - 1}`)?.focus(), 30);
+    }
+
+    function addHeightSeg() {
+      const nextIdx = heightSegments.length + 1;
+      heightSegments.push({ tag: `H${nextIdx}`, val: "" });
+      focusTarget = { type: "height", index: heightSegments.length - 1 };
+      renderSegmentInputs();
+      setTimeout(() => document.getElementById(`hSegInput_${heightSegments.length - 1}`)?.focus(), 30);
+    }
+
+    function removeSeg(type, idx) {
+      if (type === "width" && widthSegments.length > 1) {
+        widthSegments.splice(idx, 1);
+        focusTarget = { type: "width", index: Math.max(0, idx - 1) };
+      } else if (type === "height" && heightSegments.length > 1) {
+        heightSegments.splice(idx, 1);
+        focusTarget = { type: "height", index: Math.max(0, idx - 1) };
+      }
+      renderSegmentInputs();
+      renderCanvas();
+    }
+
+    function applyWidthPreset(mode) {
+      const existing = widthSegments.map(s => s.val);
+      if (mode === "split3") {
+        widthSegments = [
+          { tag: "W1(左段)", val: existing[0] || "" },
+          { tag: "W2(中段)", val: existing[1] || "" },
+          { tag: "W3(右段)", val: existing[2] || "" }
+        ];
+      } else if (mode === "3pt") {
+        widthSegments = [
+          { tag: "W1(上宽)", val: existing[0] || "" },
+          { tag: "W2(中宽)", val: existing[1] || existing[0] || "" },
+          { tag: "W3(下宽)", val: existing[2] || existing[0] || "" }
+        ];
+      } else {
+        widthSegments = [{ tag: "W1", val: existing[0] || "" }];
+      }
+      focusTarget = { type: "width", index: 0 };
+      renderSegmentInputs();
+      renderCanvas();
+    }
+
+    function applyHeightPreset(mode) {
+      const existing = heightSegments.map(s => s.val);
+      if (mode === "split3") {
+        heightSegments = [
+          { tag: "H1(左段高)", val: existing[0] || "" },
+          { tag: "H2(中段高)", val: existing[1] || "" },
+          { tag: "H3(右段高)", val: existing[2] || "" }
+        ];
+      } else if (mode === "3pt") {
+        heightSegments = [
+          { tag: "H1(左高)", val: existing[0] || "" },
+          { tag: "H2(中高)", val: existing[1] || existing[0] || "" },
+          { tag: "H3(右高)", val: existing[2] || existing[0] || "" }
+        ];
+      } else if (mode === "rod") {
+        heightSegments = [
+          { tag: "H1(窗框高)", val: existing[0] || "" },
+          { tag: "H2(装杆高)", val: existing[1] || "" },
+          { tag: "H3(墙总高)", val: existing[2] || "" }
+        ];
+      } else {
+        heightSegments = [{ tag: "H1", val: existing[0] || "" }];
+      }
+      focusTarget = { type: "height", index: 0 };
+      renderSegmentInputs();
+      renderCanvas();
+    }
+
+    // 汇总多段宽与多段高统计信息
+    function getWidthStats() {
+      const filled = widthSegments.filter(s => s.val && s.val.trim());
+      const nums = filled.map(s => parseInchNum(s.val)).filter(n => n > 0);
+      const sum = nums.reduce((a, b) => a + b, 0);
+      const min = nums.length ? Math.min(...nums) : 0;
+      const max = nums.length ? Math.max(...nums) : 0;
+      const is3Pt = filled.some(s => /上|中宽|下/.test(s.tag));
+      const summaryText = !filled.length
+        ? ""
+        : filled.length === 1
+        ? `${filled[0].val.trim()}`
+        : `${filled.map(s => `${s.tag}:${s.val.trim()}"`).join(" | ")} ${is3Pt ? `(最小宽 Min:${formatInchNum(min)}")` : `(总宽 Σ:${formatInchNum(sum)}" / Min:${formatInchNum(min)}")`}`;
+      return { filled, nums, sum, min, max, is3Pt, summaryText };
+    }
+
+    function getHeightStats() {
+      const filled = heightSegments.filter(s => s.val && s.val.trim());
+      const nums = filled.map(s => parseInchNum(s.val)).filter(n => n > 0);
+      const sum = nums.reduce((a, b) => a + b, 0);
+      const min = nums.length ? Math.min(...nums) : 0;
+      const max = nums.length ? Math.max(...nums) : 0;
+      const summaryText = !filled.length
+        ? ""
+        : filled.length === 1
+        ? `${filled[0].val.trim()}`
+        : `${filled.map(s => `${s.tag}:${s.val.trim()}"`).join(" | ")} (Max:${formatInchNum(max)}" / Min:${formatInchNum(min)}")`;
+      return { filled, nums, sum, min, max, summaryText };
     }
 
     function fillCustomer(name, phone, addr) {
@@ -386,25 +673,33 @@
       renderCanvas();
     }
 
+    function renderLineQuickChips() {
+      const lineFracWrap = document.getElementById("lineFractionChips");
+      if (!lineFracWrap) return;
+      const wTags = widthSegments.map((s, i) => `${s.tag || 'W'+(i+1)}: `);
+      const hTags = heightSegments.map((s, i) => `${s.tag || 'H'+(i+1)}: `);
+      const tokens = [...wTags, `W${widthSegments.length+1}: `, ...hTags, `H${heightSegments.length+1}: `, "D: ", ...FRACTIONS.slice(0, 7)];
+      lineFracWrap.innerHTML = tokens.map(t => `<button class="chip" onclick="appendLineToken('${t}')">${t}</button>`).join("");
+    }
+
     function initChips() {
       const locWrap = document.getElementById("locationChips");
       locWrap.innerHTML = LOCATIONS.map(l => `<button class="chip" onclick="document.getElementById('locationInput').value='${l}';renderCanvas()">${l}</button>`).join("");
 
       const fracWrap = document.getElementById("dimFractionChips");
-      fracWrap.innerHTML = `<small style="color:#64748b;font-weight:700;">快捷分数：</small>` + FRACTIONS.slice(0,8).map(f => `<button class="chip" onclick="appendFraction('${f}')">+${f}</button>`).join("");
-
-      const lineFracWrap = document.getElementById("lineFractionChips");
-      lineFracWrap.innerHTML = ["W: ","H: ","D: ",...FRACTIONS.slice(0,7)].map(t => `<button class="chip" onclick="appendLineToken('${t}')">${t}</button>`).join("");
+      fracWrap.innerHTML = `<small style="color:#64748b;font-weight:700;">点选分数 (加入 <span id="activeFracTargetLabel" style="color:#153f34;">W1</span>)：</small>` + FRACTIONS.map(f => `<button class="chip" onclick="appendFraction('${f}')">+${f}</button>`).join("");
 
       const colorWrap = document.getElementById("colorPalette");
       colorWrap.innerHTML = COLORS.map(c => `<div class="color-dot ${c===penColor?'active':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join("");
 
       renderCategoryChips();
+      renderSegmentInputs();
     }
 
     function selectColor(c) {
       penColor = c;
-      initChips();
+      const colorWrap = document.getElementById("colorPalette");
+      colorWrap.innerHTML = COLORS.map(col => `<div class="color-dot ${col===penColor?'active':''}" style="background:${col}" onclick="selectColor('${col}')"></div>`).join("");
     }
 
     function renderCategoryChips() {
@@ -425,32 +720,89 @@
     }
 
     function appendFraction(frac) {
-      const id = activeField === "width" ? "widthInput" : activeField === "height" ? "heightInput" : "depthInput";
-      const el = document.getElementById(id);
-      const base = el.value.replace(/\s+\d+\/\d+$/, "").trim();
-      el.value = base ? `${base} ${frac}` : frac;
+      if (focusTarget.type === "width") {
+        const idx = Math.min(focusTarget.index, widthSegments.length - 1);
+        const base = (widthSegments[idx].val || "").replace(/\s+\d+\/\d+$/, "").trim();
+        widthSegments[idx].val = base ? `${base} ${frac}` : frac;
+        renderSegmentInputs();
+      } else if (focusTarget.type === "height") {
+        const idx = Math.min(focusTarget.index, heightSegments.length - 1);
+        const base = (heightSegments[idx].val || "").replace(/\s+\d+\/\d+$/, "").trim();
+        heightSegments[idx].val = base ? `${base} ${frac}` : frac;
+        renderSegmentInputs();
+      } else {
+        const el = document.getElementById("depthInput");
+        const base = el.value.replace(/\s+\d+\/\d+$/, "").trim();
+        el.value = base ? `${base} ${frac}` : frac;
+      }
       renderCanvas();
       updateDeductionHint();
     }
 
     function appendLineToken(token) {
       const el = document.getElementById("lineLabelInput");
-      if (token.endsWith(": ")) el.value = token;
-      else el.value = `${el.value.trim()} ${token}"`;
+      if (token.endsWith(": ")) {
+        const currentNum = el.value.replace(/^[^:：]+[:：]\s*/, "");
+        el.value = token + currentNum;
+      } else {
+        const cleaned = el.value.replace(/"$/, "").trim();
+        el.value = `${cleaned} ${token}"`;
+      }
     }
 
     function updateDeductionHint() {
-      const w = parseFloat(document.getElementById("widthInput").value) || 0;
-      const h = parseFloat(document.getElementById("heightInput").value) || 0;
+      const wStats = getWidthStats();
+      const hStats = getHeightStats();
+      const wBar = document.getElementById("widthSummaryBar");
+      const hBar = document.getElementById("heightSummaryBar");
+
+      if (wStats.filled.length === 0) {
+        wBar.innerHTML = `💡 可输入单段宽，或点击【+ 加一段宽】录入左/中/右多段分窗、上/中/下三点测宽`;
+      } else if (wStats.filled.length === 1) {
+        wBar.innerHTML = `📏 单段宽：<b>${wStats.filled[0].tag} = ${wStats.filled[0].val}"</b> (${wStats.sum.toFixed(2)}")`;
+      } else {
+        const diff = wStats.max - wStats.min;
+        const diffWarn = diff > 0.25 && wStats.is3Pt ? ` ｜ ⚠️ <span style="color:#b91c1c;">上下框宽极差 ${formatInchNum(diff)}" (>1/4")，内装务必按最小宽 ${formatInchNum(wStats.min)}" 扣减！</span>` : "";
+        wBar.innerHTML = `📏 已录 <b>${wStats.filled.length} 段宽</b>：${wStats.filled.map(s => `${s.tag}: <b>${s.val}"</b>`).join(" + ")} ｜ <b>分段求和 ΣW = ${formatInchNum(wStats.sum)}"</b> ｜ 最小 Min = <b>${formatInchNum(wStats.min)}"</b> / 最大 Max = <b>${formatInchNum(wStats.max)}"</b>${diffWarn}`;
+      }
+
+      if (hStats.filled.length === 0) {
+        hBar.innerHTML = `💡 可输入单段高，或点击【+ 加一段高】录入多段不同落高、左/中/右三点高或窗高+杆高`;
+      } else if (hStats.filled.length === 1) {
+        hBar.innerHTML = `📏 单段高：<b>${hStats.filled[0].tag} = ${hStats.filled[0].val}"</b> (${hStats.sum.toFixed(2)}")`;
+      } else {
+        hBar.innerHTML = `📏 已录 <b>${hStats.filled.length} 段高</b>：${hStats.filled.map(s => `${s.tag}: <b>${s.val}"</b>`).join(" | ")} ｜ <b>分段求和 ΣH = ${formatInchNum(hStats.sum)}"</b> ｜ 最小 Min = <b>${formatInchNum(hStats.min)}"</b> / 最大 Max = <b>${formatInchNum(hStats.max)}"</b>`;
+      }
+
       const box = document.getElementById("deductionHint");
-      if (!w && !h) return;
-      let text = `📐 <b>智能核算：</b> 实测 W ${w || '—'}" × H ${h || '—'}"`;
-      if (currentCategory.includes("布帘") || currentCategory.includes("纱")) {
-        const finH = h ? (h - 3.15 - 1).toFixed(2) : "—";
-        text += ` ｜ 推拉门框外建议宽 <b>${w ? w + 10 : '—'}" (+10")</b>，扣80mm轨道及离地后建议成品布高约 <b>${finH}"</b>`;
-      } else if (currentCategory.includes("编织木") && w && h) {
-        const sqft = Math.max(10.76, (w * h) / 144);
-        text += ` ｜ 🎋 编织木计费面积 <b>${sqft.toFixed(2)} sq.ft</b> × $10 = 预估批发价 <b>$${(sqft * 10).toFixed(2)}</b> (仅做平折款)`;
+      const addTen = document.getElementById("addTenCheck")?.checked;
+      const mount = document.getElementById("mountSelect")?.value || "";
+      const refW = wStats.is3Pt ? wStats.min : wStats.sum;
+      const refH = hStats.nums.length ? hStats.max : 0;
+      if (!refW && !refH) return;
+
+      let text = `📐 <b>智能尺寸核算：</b> 宽 ${wStats.summaryText || '—'} × 高 ${hStats.summaryText || '—'}`;
+      if (addTen && refW) {
+        text += ` ｜ 推拉门/框外总宽 +10" = 建议成品总宽 <b>${formatInchNum(refW + 10)}"</b>`;
+      } else if (mount.includes("IM") && refW) {
+        text += ` ｜ 口内安装(IM)建议取最小宽 <b>${formatInchNum(wStats.min)}"</b> 再扣 1/8"~1/4"`;
+      }
+      if ((currentCategory.includes("布帘") || currentCategory.includes("纱")) && refH) {
+        const finH = (refH - 3.15 - 1).toFixed(2);
+        text += ` ｜ 扣 80mm 轨道(3.15")及离地 1" 后建议成品布高约 <b>${finH}"</b>`;
+      } else if (currentCategory.includes("编织木") && refW && refH) {
+        // 若是多段独立窗，可按各段分别核算最低 10.76 sq.ft 或按总面积核算
+        const segCount = Math.max(wStats.nums.length, 1);
+        let totalSqft = 0;
+        if (wStats.nums.length > 1 && !wStats.is3Pt) {
+          wStats.nums.forEach((wn, idx) => {
+            const hn = hStats.nums[idx] || hStats.nums[0] || refH;
+            totalSqft += Math.max(10.76, (wn * hn) / 144);
+          });
+        } else {
+          totalSqft = Math.max(10.76, (refW * refH) / 144);
+        }
+        text += ` ｜ 🎋 编织木计费总面积(${segCount}幅) <b>${totalSqft.toFixed(2)} sq.ft</b> × $10 = 预估批发价 <b>$${(totalSqft * 10).toFixed(2)}</b> (仅做平折款)`;
       }
       box.innerHTML = text;
     }
@@ -462,9 +814,13 @@
       const c = off.getContext("2d");
       c.fillStyle = "#1e293b"; c.fillRect(0,0,1200,900);
       c.strokeStyle = "rgba(226,232,240,0.65)"; c.lineWidth = 6;
-      c.strokeRect(240,160,720,560);
+      c.strokeRect(200,160,800,560);
       c.strokeStyle = "rgba(226,232,240,0.3)"; c.lineWidth = 3;
-      c.beginPath(); c.moveTo(600,160); c.lineTo(600,720); c.moveTo(240,440); c.lineTo(960,440); c.stroke();
+      c.beginPath();
+      c.moveTo(466,160); c.lineTo(466,720);
+      c.moveTo(733,160); c.lineTo(733,720);
+      c.moveTo(200,440); c.lineTo(1000,440);
+      c.stroke();
       baseImg = new Image();
       baseImg.onload = () => renderCanvas();
       baseImg.src = off.toDataURL("image/jpeg", 0.9);
@@ -487,7 +843,7 @@
           off.width = w; off.height = h;
           off.getContext("2d").drawImage(img, 0, 0, w, h);
           baseImg = new Image();
-          baseImg.onload = () => { renderCanvas(); showToast("照片已载入！请直接在图上拖动手指画尺寸线或手写"); };
+          baseImg.onload = () => { renderCanvas(); showToast("照片已载入！可在图上连续画多条宽/高尺寸线，自动归入 W1/W2/W3 和 H1/H2/H3"); };
           baseImg.src = off.toDataURL("image/jpeg", 0.86);
         };
         img.src = reader.result;
@@ -511,24 +867,24 @@
       ctx.clearRect(0, 0, W, H);
       ctx.drawImage(baseImg, 0, 0, W, H);
 
-      // 顶部工程信息水印栏
+      // 顶部工程信息水印栏（完整展示多段宽与多段高）
       const cust = document.getElementById("customerInput").value || "未填客户";
       const code = document.getElementById("windowCodeInput").value || "W1";
       const loc = document.getElementById("locationInput").value || "";
       const mod = document.getElementById("modelInput").value || "";
       const mount = document.getElementById("mountSelect").value || "";
       const ctrl = document.getElementById("controlSelect").value || "";
-      const wVal = document.getElementById("widthInput").value || "—";
-      const hVal = document.getElementById("heightInput").value || "—";
+      const wStats = getWidthStats();
+      const hStats = getHeightStats();
 
-      ctx.fillStyle = "rgba(15,23,42,0.8)";
-      ctx.fillRect(0, 0, W, 68);
+      ctx.fillStyle = "rgba(15,23,42,0.84)";
+      ctx.fillRect(0, 0, W, 86);
       ctx.fillStyle = "#facc15";
-      ctx.font = "bold 24px sans-serif";
-      ctx.fillText(`${code} · ${loc}  |  客户: ${cust}`, 20, 30);
+      ctx.font = "bold 23px sans-serif";
+      ctx.fillText(`${code} · ${loc}  |  客户: ${cust}  |  ${currentCategory} (${mod})`, 18, 29);
       ctx.fillStyle = "#ffffff";
-      ctx.font = "19px sans-serif";
-      ctx.fillText(`型号: ${currentCategory} (${mod}) · ${mount} · ${ctrl}  |  实测: W ${wVal}" × H ${hVal}"`, 20, 56);
+      ctx.font = "bold 18px sans-serif";
+      ctx.fillText(`↔ 宽 W: ${wStats.summaryText || "待测"}    ↕ 高 H: ${hStats.summaryText || "待测"}    [${mount} · ${ctrl}]`, 18, 66);
 
       // 手写涂鸦
       const drawStroke = (pts, color) => {
@@ -556,31 +912,39 @@
         ctx.strokeStyle = l.color; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
 
-        const drawArr = (px, py, d) => {
+        // 两端垂直卡尺短线
+        const px = -Math.sin(ang) * 14, py = Math.cos(ang) * 14;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x1 - px, y1 - py); ctx.lineTo(x1 + px, y1 + py);
+        ctx.moveTo(x2 - px, y2 - py); ctx.lineTo(x2 + px, y2 + py);
+        ctx.stroke();
+
+        const drawArr = (ax, ay, d) => {
           ctx.fillStyle = l.color;
           ctx.beginPath();
-          ctx.moveTo(px, py);
-          ctx.lineTo(px - 22 * Math.cos(d - Math.PI / 6), py - 22 * Math.sin(d - Math.PI / 6));
-          ctx.lineTo(px - 22 * Math.cos(d + Math.PI / 6), py - 22 * Math.sin(d + Math.PI / 6));
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(ax - 22 * Math.cos(d - Math.PI / 6), ay - 22 * Math.sin(d - Math.PI / 6));
+          ctx.lineTo(ax - 22 * Math.cos(d + Math.PI / 6), ay - 22 * Math.sin(d + Math.PI / 6));
           ctx.closePath(); ctx.fill();
         };
         drawArr(x2, y2, ang); drawArr(x1, y1, ang + Math.PI);
 
         if (l.label) {
           const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-          ctx.font = "bold 26px sans-serif";
-          const tw = ctx.measureText(l.label).width + 30;
-          ctx.fillStyle = "rgba(15,23,42,0.9)";
-          ctx.fillRect(mx - tw / 2, my - 21, tw, 42);
+          ctx.font = "bold 24px sans-serif";
+          const tw = ctx.measureText(l.label).width + 28;
+          ctx.fillStyle = "rgba(15,23,42,0.92)";
+          ctx.fillRect(mx - tw / 2, my - 20, tw, 40);
           ctx.strokeStyle = l.color; ctx.lineWidth = 3;
-          ctx.strokeRect(mx - tw / 2, my - 21, tw, 42);
+          ctx.strokeRect(mx - tw / 2, my - 20, tw, 40);
           ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
           ctx.fillText(l.label, mx, my + 1);
         }
         ctx.restore();
       };
       lines.forEach(drawLine);
-      if (draftLine) drawLine({ ...draftLine, label: "松手输入尺寸...", color: penColor });
+      if (draftLine) drawLine({ ...draftLine, label: "松手输入该段尺寸...", color: penColor });
 
       // 贴字标签
       pins.forEach(p => {
@@ -600,7 +964,7 @@
       const r = canvas.getBoundingClientRect();
       return {
         x: Math.max(0.02, Math.min(0.98, (e.clientX - r.left) / r.width)),
-        y: Math.max(0.08, Math.min(0.98, (e.clientY - r.top) / r.height))
+        y: Math.max(0.09, Math.min(0.98, (e.clientY - r.top) / r.height))
       };
     }
 
@@ -619,7 +983,7 @@
       } else if (toolMode === "pen") {
         draftStroke = [pt];
       } else if (toolMode === "pin") {
-        const txt = prompt("输入此处标注文字（如：插座位置 / 左控 / 避开把手）：", "插座位置");
+        const txt = prompt("输入此处标注文字（如：插座位置 / 中梃宽2\" / 避开把手）：", "中梃/障碍物");
         if (txt) { pins.push({ x: pt.x, y: pt.y, text: txt, color: penColor }); renderCanvas(); }
       }
     });
@@ -640,14 +1004,31 @@
       if (toolMode === "line" && draftLine) {
         if (Math.hypot(draftLine.x2 - draftLine.x1, draftLine.y2 - draftLine.y1) > 0.04) {
           const isH = Math.abs(draftLine.x2 - draftLine.x1) >= Math.abs(draftLine.y2 - draftLine.y1);
-          const wv = document.getElementById("widthInput").value;
-          const hv = document.getElementById("heightInput").value;
-          const def = isH ? (wv ? `W: ${wv}"` : "W: ") : (hv ? `H: ${hv}"` : "H: ");
+          // 计算当前已经是第几条水平宽线或垂直高线，自动编号 W1, W2, W3... 或 H1, H2, H3...
+          const existingHorizCount = lines.filter(l => Math.abs(l.x2 - l.x1) >= Math.abs(l.y2 - l.y1) && !l.id.includes("SUM")).length;
+          const existingVertCount = lines.filter(l => Math.abs(l.x2 - l.x1) < Math.abs(l.y2 - l.y1)).length;
+
+          let def = "";
+          if (isH) {
+            const segIdx = existingHorizCount;
+            const seg = widthSegments[segIdx];
+            const tag = seg ? seg.tag : `W${segIdx + 1}`;
+            def = seg && seg.val ? `${tag}: ${seg.val}"` : `${tag}: `;
+          } else {
+            const segIdx = existingVertCount;
+            const seg = heightSegments[segIdx];
+            const tag = seg ? seg.tag : `H${segIdx + 1}`;
+            def = seg && seg.val ? `${tag}: ${seg.val}"` : `${tag}: `;
+          }
+
           const id = "L-" + Date.now();
-          lines.push({ id, ...draftLine, label: def, color: penColor });
+          lines.push({ id, ...draftLine, label: def, color: isH ? "#facc15" : "#22c55e" });
           editingLineId = id;
-          document.getElementById("lineLabelInput").value = def;
+          renderLineQuickChips();
+          const inputEl = document.getElementById("lineLabelInput");
+          inputEl.value = def;
           document.getElementById("lineEditorBox").style.display = "block";
+          setTimeout(() => inputEl.focus(), 30);
         }
         draftLine = null;
         renderCanvas();
@@ -661,11 +1042,41 @@
     function confirmLineEdit() {
       const val = document.getElementById("lineLabelInput").value.trim() || "未标注";
       lines = lines.map(l => l.id === editingLineId ? { ...l, label: val } : l);
-      const m = val.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)/);
-      if (m) {
-        if (/^w|宽/i.test(val)) document.getElementById("widthInput").value = m[1];
-        else if (/^h|高/i.test(val)) document.getElementById("heightInput").value = m[1];
+
+      // 自动同步到对应的多段宽 W1/W2/W3... 或多段高 H1/H2/H3...
+      const segMatch = val.match(/^([A-Za-z\u4e00-\u9fa50-9()（）]+?)\s*[:：]\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/);
+      if (segMatch) {
+        const tagRaw = segMatch[1].trim();
+        const numVal = segMatch[2].trim();
+        if (/^(w|宽|左宽|中宽|右宽|上宽|下宽)/i.test(tagRaw)) {
+          const idxMatch = tagRaw.match(/(\d+)/);
+          const idx = idxMatch ? Math.max(0, Number(idxMatch[1]) - 1) : widthSegments.findIndex(s => s.tag === tagRaw);
+          if (idx >= 0) {
+            while (widthSegments.length <= idx) widthSegments.push({ tag: `W${widthSegments.length + 1}`, val: "" });
+            widthSegments[idx].val = numVal;
+          } else {
+            const emptyIdx = widthSegments.findIndex(s => !s.val.trim());
+            if (emptyIdx >= 0) widthSegments[emptyIdx].val = numVal;
+            else widthSegments.push({ tag: tagRaw, val: numVal });
+          }
+          renderSegmentInputs();
+        } else if (/^(h|高|左高|中高|右高|窗高|杆高|墙高)/i.test(tagRaw)) {
+          const idxMatch = tagRaw.match(/(\d+)/);
+          const idx = idxMatch ? Math.max(0, Number(idxMatch[1]) - 1) : heightSegments.findIndex(s => s.tag === tagRaw);
+          if (idx >= 0) {
+            while (heightSegments.length <= idx) heightSegments.push({ tag: `H${heightSegments.length + 1}`, val: "" });
+            heightSegments[idx].val = numVal;
+          } else {
+            const emptyIdx = heightSegments.findIndex(s => !s.val.trim());
+            if (emptyIdx >= 0) heightSegments[emptyIdx].val = numVal;
+            else heightSegments.push({ tag: tagRaw, val: numVal });
+          }
+          renderSegmentInputs();
+        } else if (/^(d|深)/i.test(tagRaw)) {
+          document.getElementById("depthInput").value = numVal;
+        }
       }
+
       document.getElementById("lineEditorBox").style.display = "none";
       editingLineId = null;
       renderCanvas();
@@ -679,14 +1090,53 @@
       renderCanvas();
     }
 
+    // 一键将所有多段宽与多段高自动画到照片上
     function autoDrawWH() {
-      const wv = document.getElementById("widthInput").value.trim();
-      const hv = document.getElementById("heightInput").value.trim();
+      const wStats = getWidthStats();
+      const hStats = getHeightStats();
       lines = lines.filter(l => !l.id.startsWith("AUTO-"));
-      if (wv) lines.push({ id: "AUTO-W", x1: 0.22, y1: 0.24, x2: 0.78, y2: 0.24, label: `W: ${wv}"`, color: "#facc15" });
-      if (hv) lines.push({ id: "AUTO-H", x1: 0.82, y1: 0.22, x2: 0.82, y2: 0.84, label: `H: ${hv}"`, color: "#22c55e" });
+
+      // 绘制宽度分段线
+      if (wStats.filled.length === 1) {
+        const s = wStats.filled[0];
+        lines.push({ id: "AUTO-W1", x1: 0.18, y1: 0.24, x2: 0.82, y2: 0.24, label: `${s.tag}: ${s.val}"`, color: "#facc15" });
+      } else if (wStats.filled.length > 1) {
+        if (wStats.is3Pt) {
+          // 上、中、下三点测宽：沿高度方向分布
+          const yPositions = [0.22, 0.48, 0.74, 0.84];
+          wStats.filled.forEach((s, idx) => {
+            const y = yPositions[idx] || (0.22 + idx * 0.18);
+            lines.push({ id: `AUTO-W${idx+1}`, x1: 0.18, y1: y, x2: 0.82, y2: y, label: `${s.tag}: ${s.val}"`, color: "#facc15" });
+          });
+        } else {
+          // 左、中、右多段分窗：沿水平方向分段并排绘制，同时在上方绘制总宽 ΣW 线
+          const n = wStats.filled.length;
+          const startX = 0.14, endX = 0.86;
+          const span = (endX - startX) / n;
+          wStats.filled.forEach((s, idx) => {
+            const x1 = +(startX + idx * span + 0.008).toFixed(3);
+            const x2 = +(startX + (idx + 1) * span - 0.008).toFixed(3);
+            lines.push({ id: `AUTO-W${idx+1}`, x1, y1: 0.28, x2, y2: 0.28, label: `${s.tag}: ${s.val}"`, color: "#facc15" });
+          });
+          lines.push({ id: "AUTO-WSUM", x1: startX, y1: 0.17, x2: endX, y2: 0.17, label: `总宽 ΣW: ${formatInchNum(wStats.sum)}"`, color: "#38bdf8" });
+        }
+      }
+
+      // 绘制高度分段线
+      if (hStats.filled.length === 1) {
+        const s = hStats.filled[0];
+        lines.push({ id: "AUTO-H1", x1: 0.86, y1: 0.22, x2: 0.86, y2: 0.84, label: `${s.tag}: ${s.val}"`, color: "#22c55e" });
+      } else if (hStats.filled.length > 1) {
+        const n = hStats.filled.length;
+        const xPositions = n === 2 ? [0.24, 0.84] : n === 3 ? [0.22, 0.52, 0.84] : hStats.filled.map((_, i) => +(0.18 + i * (0.68 / Math.max(1, n - 1))).toFixed(2));
+        hStats.filled.forEach((s, idx) => {
+          const x = xPositions[idx] || 0.84;
+          lines.push({ id: `AUTO-H${idx+1}`, x1: x, y1: 0.24, x2: x, y2: 0.84, label: `${s.tag}: ${s.val}"`, color: "#22c55e" });
+        });
+      }
+
       renderCanvas();
-      showToast("已在照片上自动画出宽高尺寸线");
+      showToast(`已在照片上自动画出 ${wStats.filled.length} 段宽与 ${hStats.filled.length} 段高标尺线！`);
     }
 
     function undoCanvas() {
@@ -702,7 +1152,7 @@
       renderCanvas();
     }
 
-    // 语音识别与智能解析
+    // 语音识别与多段宽高智能解析
     let recognition = null;
     let listening = false;
     function toggleSpeech() {
@@ -718,7 +1168,7 @@
       recognition.onstart = () => {
         listening = true;
         document.getElementById("voiceBtn").textContent = "⏹ 停止聆听...";
-        showToast("🎤 请说话：例如“客厅主窗 宽152 高177 双层布帘 口外安装”");
+        showToast("🎤 请说话：支持说出单段或多段宽高，例如“宽 28 56 28 高 72 84”");
       };
       recognition.onresult = e => {
         const txt = Array.from(e.results).map(r => r[0].transcript).join(" ");
@@ -733,20 +1183,61 @@
       recognition.start();
     }
 
+    // 从一段文本中提取连续的多个英寸数值（支持带分数如 35 1/2）
+    function extractInchList(segmentStr) {
+      if (!segmentStr) return [];
+      const matches = segmentStr.match(/\d+(?:\s+\d+\/\d+|\.\d+|\s*\/\s*\d+)?/g);
+      return matches ? matches.map(m => m.trim()).filter(Boolean) : [];
+    }
+
     function parseTextAndFill() {
       const raw = document.getElementById("voiceText").value;
       if (!raw.trim()) return;
-      const norm = raw.replace(/又二分之一|半/g, " 1/2").replace(/又四分之(\d)/g, " $1/4").replace(/又八分之(\d)/g, " $1/8").replace(/又十六分之(\d+)/g, " $1/16");
-      const wm = norm.match(/(?:宽|width|w)\s*[:：是]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
-      const hm = norm.match(/(?:高|height|h)\s*[:：是]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
-      const by = norm.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)\s*(?:×|x|by|乘)\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
-      if (wm) document.getElementById("widthInput").value = wm[1].trim();
-      if (hm) document.getElementById("heightInput").value = hm[1].trim();
-      if (!wm && !hm && by) {
-        document.getElementById("widthInput").value = by[1].trim();
-        document.getElementById("heightInput").value = by[2].trim();
+      const norm = raw
+        .replace(/又二分之一|半/g, " 1/2")
+        .replace(/又四分之(\d)/g, " $1/4")
+        .replace(/又八分之(\d)/g, " $1/8")
+        .replace(/又十六分之(\d+)/g, " $1/16");
+
+      // 1. 优先识别显式命名的多点宽/高（上宽/中宽/下宽、左宽/右宽、W1/W2/W3、左高/中高/右高、H1/H2/H3）
+      const namedW = [];
+      const namedH = [];
+      const wNamedRegex = /(上宽|中宽|下宽|左宽|右宽|W\d+)\s*[:：是=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/gi;
+      const hNamedRegex = /(左高|中高|右高|上高|下高|窗高|杆高|墙高|H\d+)\s*[:：是=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/gi;
+      let m;
+      while ((m = wNamedRegex.exec(norm)) !== null) namedW.push({ tag: m[1].toUpperCase(), val: m[2].trim() });
+      while ((m = hNamedRegex.exec(norm)) !== null) namedH.push({ tag: m[1].toUpperCase(), val: m[2].trim() });
+
+      if (namedW.length > 0) {
+        widthSegments = namedW;
+      } else {
+        // 2. 识别“宽 [多组数字]”直到遇到“高/深/产品词”
+        const wBlock = norm.match(/(?:宽|width|w)(?:度|三段|两段|四段)?\s*[:：是]?\s*([\d\s./+、,，-]+?)(?=\s*(?:高|height|h|深|depth|双层|布帘|白纱|卷帘|斑马|罗马|竹帘|编织|百叶|口内|口外|内装|外装|$))/i);
+        if (wBlock) {
+          const list = extractInchList(wBlock[1]);
+          if (list.length > 0) widthSegments = list.map((v, i) => ({ tag: `W${i + 1}`, val: v }));
+        }
       }
-      if (/客厅|living/i.test(raw)) document.getElementById("locationInput").value = "客厅主窗 (Living Room)";
+
+      if (namedH.length > 0) {
+        heightSegments = namedH;
+      } else {
+        const hBlock = norm.match(/(?:高|height|h)(?:度|三段|两段|四段)?\s*[:：是]?\s*([\d\s./+、,，-]+?)(?=\s*(?:深|depth|双层|布帘|白纱|卷帘|斑马|罗马|竹帘|编织|百叶|口内|口外|内装|外装|对开|单开|$))/i);
+        if (hBlock) {
+          const list = extractInchList(hBlock[1]);
+          if (list.length > 0) heightSegments = list.map((v, i) => ({ tag: `H${i + 1}`, val: v }));
+        }
+      }
+
+      // 3. 如果既没写“宽”也没写“高”，识别 72 x 84 格式
+      const by = norm.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)\s*(?:×|x|by|乘)\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+      if (by && !namedW.length && !namedH.length && !/(?:宽|高|width|height)/i.test(norm)) {
+        widthSegments = [{ tag: "W1", val: by[1].trim() }];
+        heightSegments = [{ tag: "H1", val: by[2].trim() }];
+      }
+
+      if (/飘窗|转角|bay/i.test(raw)) document.getElementById("locationInput").value = "客厅飘窗/转角窗 (Bay Window)";
+      else if (/客厅|living/i.test(raw)) document.getElementById("locationInput").value = "客厅主窗 (Living Room)";
       else if (/主卧|master/i.test(raw)) document.getElementById("locationInput").value = "主卧 (Master Bedroom)";
       else if (/挑高|high ceiling/i.test(raw)) document.getElementById("locationInput").value = "挑高大窗 (High Ceiling)";
       else if (/推拉门|sliding/i.test(raw)) document.getElementById("locationInput").value = "推拉门 (Sliding Door)";
@@ -760,14 +1251,16 @@
       if (/口内|内装|\bim\b/i.test(raw)) document.getElementById("mountSelect").value = "口内安装 (IM)";
       else if (/口外|外装|\bom\b/i.test(raw)) document.getElementById("mountSelect").value = "口外安装 (OM)";
 
+      renderSegmentInputs();
       autoDrawWH();
-      updateDeductionHint();
-      showToast("✦ 已从语音/手写内容提取尺寸与型号！");
+      showToast(`✦ 已智能提取 ${widthSegments.length} 段宽、${heightSegments.length} 段高并标到照片上！`);
     }
 
     function saveWindowRecord(andNext) {
       const customer = document.getElementById("customerInput").value.trim();
       if (!customer) { showToast("请先输入或点选【客户姓名】"); return; }
+      const wStats = getWidthStats();
+      const hStats = getHeightStats();
       renderCanvas();
       const annotatedPhotoDataUrl = canvas.toDataURL("image/jpeg", 0.88);
       const rec = {
@@ -777,8 +1270,10 @@
         address: document.getElementById("addressInput").value.trim(),
         windowCode: document.getElementById("windowCodeInput").value.trim() || "W1",
         windowLocation: document.getElementById("locationInput").value.trim(),
-        widthRaw: document.getElementById("widthInput").value.trim(),
-        heightRaw: document.getElementById("heightInput").value.trim(),
+        widthRaw: wStats.summaryText,
+        heightRaw: hStats.summaryText,
+        widthSegments: JSON.parse(JSON.stringify(widthSegments)),
+        heightSegments: JSON.parse(JSON.stringify(heightSegments)),
         depthRaw: document.getElementById("depthInput").value.trim(),
         productCategory: currentCategory,
         productModel: document.getElementById("modelInput").value.trim(),
@@ -798,14 +1293,15 @@
         const m = rec.windowCode.match(/(\d+)/);
         const nextCode = "W" + (m ? Number(m[1]) + 1 : records.length + 1);
         document.getElementById("windowCodeInput").value = nextCode;
-        document.getElementById("widthInput").value = "";
-        document.getElementById("heightInput").value = "";
+        widthSegments = [{ tag: "W1", val: "" }];
+        heightSegments = [{ tag: "H1", val: "" }];
         document.getElementById("depthInput").value = "";
         document.getElementById("voiceText").value = "";
+        renderSegmentInputs();
         resetBlankCanvas();
         showToast(`✓ 已保存 ${rec.windowCode}！已自动切换到 ${nextCode}`);
       } else {
-        showToast(`✓ 已保存 ${rec.customer} 的 ${rec.windowCode} 测量图！`);
+        showToast(`✓ 已保存 ${rec.customer} 的 ${rec.windowCode} 多段测量图！`);
       }
     }
 
@@ -813,7 +1309,7 @@
       document.getElementById("recordCount").textContent = records.length;
       const grid = document.getElementById("galleryGrid");
       if (!records.length) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:28px;color:#64748b;">暂无保存记录，在上方拍照并画线后点击保存即可生成带尺寸水印的现场照片。</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:28px;color:#64748b;">暂无保存记录，在上方拍照并录入单段或多段宽高后点击保存即可生成带标注的现场照片。</div>`;
         return;
       }
       grid.innerHTML = records.map(r => `
@@ -825,8 +1321,9 @@
               <small style="color:#64748b;">${r.createdAt}</small>
             </div>
             <div><b>👤 客户：</b>${r.customer} ${r.phone || ''}</div>
-            <div style="background:#f1f5f3;padding:6px 9px;border-radius:8px;font-weight:800;color:#153f34;">
-              📏 实测：W ${r.widthRaw || '—'}" × H ${r.heightRaw || '—'}"
+            <div style="background:#f1f5f3;padding:7px 10px;border-radius:8px;font-weight:800;color:#153f34;line-height:1.45;">
+              <div>↔️ 宽 W：${r.widthRaw || '—'}</div>
+              <div>↕️ 高 H：${r.heightRaw || '—'}${r.depthRaw ? ` ｜ 深 D：${r.depthRaw}"` : ''}</div>
             </div>
             <div><b>选定型号：</b>${r.productCategory} · <b>${r.productModel}</b></div>
             <div style="color:#475569;font-size:12px;">${r.mountType} · ${r.openOrControl} · ${r.motorOrTrack}</div>
@@ -848,7 +1345,7 @@
 
     function exportAllRecordsCsv() {
       if (!records.length) { showToast("暂无测量记录可导出"); return; }
-      const header = "编号,时间,客户,电话,地址,窗号,窗位置,实测宽(in),实测高(in),窗深(in),产品品类,选定型号,安装方式,开合控制,轨道电机,工艺衬布,语音手写备注";
+      const header = "编号,时间,客户,电话,地址,窗号,窗位置,实测宽明细(多段/汇总),实测高明细(多段/汇总),窗深(in),产品品类,选定型号,安装方式,开合控制,轨道电机,工艺衬布,语音手写备注";
       const rows = records.map(r => [r.id,r.createdAt,r.customer,r.phone,r.address,r.windowCode,r.windowLocation,r.widthRaw,r.heightRaw,r.depthRaw,r.productCategory,r.productModel,r.mountType,r.openOrControl,r.motorOrTrack,r.linerOrStyle,r.voiceTranscript].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(","));
       const blob = new Blob(["\ufeff" + [header, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
@@ -864,4 +1361,3 @@
   </script>
 </body>
 </html>
-
