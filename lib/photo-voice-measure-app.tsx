@@ -1272,6 +1272,311 @@ export function PhotoVoiceMeasureApp({
   };
 
   // ==========================================
+  // 保存图片 (下载 JPG / 存手机相册) & 生成 Excel (.xlsx / 带照片 .xls)
+  // ==========================================
+  const dataUrlToBlob = (dataUrl: string) => {
+    const parts = dataUrl.split(",");
+    const mime = (parts[0]?.match(/:(.*?);/) || [])[1] || "image/jpeg";
+    const bstr = atob(parts[1] || "");
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  };
+
+  const sanitizeFilename = (str: string) =>
+    String(str || "未命名").replace(/[\\/:*?"<>|\s]+/g, "_");
+
+  const downloadDataUrlImage = (dataUrl: string, filename: string) => {
+    try {
+      const blob = dataUrlToBlob(dataUrl);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || `博朗测量标注图-${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      showMsg(`🖼️ 已保存图片：${a.download}`);
+    } catch {
+      showMsg("请点击放大图片后长按保存到手机相册");
+    }
+  };
+
+  const shareDataUrlImage = async (dataUrl: string, filename: string) => {
+    const safeName = filename || `博朗测量图-${Date.now()}.jpg`;
+    try {
+      const blob = dataUrlToBlob(dataUrl);
+      const file = new File([blob], safeName, { type: "image/jpeg" });
+      if ((navigator as any).canShare && (navigator as any).canShare({ files: [file] })) {
+        await (navigator as any).share({
+          title: safeName,
+          text: "博朗窗饰现场拍照测量标注图",
+          files: [file],
+        });
+        showMsg("📱 已调起手机相册/微信分享菜单！");
+        return;
+      }
+    } catch (err: any) {
+      if (err && err.name === "AbortError") return;
+    }
+    downloadDataUrlImage(dataUrl, safeName);
+  };
+
+  const saveCurrentCanvasImage = (mode: "download" | "share") => {
+    renderCanvas();
+    const dataUrl = canvasRef.current?.toDataURL("image/jpeg", 0.92) || rawPhoto;
+    const cust = sanitizeFilename(customer.trim() || "客户");
+    const code = sanitizeFilename(windowCode.trim() || "W1");
+    const loc = sanitizeFilename((windowLocation.trim() || "窗户").split(" ")[0]);
+    const filename = `博朗测量_${cust}_${code}_${loc}.jpg`;
+    if (mode === "share") shareDataUrlImage(dataUrl, filename);
+    else downloadDataUrlImage(dataUrl, filename);
+  };
+
+  const buildCurrentScreenRecord = (): PhotoMeasureRecord => {
+    renderCanvas();
+    const annotatedDataUrl = canvasRef.current?.toDataURL("image/jpeg", 0.88) || rawPhoto;
+    return {
+      id: `PM-${Date.now().toString().slice(-6)}`,
+      customer: customer.trim() || "现场客户",
+      phone: phone.trim(),
+      address: address.trim(),
+      windowCode: windowCode.trim() || `W${records.length + 1}`,
+      windowLocation: windowLocation.trim() || "未命名窗位",
+      widthRaw: widthRaw.trim(),
+      heightRaw: heightRaw.trim(),
+      widthSegments,
+      heightSegments,
+      depthRaw: depthRaw.trim(),
+      finishedWidthNote,
+      finishedHeightNote,
+      productCategory,
+      productModel: productModel.trim(),
+      mountType,
+      openOrControl,
+      motorOrTrack,
+      linerOrStyle,
+      remark: remark.trim(),
+      voiceTranscript: voiceTranscript.trim(),
+      audioDataUrl,
+      rawPhotoDataUrl: rawPhoto,
+      annotatedPhotoDataUrl: annotatedDataUrl,
+      lines,
+      strokes,
+      pins,
+      createdAt: new Date().toLocaleString("zh-CN", { hour12: false }),
+    };
+  };
+
+  const getExportableRecords = (): PhotoMeasureRecord[] => {
+    const hasCurrent = widthStats.filled.length > 0 || heightStats.filled.length > 0 || lines.length > 0 || customer.trim().length > 0;
+    if (!records.length) {
+      return [buildCurrentScreenRecord()];
+    }
+    if (hasCurrent && (widthStats.filled.length > 0 || heightStats.filled.length > 0)) {
+      const alreadySaved = records.some(
+        (r) => r.windowCode === windowCode.trim() && r.widthRaw === widthRaw.trim() && r.heightRaw === heightRaw.trim()
+      );
+      if (!alreadySaved) {
+        return [buildCurrentScreenRecord(), ...records];
+      }
+    }
+    return [...records];
+  };
+
+  const exportPhotoExcelHtml = () => {
+    const list = getExportableRecords().slice().reverse();
+    if (!list.length) {
+      showMsg("暂无测量记录可导出");
+      return;
+    }
+    const custName = sanitizeFilename(list[0]?.customer || "客户");
+    const dateStr = new Date().toISOString().slice(0, 10);
+
+    const rowsHtml = list
+      .map(
+        (r, i) => `
+      <tr>
+        <td style="text-align:center;font-weight:bold;">${i + 1}</td>
+        <td style="text-align:center;font-weight:bold;color:#153f34;">${r.windowCode || ""}</td>
+        <td>${r.windowLocation || ""}</td>
+        <td><b>${r.customer || ""}</b><br/><span style="color:#475569;font-size:12px;">${r.phone || ""}<br/>${r.address || ""}</span></td>
+        <td style="font-weight:bold;color:#0f172a;">${r.widthRaw || "—"}</td>
+        <td style="font-weight:bold;color:#0f172a;">${r.heightRaw || "—"}</td>
+        <td style="text-align:center;">${r.depthRaw || "—"}</td>
+        <td><b>${r.productCategory || ""}</b><br/>${r.productModel || ""}</td>
+        <td>${r.mountType || ""}</td>
+        <td><b>${r.openOrControl || ""}</b><br/>${r.motorOrTrack || ""}<br/>${r.linerOrStyle || ""}</td>
+        <td style="color:#92400e;font-weight:bold;">${r.remark || ""}</td>
+        <td style="text-align:center;padding:6px;">
+          ${r.annotatedPhotoDataUrl ? `<img src="${r.annotatedPhotoDataUrl}" width="220" height="165" style="width:220px;height:165px;object-fit:contain;border:1px solid #cbd5cf;" />` : "—"}
+        </td>
+        <td style="font-size:12px;color:#64748b;">${r.createdAt || ""}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    const htmlDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8" />
+      <style>
+        body { font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+        table { border-collapse: collapse; width: 100%; }
+        th { background: #153f34; color: #ffffff; font-weight: bold; padding: 10px 8px; border: 1px solid #0f172a; font-size: 13px; }
+        td { padding: 8px; border: 1px solid #cbd5cf; vertical-align: middle; font-size: 13px; }
+      </style>
+    </head>
+    <body>
+      <h2 style="color:#153f34;margin-bottom:4px;">BRAUN INTERNATIONAL · 博朗窗饰现场拍照测量与选品图文工单</h2>
+      <p style="margin-top:0;color:#475569;font-size:13px;">客户：<b>${list[0]?.customer || "现场客户"}</b> ｜ 电话：${list[0]?.phone || "—"} ｜ 地址：${list[0]?.address || "—"} ｜ 导出日期：${dateStr} ｜ 共 ${list.length} 扇窗</p>
+      <table>
+        <thead>
+          <tr>
+            <th>序号</th><th>窗号</th><th>窗位置/房间</th><th>客户信息</th>
+            <th>实测宽 Width (多段/汇总)</th><th>实测高 Height (多段/汇总)</th><th>窗深 Depth</th>
+            <th>产品品类与选定型号</th><th>安装方式</th><th>专属操控方式 / 轨道电机 / 衬布工艺</th>
+            <th>现场测量与加工备注</th><th>现场标注测量照片</th><th>记录时间</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </body>
+    </html>`;
+
+    const blob = new Blob(["\ufeff" + htmlDoc], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `博朗带照片图文测量工单_${custName}_${dateStr}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    showMsg(`🖼️ 已生成带照片 Excel 工单：${a.download}`);
+  };
+
+  const exportExcelXlsx = async () => {
+    const list = getExportableRecords().slice().reverse();
+    if (!list.length) {
+      showMsg("暂无测量记录可导出");
+      return;
+    }
+
+    if (typeof window !== "undefined" && !(window as any).XLSX) {
+      await new Promise<void>((resolve) => {
+        const s = document.createElement("script");
+        s.src = "/xlsx.full.min.js";
+        s.onload = () => resolve();
+        s.onerror = () => resolve();
+        document.head.appendChild(s);
+      });
+    }
+
+    const XLSXLib = typeof window !== "undefined" ? (window as any).XLSX : null;
+    if (!XLSXLib) {
+      exportPhotoExcelHtml();
+      return;
+    }
+
+    const summaryRows = list.map((r, idx) => {
+      const wSegs = Array.isArray(r.widthSegments) ? r.widthSegments.filter((s) => s.val && s.val.trim()) : [];
+      const hSegs = Array.isArray(r.heightSegments) ? r.heightSegments.filter((s) => s.val && s.val.trim()) : [];
+      const wNums = wSegs.map((s) => parseInchValue(s.val)).filter((n) => n > 0);
+      const hNums = hSegs.map((s) => parseInchValue(s.val)).filter((n) => n > 0);
+      const wSum = wNums.reduce((a, b) => a + b, 0);
+      const wMin = wNums.length ? Math.min(...wNums) : 0;
+      const hMax = hNums.length ? Math.max(...hNums) : 0;
+      const hMin = hNums.length ? Math.min(...hNums) : 0;
+
+      return {
+        "序号": idx + 1,
+        "窗位编号": r.windowCode || `W${idx + 1}`,
+        "房间/窗位置": r.windowLocation || "",
+        "客户姓名": r.customer || "",
+        "联系电话": r.phone || "",
+        "测量/安装地址": r.address || "",
+        "实测宽汇总(in)": r.widthRaw || "",
+        "分段总宽 ΣW(in)": wSum ? formatInchValue(wSum) : "",
+        "最小宽 Min W(in)": wMin ? formatInchValue(wMin) : "",
+        "W1": wSegs[0] ? `${wSegs[0].tag}: ${wSegs[0].val}` : "",
+        "W2": wSegs[1] ? `${wSegs[1].tag}: ${wSegs[1].val}` : "",
+        "W3": wSegs[2] ? `${wSegs[2].tag}: ${wSegs[2].val}` : "",
+        "W4": wSegs[3] ? `${wSegs[3].tag}: ${wSegs[3].val}` : "",
+        "实测高汇总(in)": r.heightRaw || "",
+        "最大高 Max H(in)": hMax ? formatInchValue(hMax) : "",
+        "最小高 Min H(in)": hMin ? formatInchValue(hMin) : "",
+        "H1": hSegs[0] ? `${hSegs[0].tag}: ${hSegs[0].val}` : "",
+        "H2": hSegs[1] ? `${hSegs[1].tag}: ${hSegs[1].val}` : "",
+        "H3": hSegs[2] ? `${hSegs[2].tag}: ${hSegs[2].val}` : "",
+        "H4": hSegs[3] ? `${hSegs[3].tag}: ${hSegs[3].val}` : "",
+        "窗深 Depth(in)": r.depthRaw || "",
+        "产品品类": r.productCategory || "",
+        "选定型号/面料色号": r.productModel || "",
+        "安装方式(Mount)": r.mountType || "",
+        "专属操控方式": r.openOrControl || "",
+        "驱动/轨道/电机/扇数": r.motorOrTrack || "",
+        "工艺/衬布/罩壳配件": r.linerOrStyle || "",
+        "现场测量与加工备注": r.remark || "",
+        "语音手写速记原文": r.voiceTranscript || "",
+        "测量时间": r.createdAt || "",
+      };
+    });
+
+    const splitRows: Record<string, any>[] = [];
+    list.forEach((r, idx) => {
+      const wSegs =
+        Array.isArray(r.widthSegments) && r.widthSegments.some((s) => s.val && s.val.trim())
+          ? r.widthSegments.filter((s) => s.val && s.val.trim())
+          : [{ tag: "W1", val: r.widthRaw || "" }];
+      const hSegs =
+        Array.isArray(r.heightSegments) && r.heightSegments.some((s) => s.val && s.val.trim())
+          ? r.heightSegments.filter((s) => s.val && s.val.trim())
+          : [{ tag: "H1", val: r.heightRaw || "" }];
+      const maxCount = Math.max(wSegs.length, hSegs.length, 1);
+      for (let k = 0; k < maxCount; k++) {
+        const ws = wSegs[k] || wSegs[0] || { tag: `W${k + 1}`, val: "" };
+        const hs = hSegs[k] || hSegs[0] || { tag: `H${k + 1}`, val: "" };
+        splitRows.push({
+          "主窗序号": idx + 1,
+          "窗位编号": r.windowCode || `W${idx + 1}`,
+          "分窗/测点序号": maxCount > 1 ? `${r.windowCode}-${k + 1}` : r.windowCode,
+          "房间/窗位置": r.windowLocation || "",
+          "客户姓名": r.customer || "",
+          "宽度标识": ws.tag,
+          "单段宽(in)": ws.val,
+          "单段宽数值(小数)": parseInchValue(ws.val) || "",
+          "高度标识": hs.tag,
+          "单段高(in)": hs.val,
+          "单段高数值(小数)": parseInchValue(hs.val) || "",
+          "窗深(in)": r.depthRaw || "",
+          "产品品类": r.productCategory || "",
+          "选定型号/面料": r.productModel || "",
+          "安装方式": r.mountType || "",
+          "专属操控方式": r.openOrControl || "",
+          "轨道/电机/扇数": r.motorOrTrack || "",
+          "工艺/衬布/罩壳": r.linerOrStyle || "",
+          "现场备注": r.remark || "",
+        });
+      }
+    });
+
+    const wb = XLSXLib.utils.book_new();
+    const ws1 = XLSXLib.utils.json_to_sheet(summaryRows);
+    XLSXLib.utils.book_append_sheet(wb, ws1, "测量与选品总表");
+    const ws2 = XLSXLib.utils.json_to_sheet(splitRows);
+    XLSXLib.utils.book_append_sheet(wb, ws2, "多段分窗拆单明细");
+
+    const custName = sanitizeFilename(list[0]?.customer || "客户");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `博朗窗饰测量与下单表_${custName}_${dateStr}.xlsx`;
+    XLSXLib.writeFile(wb, filename);
+    showMsg(`📊 已生成 Excel 表格：${filename}`);
+  };
+
+  // ==========================================
   // 保存当前窗位测量记录 & 同步至零售/批发订单
   // ==========================================
   const handleSaveWindow = (andNextWindow: boolean) => {
@@ -1489,6 +1794,54 @@ export function PhotoVoiceMeasureApp({
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => saveCurrentCanvasImage("download")}
+            style={{
+              background: "#fff",
+              color: "#153f34",
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "none",
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            🖼️ 保存当前图片 (JPG)
+          </button>
+          <button
+            type="button"
+            onClick={exportExcelXlsx}
+            style={{
+              background: "#e5c168",
+              color: "#153f34",
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "none",
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            📊 生成 Excel (.xlsx)
+          </button>
+          <button
+            type="button"
+            onClick={exportPhotoExcelHtml}
+            style={{
+              background: "#dcfce7",
+              color: "#14532d",
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "none",
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            🖼️ 生成带图 Excel (.xls)
+          </button>
           {!standalone ? (
             <a
               href="/photo-measure"
@@ -1924,8 +2277,49 @@ export function PhotoVoiceMeasureApp({
               }}
             />
           </div>
+          {/* 画布下方一键保存标注图片工具条 */}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              marginTop: 10,
+              padding: 10,
+              background: "#eef6f2",
+              border: "1px solid #bdd5c8",
+              borderRadius: 12,
+              alignItems: "center",
+            }}
+          >
+            <button
+              type="button"
+              className="primary"
+              style={{ flex: 1, minWidth: 165, padding: "10px 12px", fontSize: 13, fontWeight: 800 }}
+              onClick={() => saveCurrentCanvasImage("download")}
+            >
+              🖼️ 保存当前标注图片 (下载 JPG)
+            </button>
+            <button
+              type="button"
+              style={{
+                flex: 1,
+                minWidth: 165,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "none",
+                background: "#e5c168",
+                color: "#153f34",
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+              onClick={() => saveCurrentCanvasImage("share")}
+            >
+              📱 存手机相册 / 发微信 (iOS/平板)
+            </button>
+          </div>
           <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}>
-            💡 提示：在【📏 画尺寸线】模式下，手指按住照片从窗户一端拖到另一端即可画出带双箭头的标尺线；切换到【✍️ 手写笔涂鸦】可用手指或电容笔直接在照片上手写尺寸、画开合箭头。
+            💡 提示：在【📏 画尺寸线】模式下，手指按住照片从窗户一端拖到另一端即可画出带双箭头的标尺线；点上方【🖼️ 保存当前标注图片】即可将带客户、尺寸线、操控方式与备注的高清图保存到手机相册或电脑。
           </p>
         </section>
 
@@ -2517,23 +2911,47 @@ export function PhotoVoiceMeasureApp({
               </div>
             </div>
 
-            {/* 保存按钮组 */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+            {/* 保存与导出按钮组 */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
               <button
                 type="button"
                 className="primary"
                 onClick={() => handleSaveWindow(true)}
-                style={{ flex: 2, padding: "13px 16px", fontSize: 15, fontWeight: 800 }}
+                style={{ flex: 2, minWidth: 210, padding: "13px 16px", fontSize: 15, fontWeight: 800 }}
               >
-                ✓ 保存此窗位并继续拍下一扇窗 (自动切到下一窗号)
+                ✓ 保存此窗位并继续拍下一扇窗
               </button>
               <button
                 type="button"
                 className="secondary"
                 onClick={() => handleSaveWindow(false)}
-                style={{ flex: 1, padding: "13px 14px", fontSize: 14, fontWeight: 700 }}
+                style={{ flex: 1, minWidth: 130, padding: "13px 14px", fontSize: 14, fontWeight: 700 }}
               >
                 仅保存当前窗位
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => saveCurrentCanvasImage("download")}
+                style={{ padding: "13px 14px", fontSize: 14, fontWeight: 800 }}
+              >
+                🖼️ 保存图片
+              </button>
+              <button
+                type="button"
+                onClick={exportExcelXlsx}
+                style={{
+                  padding: "13px 14px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: "#e5c168",
+                  color: "#153f34",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                📊 生成 Excel
               </button>
             </div>
           </section>
@@ -2549,24 +2967,32 @@ export function PhotoVoiceMeasureApp({
               点击任意标注照片可放大查看或下载合成图发给客户/工厂；支持按客户一键转入【零售定制】或【批发业务】。
             </p>
           </div>
-          {customer && records.some((r) => r.customer === customer) && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                type="button"
-                className="primary"
-                onClick={() => syncCustomerToOrder(customer, "retail")}
-              >
-                ➔ 将「{customer}」全部测量窗位转入【零售定制管理】
-              </button>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => syncCustomerToOrder(customer, "wholesale")}
-              >
-                ➔ 转入【批发业务管理】
-              </button>
-            </div>
-          )}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button type="button" className="primary" onClick={exportExcelXlsx}>
+              📊 生成标准 Excel (.xlsx 含多段拆单)
+            </button>
+            <button type="button" className="secondary" onClick={exportPhotoExcelHtml}>
+              🖼️ 生成【带现场照片】图文 Excel 工单 (.xls)
+            </button>
+            {customer && records.some((r) => r.customer === customer) && (
+              <>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => syncCustomerToOrder(customer, "retail")}
+                >
+                  ➔ 转入【零售定制】
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => syncCustomerToOrder(customer, "wholesale")}
+                >
+                  ➔ 转入【批发业务】
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div
