@@ -1,5 +1,22 @@
 import assert from "node:assert/strict";
+import { register } from "node:module";
 import test from "node:test";
+
+register(
+  "data:text/javascript," +
+    encodeURIComponent(`
+      export async function load(url, context, nextLoad) {
+        if (url.startsWith("cloudflare:")) {
+          return {
+            format: "module",
+            shortCircuit: true,
+            source: "export class DurableObject {} export class WorkerEntrypoint {} export class WorkflowEntrypoint {} export const env = {}; export default {};",
+          };
+        }
+        return nextLoad(url, context);
+      }
+    `),
+);
 
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
