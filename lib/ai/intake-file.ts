@@ -9,6 +9,8 @@ const types: Record<string,{kind:IntakeFileKind; mime:string[]}> = {
  '.xlsx':{kind:'excel',mime:['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']},
  '.xls':{kind:'excel',mime:['application/vnd.ms-excel']},
  '.txt':{kind:'text',mime:['text/plain']},
+ '.csv':{kind:'text',mime:['text/csv','application/vnd.ms-excel','text/plain']},
+ '.tsv':{kind:'text',mime:['text/tab-separated-values','text/plain']},
 };
 export function inspectIntakeFile(name:string,size:number,mime:string):IntakeFileInfo {
  const ext=Object.keys(types).find(extension=>name.toLowerCase().endsWith(extension));
