@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="博朗智能转单" />
+  <title>博朗窗饰 · 客户订单智能转换工厂下单模版 App (Roman Shade 2026V1 &amp; Drapery 2026V1)</title>
+  <script src="./xlsx.full.min.js"></script>
+  <script src="./order-templates-bundle.js"></script>
+  <style>
+    :root {
+      --bg: #f3f0e9;
+      --brand: #153f34;
+      --brand-dark: #0e2c24;
+      --brand-light: #e6f4ed;
+      --navy: #102b42;
+      --gold: #e5c168;
+      --border: #cbd5cf;
+      --text: #0f172a;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      padding: 12px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+    .container { max-width: 1440px; margin: 0 auto; padding-bottom: 60px; }
+    .header {
+      background: linear-gradient(135deg, #153f34 0%, #102b42 100%);
+      color: #fff;
+      padding: 18px 22px;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+    }
+    .header small { color: var(--gold); font-weight: 800; letter-spacing: 0.8px; display: block; font-size: 11px; }
+    .header h1 { margin: 4px 0; font-size: 22px; }
+    .header p { margin: 0; color: #d1e2dc; font-size: 13px; }
+    .card {
+      background: #fff;
+      border: 1px solid #ded9ce;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: var(--brand);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-navy { background: var(--navy); color: #fff; }
+    .btn-gold { background: var(--gold); color: #153f34; }
+    .btn-secondary { background: #edf3ef; color: var(--brand); border: 1px solid #cbd5cf; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .import-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+    }
+    .import-box {
+      background: #f8faf9;
+      border: 1px solid #d5e0da;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .import-box h3 { margin: 0; font-size: 14px; color: var(--brand); display: flex; align-items: center; gap: 6px; }
+    .import-box p { margin: 0; font-size: 12px; color: #52635b; line-height: 1.45; }
+    .header-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 14px;
+    }
+    .header-subbox {
+      border: 1px solid #d5e0da;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fcfdfc;
+    }
+    .header-subbox h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #fff;
+      background: var(--brand);
+      padding: 6px 10px;
+      border-radius: 7px;
+      letter-spacing: 0.5px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 9px;
+    }
+    label { display: grid; gap: 4px; font-size: 11px; font-weight: 800; color: #334155; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px rgba(21, 63, 52, 0.14);
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      padding: 11px 18px;
+      border-radius: 12px;
+      border: 2px solid #cbd5cf;
+      background: #f8faf9;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+      box-shadow: 0 4px 12px rgba(21, 63, 52, 0.2);
+    }
+    .badge {
+      background: var(--gold);
+      color: #153f34;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #cbd5cf;
+      border-radius: 12px;
+      background: #fff;
+    }
+    table.order-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1280px;
+      font-size: 12px;
+    }
+    table.order-table th {
+      background: #102b42;
+      color: #fff;
+      padding: 8px 6px;
+      border: 1px solid #264661;
+      text-align: center;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    table.order-table th.group-head {
+      background: #153f34;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.4px;
+    }
+    table.order-table td {
+      padding: 5px;
+      border: 1px solid #d8e0dc;
+      vertical-align: middle;
+      background: #fff;
+    }
+    table.order-table tr:nth-child(even) td { background: #f9fbfa; }
+    table.order-table input, table.order-table select {
+      padding: 6px 7px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5cf;
+      min-width: 68px;
+    }
+    .notes-panel {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fffdf5;
+      border: 1px solid #e5c168;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #78350f;
+      line-height: 1.55;
+    }
+    .warn-bar {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      color: #b91c1c;
+      font-size: 12px;
+      font-weight: 700;
+      display: none;
+    }
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #153f34;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 14px;
+      z-index: 3000;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.28);
+      display: none;
+      max-width: 92vw;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div>
+        <small>BRAUN INTERNATIONAL · SMART ORDER FORM CONVERTER 2026V1</small>
+        <h1>🔄 客户订单智能转换工厂下单模版工作台</h1>
+        <p>一键将【拍照测量单 / 客户 Excel / 微信短信订单】自动转换为 100% 原版样式 <b>Roman Shade Order Form 2026V1.xlsx</b> 与 <b>Drapery Order Form 2026V1.xlsx</b></p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="downloadRomanShadeXlsx()">📥 下载 Roman Shade 2026V1.xlsx</button>
+        <button class="btn btn-gold" style="background:#fde047;" onclick="downloadDraperyXlsx()">📥 下载 Drapery 2026V1.xlsx</button>
+        <a class="btn btn-secondary" href="./photo-measure-app.html">📱 返回拍照画线测量 App</a>
+        <a class="btn btn-secondary" href="./cornice.html">🏛️ 软包窗帘盒报价</a>
+      </div>
+    </header>
+
+    <!-- ① 三合一智能订单导入与转换中心 -->
+    <section class="card">
+      <h2>
+        <span>① 选择订单来源 · 一键智能识别并转换到标准模版</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="loadDemoOrder()">✨ 载入示例客户订单演示 (Roman + Drapery)</button>
+          <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="clearAllRows()">🗑️ 清空当前表格</button>
+        </div>
+      </h2>
+
+      <div class="import-grid">
+        <!-- 方式 A：从拍照测量 App 导入 -->
+        <div class="import-box">
+          <h3>📱 方式 A：从【拍照画线测量 App】一键同步</h3>
+          <p>自动读取您在本机拍照测量保存的客户窗位（含多段宽 W1/W2/W3、高度、安装方式、衬布、操控及现场备注），自动分流至罗马帘表与布帘表。</p>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <select id="savedCustomerSelect" style="flex:1;">
+              <option value="__ALL__">全部已保存测量客户 (0 扇窗)</option>
+            </select>
+            <button class="btn btn-secondary" style="padding:8px 10px;" onclick="refreshSavedMeasureList()" title="刷新列表">🔄</button>
+          </div>
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#153f34;">
+            <input type="checkbox" id="splitMultiSegCheck" checked style="width:16px;height:16px;" />
+            遇到多段分窗 (W1 / W2 / W3) 时，自动拆分为多行独立窗位下单
+          </label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;">
+            <button class="btn btn-primary" style="flex:1;" onclick="importFromPhotoMeasureApp('auto')">⚡ 智能分流导入 (按品类自动入表)</button>
+            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('rs')">全转罗马帘</button>
+            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('dr')">全转布帘</button>
+          </div>
+        </div>
+
+        <!-- 方式 B：上传任意客户订单 Excel / CSV -->
+        <div class="import-box">
+          <h3>📂 方式 B：上传客户订单 Excel / CSV 自动转换</h3>
+          <p>支持上传拍照测量导出的 `.xlsx/.csv`、客户的尺寸清单或旧版报价表。系统自动识别中英文表头并将中文款式/褶皱/衬布转换成模版英文代码。</p>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <label style="flex:1;font-size:12px;">导入目标模版：
+              <select id="uploadTargetSelect">
+                <option value="auto">智能自动判断 (Roman Shade / Drapery)</option>
+                <option value="rs">全部导入 Roman Shade Order Form 2026V1</option>
+                <option value="dr">全部导入 Drapery Order Form 2026V1</option>
+              </select>
+            </label>
+          </div>
+          <label class="btn btn-navy" style="cursor:pointer;margin-top:auto;width:100%;">
+            📤 点击选择客户 Excel / CSV 文件 (.xlsx / .xls / .csv)
+            <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelUpload(event)" />
+          </label>
+        </div>
+
+        <!-- 方式 C：粘贴微信/短信/邮件文字智能拆单 -->
+        <div class="import-box">
+          <h3>💬 方式 C：粘贴微信 / 短信 / 手写文字智能转表</h3>
+          <textarea id="rawOrderText" rows="3" placeholder="直接粘贴客户发来的微信/短信尺寸（支持多行）：&#10;例如：客户 Ignacio 电话 909-552-0455 地址 680 W Byron Ct&#10;1. Living Room 宽 120 高 96 双层布帘 Aspen Allure + 白纱 Soft Breeze 遮光衬 双韩褶 对开&#10;2. Master Room 宽 35 1/2 高 72 深 3 1/2 罗马帘 Liberty Linen 口内 平折带骨 无拉绳 透光衬"></textarea>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;">
+            <button class="btn btn-primary" style="flex:1;" onclick="parseTextOrder('auto')">✦ 智能识别文字并填入对应下单模版</button>
+            <button class="btn btn-secondary" onclick="parseTextOrder('rs')">转罗马帘</button>
+            <button class="btn btn-secondary" onclick="parseTextOrder('dr')">转布帘</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② 模版公共订单表头 (DEALER & SHIP TO，对应 Excel 第 5~10 行) -->
+    <section class="card">
+      <h2>
+        <span>② 订单表头信息 (自动写入 Excel 顶部 DEALER &amp; SHIP TO 区域 C5:R10)</span>
+        <span style="font-size:12px;color:#64748b;">修改此处会同时同步到 Roman Shade 与 Drapery 两张下单表表头</span>
+      </h2>
+      <div class="header-grid">
+        <div class="header-subbox">
+          <h4>DEALER &amp; ORDER INFO (左侧表头 C5:C10)</h4>
+          <div class="form-grid">
+            <label>DEALER NAME (C5)<input id="hdrDealerName" value="BRAUN INTERNATIONAL, LLC" /></label>
+            <label>COMPANY ID (C6)<input id="hdrCompanyId" value="NJ-CWF001" /></label>
+            <label>PO NUMBER (C7)<input id="hdrPoNumber" placeholder="如 PO-20261125-01" /></label>
+            <label>ORDER DATE (C8)<input id="hdrOrderDate" /></label>
+            <label>SIDEMARK / 客户项目标识 (C9)<input id="hdrSidemark" placeholder="如 Ignacio / Living Room" /></label>
+            <label>INVOICE # (C10)<input id="hdrInvoiceNo" placeholder="选填 Invoice 编号" /></label>
+          </div>
+        </div>
+
+        <div class="header-subbox">
+          <h4>SHIP TO &amp; SPECIAL REQUIREMENT (右侧收货信息 L6:T10)</h4>
+          <div class="form-grid">
+            <label>SHIP TO NAME / 收件人 (L6)<input id="hdrShipName" placeholder="客户或收货人姓名" /></label>
+            <label>PHONE / 联系电话 (P6 / S6)<input id="hdrShipPhone" placeholder="如 909-552-0455" /></label>
+            <label>ADDRESS / 收货地址 (L7)<input id="hdrShipAddress" placeholder="如 680 W Byron Ct" /></label>
+            <label>ZIP / 邮编 (P7 / S7)<input id="hdrShipZip" placeholder="如 91762" /></label>
+            <label style="grid-column: 1 / -1;">SPECIAL REQUIREMENT / 整单特殊要求 (L8:R10 / L8:T10)
+              <input id="hdrSpecialReq" placeholder="如：无明线，无纤维棒，后面多竖线，配遥控器与充电线等整单要求" />
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ③ 双模版切换与可视化对齐编辑表格 -->
+    <section class="card">
+      <div class="tabs">
+        <button id="tabBtnRs" class="tab-btn active" onclick="switchTab('rs')">
+          🪟 Roman Shade Order Form 2026V1 (罗马帘下单模版 · RSMeasure)
+          <span class="badge" id="badgeRsCount">0</span>
+        </button>
+        <button id="tabBtnDr" class="tab-btn" onclick="switchTab('dr')">
+          🪡 Drapery Order Form 2026V1 (布帘/纱帘下单模版 · DRMeasure)
+          <span class="badge" id="badgeDrCount">0</span>
+        </button>
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="downloadRomanShadeXlsx()">📥 导出 Roman Shade Order Form 2026V1.xlsx</button>
+          <button class="btn btn-navy" onclick="downloadDraperyXlsx()">📥 导出 Drapery Order Form 2026V1.xlsx</button>
+          <button class="btn btn-gold" onclick="downloadBothXlsx()">📦 一键同时导出两张下单表</button>
+        </div>
+      </div>
+
+      <div id="validationWarnBar" class="warn-bar"></div>
+
+      <!-- 模版 1：Roman Shade Order Form 2026V1 (RSMeasure) -->
+      <div id="panelRs">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div>
+            <strong style="color:#153f34;font-size:15px;">📄 模版一：Roman Shade Order Form 2026V1 (工作表：RSMeasure，行 15~42)</strong>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;">严格对齐模版 A~Q 列，导出时 100% 保留原模版边框、底色、合并单元格与下拉菜单</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-primary" style="padding:7px 12px;font-size:12px;" onclick="addRsRow()">+ 新增一行罗马帘</button>
+            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastRsRow()">📋 复制上一行</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="order-table">
+            <thead>
+              <tr>
+                <th colspan="3" class="group-head">Basic Info</th>
+                <th class="group-head">Mount.</th>
+                <th colspan="3" class="group-head">Measurements. (Inches)</th>
+                <th class="group-head">Fabric.</th>
+                <th class="group-head">Sheer.</th>
+                <th colspan="3" class="group-head">Style.</th>
+                <th colspan="3" class="group-head">Decorative Upgrades</th>
+                <th colspan="2" class="group-head">Alignment &amp; Notes</th>
+                <th class="group-head">操作</th>
+              </tr>
+              <tr>
+                <th style="width:38px;"># (A)</th>
+                <th style="width:130px;">Room (B)</th>
+                <th style="width:52px;">QTY (C)</th>
+                <th style="width:74px;">In/Out<br/>IM/OM (D)</th>
+                <th style="width:82px;">Width (E)</th>
+                <th style="width:82px;">Height (F)</th>
+                <th style="width:72px;">Depth (G)</th>
+                <th style="width:130px;">Pattern Code (H)</th>
+                <th style="width:115px;">Pattern Code (I)</th>
+                <th style="width:128px;">Shade Style (J)</th>
+                <th style="width:190px;">Lift Control (K)</th>
+                <th style="width:86px;">Cord Length (L)</th>
+                <th style="width:105px;">Lining (M)</th>
+                <th style="width:95px;">Trim Code (N)</th>
+                <th style="width:135px;">Trim Option (O)</th>
+                <th style="width:115px;">Side By Side (P)</th>
+                <th style="min-width:170px;">Special Instructions (Q:R)</th>
+                <th style="width:80px;">行操作</th>
+              </tr>
+            </thead>
+            <tbody id="rsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="notes-panel">
+          <b>📌 Roman Shade Order Form 2026V1 官方模版填表规范提示：</b><br/>
+          • <b>Shade Style (J列)</b>：<code>Plain_Fold</code> (经典折) ｜ <code>Ribbed</code> (明骨平折) ｜ <code>Flat_A</code> (With hidden ribs 带暗骨平折) ｜ <code>Flat_B</code> (Without hidden ribs 无暗骨平折) ｜ <code>Hobbled</code> (水波折/刀折，仅支持 Standard Lift) ｜ <code>Balloon Roman</code><br/>
+          • <b>Lift Control (K列)</b>：<code>[Standard] Cordless</code> ｜ <code>[Standard] Cordless TDBU</code> ｜ <code>[Standard] Motorized</code> ｜ <code>[Standard] Continous Loop-L / R</code> ｜ <code>[Waterfall] Cordless / TWIN / Continous Loop-L / R / Motorized</code>（仅 Loop 循环拉珠需填 L列 Cord Length）<br/>
+          • <b>Lining (M列)</b>：<code>Unlined</code> (无衬) ｜ <code>LF Lining</code> (透光衬) ｜ <code>BO Lining</code> (全遮光衬) —— <i>注：SH &amp; SB 面料不可加 LF 或 BO 衬布</i><br/>
+          • <b>Decorative Trim (N/O列)</b>：<code>A (Edge)</code> 侧边包边 ｜ <code>B (Insert L&amp;R Side)</code> 左右内嵌 1 1/2" 或 2" ｜ <code>C (Insert L&amp;R&amp;B Side)</code> 左右下三边内嵌
+        </div>
+      </div>
+
+      <!-- 模版 2：Drapery Order Form 2026V1 (DRMeasure) -->
+      <div id="panelDr" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div>
+            <strong style="color:#102b42;font-size:15px;">📄 模版二：Drapery Order Form 2026V1 (工作表：DRMeasure，行 15~25)</strong>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;">严格对齐模版 A~T 列，包含褶皱款式、开合扇数、回折 Return、绑带 Tieband、花边与拼色 Color Blocking</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-navy" style="padding:7px 12px;font-size:12px;" onclick="addDrRow()">+ 新增一行布帘/纱帘</button>
+            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastDrRow()">📋 复制上一行</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="order-table">
+            <thead>
+              <tr>
+                <th colspan="3" class="group-head">Basic Info</th>
+                <th colspan="2" class="group-head">Measurements.</th>
+                <th colspan="3" class="group-head">Fabric.</th>
+                <th colspan="6" class="group-head">Style.</th>
+                <th colspan="5" class="group-head">Decorative Upgrades (Trim &amp; Color Blocking)</th>
+                <th class="group-head">Instructions</th>
+                <th class="group-head">操作</th>
+              </tr>
+              <tr>
+                <th style="width:36px;"># (A)</th>
+                <th style="width:125px;">ROOM (B)</th>
+                <th style="width:50px;">QTY (C)</th>
+                <th style="width:78px;">Width (D)</th>
+                <th style="width:78px;">Height (E)</th>
+                <th style="width:130px;">Fabric Pattern Code (F)</th>
+                <th style="width:102px;">Lining (G)</th>
+                <th style="width:120px;">Sheer Pattern Code (H)</th>
+                <th style="width:155px;">Hanging Header Style (I)</th>
+                <th style="width:120px;">Style Options (J)</th>
+                <th style="width:105px;">Panels (K)</th>
+                <th style="width:155px;">Returns (L)</th>
+                <th style="width:118px;">Tieband (M)</th>
+                <th style="width:120px;">Notes. (N)</th>
+                <th style="width:82px;">Trim Code (O)</th>
+                <th style="width:120px;">Trim Location (P)</th>
+                <th style="width:78px;">Block Code1 (Q)</th>
+                <th style="width:78px;">Block Code2 (R)</th>
+                <th style="width:70px;">Block Loc (S)</th>
+                <th style="min-width:160px;">Special Instructions (T:U)</th>
+                <th style="width:80px;">行操作</th>
+              </tr>
+            </thead>
+            <tbody id="drTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="notes-panel">
+          <b>📌 Drapery Order Form 2026V1 官方模版填表规范与尺寸限制提示：</b><br/>
+          • <b>尺寸限制 (Size Limitations)</b>：最小宽 <code>20"</code> ｜ 单开最大宽 (One Way) <code>150"</code> ｜ 对开最大宽 (Split/Pair) <code>300"</code> ｜ 最小高 <code>24"</code> ｜ 最大高 <code>270"</code><br/>
+          • <b>Hanging Header Style (I列)</b>：<code>Double_Pinch_PLeat</code> (双韩褶) ｜ <code>Triple_Pinch_Pleat</code> (三韩褶) ｜ <code>Euro_Double_Pleat</code> (欧式双褶) ｜ <code>Euro_Triple_Pleat</code> (欧式三褶) ｜ <code>X_Pleat</code> ｜ <code>Inverted_Pleat</code> (暗褶) ｜ <code>Goblet_Pleat</code> (酒杯褶) ｜ <code>Ripple_Fold</code> (S波浪帘) ｜ <code>Rod_Pocket</code> (穿杆袋: J列选 <code>A_Standard</code> 无帘头 或 <code>B_With_Header</code> 含1.5"帘头) ｜ <code>Pencil_Pleat</code><br/>
+          • <b>Panels (K列)</b>：<code>Pair</code> (对开双开) ｜ <code>Single_L</code> (单开往左收) ｜ <code>Single_R</code> (单开往右收) ｜ <code>Single Panel</code> (单幅)<br/>
+          • <b>纱帘限制</b>：纯纱帘 (Sheer draperies) 不可选 Privacy/Blackout Lining、Color Blocking 或 Trimmings。<br/>
+          • <b>Color Blocking (Q/R/S列)</b>：<code>A</code>=底部 1/3 拼色 ｜ <code>B</code>=底部 1/3 拼色含花边 ｜ <code>C</code>=三等分拼色 (上:主布, 中:Code1, 下:Code2)
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const PHOTO_MEASURE_STORAGE_KEY = "braun-photo-voice-measures-v1";
+    const CONVERTER_STATE_KEY = "braun-order-converter-2026v1";
+
+    // 官方模版标准下拉枚举
+    const RS_SHADE_STYLES = ["Flat_A", "Flat_B", "Plain_Fold", "Ribbed", "Hobbled", "Balloon Roman"];
+    const RS_LIFT_CONTROLS = [
+      "[Standard] Cordless",
+      "[Standard] Cordless TDBU",
+      "[Standard] Motorized",
+      "[Standard] Continous Loop-L",
+      "[Standard] Continous Loop-R",
+      "[Waterfall] Cordless",
+      "[Waterfall] Cordless TWIN",
+      "[Waterfall] Continous Loop-L",
+      "[Waterfall] Continous Loop-R",
+      "[Waterfall] Motorized"
+    ];
+    const LINING_OPTIONS = ["Unlined", "LF Lining", "BO Lining"];
+    const RS_TRIM_OPTIONS = ["", "A (Edge)", "B (Insert L&R Side)", "C (Insert L&R&B Side)"];
+    const RS_SBS_OPTIONS = ["NO", "Top Aligned", "Bottom Aligned"];
+
+    const DR_HEADER_STYLES = [
+      "Double_Pinch_PLeat",
+      "Triple_Pinch_Pleat",
+      "Euro_Double_Pleat",
+      "Euro_Triple_Pleat",
+      "X_Pleat",
+      "Inverted_Pleat",
+      "Goblet_Pleat",
+      "Ripple_Fold",
+      "Rod_Pocket",
+      "Pencil_Pleat"
+    ];
+    const DR_STYLE_OPTIONS = ["", "2.0x Fullness", "2.2x Fullness", "2.5x Fullness", "A_Standard", "B_With_Header"];
+    const DR_PANELS = ["Pair", "Single_L", "Single_R", "Single Panel"];
+    const DR_RETURNS = ['Standard 3 1/2" Return', "No Returns", "Custom (Enter Return Width)"];
+    const DR_TIEBANDS = ["None", "A_Without_Welt", "B_With_Welt"];
+    const DR_TRIM_LOCS = ["", "A (Leading Edge)", "B (Insert Side)"];
+    const DR_BLOCK_LOCS = ["", "A", "B", "C"];
+
+    let activeTab = "rs";
+    let rsRows = [];
+    let drRows = [];
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(window._convToast);
+      window._convToast = setTimeout(() => { el.style.display = "none"; }, 3400);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function parseInch(str) {
+      if (!str) return 0;
+      const s = String(str).replace(/"|″|in/gi, "").trim();
+      const mix = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+      if (mix) return Number(mix[1]) + Number(mix[2]) / Number(mix[3]);
+      const frac = s.match(/^(\d+)\/(\d+)$/);
+      if (frac) return Number(frac[1]) / Number(frac[2]);
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // ====================================================
+    // 智能中英文业务词汇 -> 2026V1 模版标准英文代码映射器
+    // ====================================================
+    function mapMountToImOm(raw) {
+      const s = String(raw || "").toUpperCase();
+      if (s.includes("IM") || s.includes("口内") || s.includes("内装") || s.includes("INSIDE")) return "IM";
+      return "OM";
+    }
+
+    function mapLiningCode(raw) {
+      const s = String(raw || "");
+      if (/遮光|blackout|\bbo\b/i.test(s)) return "BO Lining";
+      if (/透光|半透|light[\s-]*filtering|privacy|\blf\b/i.test(s)) return "LF Lining";
+      if (/无衬|不加衬|unlined/i.test(s)) return "Unlined";
+      return "LF Lining";
+    }
+
+    function mapRomanStyleCode(raw) {
+      const s = String(raw || "");
+      if (/Flat_B|无骨|贴墙/i.test(s)) return "Flat_B";
+      if (/Flat_A|平折|带骨|flat/i.test(s)) return "Flat_A";
+      if (/Ribbed|明骨/i.test(s)) return "Ribbed";
+      if (/Hobbled|水波|刀折|折叠/i.test(s)) return "Hobbled";
+      if (/Balloon|气球/i.test(s)) return "Balloon Roman";
+      if (/Plain_Fold|plain/i.test(s)) return "Plain_Fold";
+      return "Flat_A";
+    }
+
+    function mapRomanLiftCode(rawControl, rawMotor) {
+      const s = `${rawControl || ""} ${rawMotor || ""}`;
+      const isWaterfall = /waterfall|瀑布|前出/i.test(s);
+      const prefix = isWaterfall ? "[Waterfall]" : "[Standard]";
+      if (/twin|日夜|双帘/i.test(s)) return "[Waterfall] Cordless TWIN";
+      if (/tdbu|上开下合/i.test(s)) return "[Standard] Cordless TDBU";
+      if (/电动|电机|motor/i.test(s)) return `${prefix} Motorized`;
+      if (/右拉|右控|右循环|loop[\s-]*r|right\s*cord/i.test(s)) return `${prefix} Continous Loop-R`;
+      if (/左拉|左控|左循环|loop[\s-]*l|left\s*cord/i.test(s)) return `${prefix} Continous Loop-L`;
+      return `${prefix} Cordless`;
+    }
+
+    function mapDraperyHeaderCode(rawStyle) {
+      const s = String(rawStyle || "");
+      if (/三韩褶|三褶|3-Prong|Triple_Pinch/i.test(s)) return "Triple_Pinch_Pleat";
+      if (/欧式双|Euro_Double/i.test(s)) return "Euro_Double_Pleat";
+      if (/欧式三|Euro_Triple/i.test(s)) return "Euro_Triple_Pleat";
+      if (/X_Pleat|X褶/i.test(s)) return "X_Pleat";
+      if (/Inverted|暗褶|工字/i.test(s)) return "Inverted_Pleat";
+      if (/Goblet|酒杯/i.test(s)) return "Goblet_Pleat";
+      if (/Ripple|S波浪|波浪|韩式S/i.test(s)) return "Ripple_Fold";
+      if (/Rod_Pocket|穿杆|打孔|grommet/i.test(s)) return "Rod_Pocket";
+      if (/Pencil|铅笔/i.test(s)) return "Pencil_Pleat";
+      return "Double_Pinch_PLeat";
+    }
+
+    function mapDraperyPanelsCode(rawControl) {
+      const s = String(rawControl || "");
+      if (/Single_L|往左|左收|左开|stack\s*left/i.test(s)) return "Single_L";
+      if (/Single_R|往右|右收|右开|stack\s*right/i.test(s)) return "Single_R";
+      if (/Single Panel|单幅|固定/i.test(s)) return "Single Panel";
+      return "Pair";
+    }
+
+    // 拆分“布帘 + 白纱”组合型号字符串为 mainFabric 与 sheerFabric
+    function splitFabricAndSheer(category, modelStr) {
+      const m = String(modelStr || "").trim();
+      const cat = String(category || "");
+      if (cat.includes("白纱") && !cat.includes("双层")) {
+        return { fabric: "", sheer: m || "White Sheer" };
+      }
+      if (m.includes("+")) {
+        const parts = m.split("+").map(p => p.trim());
+        const sheerPart = parts.find(p => /纱|sheer/i.test(p)) || "";
+        const fabPart = parts.find(p => p !== sheerPart) || parts[0] || "";
+        return {
+          fabric: fabPart.replace(/布帘|面料/g, "").trim() || fabPart,
+          sheer: sheerPart.replace(/白纱|透光纱/g, "").trim() || sheerPart
+        };
+      }
+      return { fabric: m, sheer: "" };
+    }
+
+    function createDefaultRsRow(overrides = {}) {
+      return {
+        room: "Living Room",
+        qty: "1",
+        mount: "IM",
+        width: "",
+        height: "",
+        depth: "",
+        fabricCode: "",
+        sheerCode: "",
+        shadeStyle: "Flat_A",
+        liftControl: "[Standard] Cordless",
+        cordLength: "",
+        lining: "LF Lining",
+        trimCode: "",
+        trimOption: "",
+        sideBySide: "NO",
+        specialInstructions: "",
+        ...overrides
+      };
+    }
+
+    function createDefaultDrRow(overrides = {}) {
+      return {
+        room: "Living Room",
+        qty: "1",
+        width: "",
+        height: "",
+        fabricCode: "",
+        lining: "BO Lining",
+        sheerCode: "",
+        headerStyle: "Double_Pinch_PLeat",
+        styleOptions: "2.0x Fullness",
+        panels: "Pair",
+        returns: 'Standard 3 1/2" Return',
+        tieband: "None",
+        notes: "",
+        trimCode: "",
+        trimLocation: "",
+        blockCode1: "",
+        blockCode2: "",
+        blockLocation: "",
+        specialInstructions: "",
+        ...overrides
+      };
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById("tabBtnRs").className = tab === "rs" ? "tab-btn active" : "tab-btn";
+      document.getElementById("tabBtnDr").className = tab === "dr" ? "tab-btn active" : "tab-btn";
+      document.getElementById("panelRs").style.display = tab === "rs" ? "block" : "none";
+      document.getElementById("panelDr").style.display = tab === "dr" ? "block" : "none";
+      validateCurrentRows();
+    }
+
+    function renderSelectHtml(options, currentVal, onChangeExpr) {
+      const normCur = String(currentVal ?? "");
+      const hasCur = options.includes(normCur);
+      const allOpts = hasCur ? options : [normCur, ...options];
+      return `<select onchange="${onChangeExpr}">` +
+        allOpts.map(o => `<option value="${escapeHtml(o)}" ${o === normCur ? "selected" : ""}>${escapeHtml(o || "—")}</option>`).join("") +
+        `</select>`;
+    }
+
+    function renderTables() {
+      document.getElementById("badgeRsCount").textContent = rsRows.length;
+      document.getElementById("badgeDrCount").textContent = drRows.length;
+
+      // Render Roman Shade Table
+      const rsBody = document.getElementById("rsTableBody");
+      if (!rsRows.length) {
+        rsBody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:22px;color:#64748b;">当前暂无罗马帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行罗马帘】。</td></tr>`;
+      } else {
+        rsBody.innerHTML = rsRows.map((r, i) => `
+          <tr>
+            <td style="text-align:center;font-weight:800;color:#153f34;">${i + 1}</td>
+            <td><input value="${escapeHtml(r.room)}" oninput="updateRsField(${i},'room',this.value)" placeholder="Room" /></td>
+            <td><input type="number" min="1" value="${escapeHtml(r.qty)}" oninput="updateRsField(${i},'qty',this.value)" style="width:54px;text-align:center;" /></td>
+            <td>${renderSelectHtml(["IM", "OM"], r.mount, `updateRsField(${i},'mount',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.width)}" oninput="updateRsField(${i},'width',this.value)" placeholder="如 35 1/2" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.height)}" oninput="updateRsField(${i},'height',this.value)" placeholder="如 72" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.depth)}" oninput="updateRsField(${i},'depth',this.value)" placeholder="如 3 1/2" /></td>
+            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateRsField(${i},'fabricCode',this.value)" placeholder="面料型号/色号" /></td>
+            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateRsField(${i},'sheerCode',this.value)" placeholder="日夜帘纱号(选填)" /></td>
+            <td>${renderSelectHtml(RS_SHADE_STYLES, r.shadeStyle, `updateRsField(${i},'shadeStyle',this.value)`)}</td>
+            <td>${renderSelectHtml(RS_LIFT_CONTROLS, r.liftControl, `updateRsField(${i},'liftControl',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.cordLength)}" oninput="updateRsField(${i},'cordLength',this.value)" placeholder="Loop绳长" /></td>
+            <td>${renderSelectHtml(LINING_OPTIONS, r.lining, `updateRsField(${i},'lining',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateRsField(${i},'trimCode',this.value)" placeholder="如 T789_1" /></td>
+            <td>${renderSelectHtml(RS_TRIM_OPTIONS, r.trimOption, `updateRsField(${i},'trimOption',this.value)`)}</td>
+            <td>${renderSelectHtml(RS_SBS_OPTIONS, r.sideBySide, `updateRsField(${i},'sideBySide',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateRsField(${i},'specialInstructions',this.value)" placeholder="单窗特殊要求/备注" /></td>
+            <td style="text-align:center;white-space:nowrap;">
+              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" title="转入布帘模版" onclick="moveRsToDr(${i})">⇄布</button>
+              <button class="btn btn-danger" style="padding:4px 7px;font-size:11px;" onclick="removeRsRow(${i})">×</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      // Render Drapery Table
+      const drBody = document.getElementById("drTableBody");
+      if (!drRows.length) {
+        drBody.innerHTML = `<tr><td colspan="21" style="text-align:center;padding:22px;color:#64748b;">当前暂无布帘/纱帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行布帘/纱帘】。</td></tr>`;
+      } else {
+        drBody.innerHTML = drRows.map((r, i) => `
+          <tr>
+            <td style="text-align:center;font-weight:800;color:#102b42;">${i + 1}</td>
+            <td><input value="${escapeHtml(r.room)}" oninput="updateDrField(${i},'room',this.value)" placeholder="ROOM" /></td>
+            <td><input type="number" min="1" value="${escapeHtml(r.qty)}" oninput="updateDrField(${i},'qty',this.value)" style="width:52px;text-align:center;" /></td>
+            <td><input value="${escapeHtml(r.width)}" oninput="updateDrField(${i},'width',this.value)" placeholder="Width" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.height)}" oninput="updateDrField(${i},'height',this.value)" placeholder="Height" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateDrField(${i},'fabricCode',this.value)" placeholder="主布型号" /></td>
+            <td>${renderSelectHtml(LINING_OPTIONS, r.lining, `updateDrField(${i},'lining',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateDrField(${i},'sheerCode',this.value)" placeholder="纱帘型号" /></td>
+            <td>${renderSelectHtml(DR_HEADER_STYLES, r.headerStyle, `updateDrField(${i},'headerStyle',this.value)`)}</td>
+            <td>${renderSelectHtml(DR_STYLE_OPTIONS, r.styleOptions, `updateDrField(${i},'styleOptions',this.value)`)}</td>
+            <td>${renderSelectHtml(DR_PANELS, r.panels, `updateDrField(${i},'panels',this.value)`)}</td>
+            <td>${renderSelectHtml(DR_RETURNS, r.returns, `updateDrField(${i},'returns',this.value)`)}</td>
+            <td>${renderSelectHtml(DR_TIEBANDS, r.tieband, `updateDrField(${i},'tieband',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.notes)}" oninput="updateDrField(${i},'notes',this.value)" placeholder="轨道/电机说明" /></td>
+            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateDrField(${i},'trimCode',this.value)" placeholder="花边号" /></td>
+            <td>${renderSelectHtml(DR_TRIM_LOCS, r.trimLocation, `updateDrField(${i},'trimLocation',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.blockCode1)}" oninput="updateDrField(${i},'blockCode1',this.value)" placeholder="拼色1" /></td>
+            <td><input value="${escapeHtml(r.blockCode2)}" oninput="updateDrField(${i},'blockCode2',this.value)" placeholder="拼色2" /></td>
+            <td>${renderSelectHtml(DR_BLOCK_LOCS, r.blockLocation, `updateDrField(${i},'blockLocation',this.value)`)}</td>
+            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateDrField(${i},'specialInstructions',this.value)" placeholder="现场与加工特殊要求" /></td>
+            <td style="text-align:center;white-space:nowrap;">
+              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" title="转入罗马帘模版" onclick="moveDrToRs(${i})">⇄罗</button>
+              <button class="btn btn-danger" style="padding:4px 7px;font-size:11px;" onclick="removeDrRow(${i})">×</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      validateCurrentRows();
+      persistState();
+    }
+
+    function updateRsField(idx, key, val) {
+      if (!rsRows[idx]) return;
+      rsRows[idx][key] = val;
+      validateCurrentRows();
+      persistState();
+    }
+
+    function updateDrField(idx, key, val) {
+      if (!drRows[idx]) return;
+      drRows[idx][key] = val;
+      validateCurrentRows();
+      persistState();
+    }
+
+    function addRsRow() {
+      rsRows.push(createDefaultRsRow({ room: `W${rsRows.length + 1} Room` }));
+      renderTables();
+    }
+
+    function duplicateLastRsRow() {
+      const last = rsRows[rsRows.length - 1] || createDefaultRsRow();
+      rsRows.push({ ...last });
+      renderTables();
+    }
+
+    function removeRsRow(idx) {
+      rsRows.splice(idx, 1);
+      renderTables();
+    }
+
+    function moveRsToDr(idx) {
+      const r = rsRows[idx];
+      if (!r) return;
+      drRows.push(createDefaultDrRow({
+        room: r.room,
+        qty: r.qty,
+        width: r.width,
+        height: r.height,
+        fabricCode: r.fabricCode,
+        sheerCode: r.sheerCode,
+        lining: r.lining,
+        trimCode: r.trimCode,
+        specialInstructions: r.specialInstructions
+      }));
+      rsRows.splice(idx, 1);
+      renderTables();
+      showToast("已将该窗位转入 Drapery 布帘下单表");
+    }
+
+    function addDrRow() {
+      drRows.push(createDefaultDrRow({ room: `W${drRows.length + 1} Room` }));
+      renderTables();
+    }
+
+    function duplicateLastDrRow() {
+      const last = drRows[drRows.length - 1] || createDefaultDrRow();
+      drRows.push({ ...last });
+      renderTables();
+    }
+
+    function removeDrRow(idx) {
+      drRows.splice(idx, 1);
+      renderTables();
+    }
+
+    function moveDrToRs(idx) {
+      const r = drRows[idx];
+      if (!r) return;
+      rsRows.push(createDefaultRsRow({
+        room: r.room,
+        qty: r.qty,
+        width: r.width,
+        height: r.height,
+        fabricCode: r.fabricCode,
+        sheerCode: r.sheerCode,
+        lining: r.lining,
+        trimCode: r.trimCode,
+        specialInstructions: [r.notes, r.specialInstructions].filter(Boolean).join("; ")
+      }));
+      drRows.splice(idx, 1);
+      renderTables();
+      showToast("已将该窗位转入 Roman Shade 罗马帘下单表");
+    }
+
+    function clearAllRows() {
+      rsRows = [];
+      drRows = [];
+      renderTables();
+      showToast("已清空当前转换表格");
+    }
+
+    // 模版官方工艺与尺寸限制自动校验
+    function validateCurrentRows() {
+      const warns = [];
+      rsRows.forEach((r, i) => {
+        if (r.shadeStyle === "Hobbled" && !r.liftControl.startsWith("[Standard]")) {
+          warns.push(`Roman Shade 第 ${i + 1} 行 (${r.room})：Hobbled 水波折款仅支持 [Standard] 标准升降方式`);
+        }
+        if (/^(SH|SB)\b/i.test(r.fabricCode) && (r.lining === "LF Lining" || r.lining === "BO Lining")) {
+          warns.push(`Roman Shade 第 ${i + 1} 行 (${r.room})：模版规范提示 SH & SB 面料不适合加 LF 或 BO 衬布`);
+        }
+      });
+
+      drRows.forEach((r, i) => {
+        const w = parseInch(r.width);
+        const h = parseInch(r.height);
+        if (w > 0 && w < 20) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：宽度 ${r.width}" 小于模版最小限制 20"`);
+        if (w > 150 && r.panels !== "Pair") warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：单开 (One Way) 宽度 ${r.width}" 超过模版最大限制 150"`);
+        if (w > 300) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：对开 (Split) 宽度 ${r.width}" 超过模版最大限制 300"`);
+        if (h > 0 && (h < 24 || h > 270)) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：高度 ${r.height}" 超出模版范围 (24" ~ 270")`);
+        if (!r.fabricCode && r.sheerCode && r.lining !== "Unlined") {
+          warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：纯纱帘 (Sheer) 模版规定不可加 LF/BO 衬布，建议将 Lining 设为 Unlined`);
+        }
+      });
+
+      const bar = document.getElementById("validationWarnBar");
+      if (warns.length) {
+        bar.style.display = "block";
+        bar.innerHTML = "⚠️ <b>模版规范智能校验提醒：</b><br/>" + warns.map(w => "• " + escapeHtml(w)).join("<br/>");
+      } else {
+        bar.style.display = "none";
+      }
+    }
+
+    // ====================================================
+    // 方式 A：从【拍照画线测量 App】一键读取转换
+    // ====================================================
+    function getSavedPhotoMeasures() {
+      try {
+        return JSON.parse(localStorage.getItem(PHOTO_MEASURE_STORAGE_KEY) || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function refreshSavedMeasureList() {
+      const list = getSavedPhotoMeasures();
+      const sel = document.getElementById("savedCustomerSelect");
+      const customers = Array.from(new Set(list.map(r => r.customer).filter(Boolean)));
+      sel.innerHTML = `<option value="__ALL__">全部已保存测量客户 (共 ${list.length} 扇窗)</option>` +
+        customers.map(c => {
+          const cnt = list.filter(r => r.customer === c).length;
+          return `<option value="${escapeHtml(c)}">${escapeHtml(c)} (${cnt} 扇窗)</option>`;
+        }).join("");
+    }
+
+    function convertPhotoMeasureRecordToRows(rec, targetMode, splitSegments) {
+      const cat = String(rec.productCategory || "");
+      const isDraperyCat = targetMode === "dr" || (targetMode === "auto" && (cat.includes("布") || cat.includes("纱") || /drapery|sheer|curtain/i.test(cat)));
+
+      const wSegs = Array.isArray(rec.widthSegments) ? rec.widthSegments.filter(s => s.val && String(s.val).trim()) : [];
+      const hSegs = Array.isArray(rec.heightSegments) ? rec.heightSegments.filter(s => s.val && String(s.val).trim()) : [];
+      const is3PtW = wSegs.some(s => /上|中宽|下/.test(s.tag));
+
+      // 构建宽高对列表
+      let dimPairs = [];
+      if (splitSegments && wSegs.length > 1 && !is3PtW) {
+        const count = Math.max(wSegs.length, hSegs.length);
+        for (let k = 0; k < count; k++) {
+          const ws = wSegs[k] || wSegs[0];
+          const hs = hSegs[k] || hSegs[0];
+          dimPairs.push({
+            roomSuffix: ` (${ws.tag || "Seg" + (k + 1)})`,
+            w: ws ? String(ws.val).trim() : "",
+            h: hs ? String(hs.val).trim() : "",
+            sbs: "Top Aligned"
+          });
+        }
+      } else {
+        // 单窗或三点测宽汇总
+        let wVal = "";
+        if (wSegs.length === 1) {
+          wVal = String(wSegs[0].val).trim();
+        } else if (wSegs.length > 1) {
+          const nums = wSegs.map(s => parseInch(s.val)).filter(n => n > 0);
+          wVal = is3PtW ? String(Math.min(...nums)) : String(nums.reduce((a, b) => a + b, 0));
+        } else {
+          wVal = String(rec.widthRaw || "").split("|")[0].replace(/^[A-Za-z0-9()（）]+:/, "").replace(/"/g, "").trim();
+        }
+
+        let hVal = "";
+        if (hSegs.length === 1) {
+          hVal = String(hSegs[0].val).trim();
+        } else if (hSegs.length > 1) {
+          const nums = hSegs.map(s => parseInch(s.val)).filter(n => n > 0);
+          hVal = String(Math.max(...nums));
+        } else {
+          hVal = String(rec.heightRaw || "").split("|")[0].replace(/^[A-Za-z0-9()（）]+:/, "").replace(/"/g, "").trim();
+        }
+        dimPairs.push({ roomSuffix: "", w: wVal, h: hVal, sbs: wSegs.length > 1 && !is3PtW ? "Top Aligned" : "NO" });
+      }
+
+      const { fabric, sheer } = splitFabricAndSheer(cat, rec.productModel);
+      const roomBase = [rec.windowCode, (rec.windowLocation || "").replace(/\s*\([^)]*\)/, "")].filter(Boolean).join(" ");
+      const specialNote = [rec.remark, rec.voiceTranscript].filter(Boolean).join("；");
+
+      dimPairs.forEach(dp => {
+        if (isDraperyCat) {
+          drRows.push(createDefaultDrRow({
+            room: `${roomBase}${dp.roomSuffix}`,
+            qty: "1",
+            width: dp.w,
+            height: dp.h,
+            fabricCode: fabric,
+            lining: !fabric && sheer ? "Unlined" : mapLiningCode(rec.linerOrStyle),
+            sheerCode: sheer,
+            headerStyle: mapDraperyHeaderCode(rec.linerOrStyle),
+            styleOptions: /Rod_Pocket|穿杆/i.test(rec.linerOrStyle) ? "A_Standard" : "2.0x Fullness",
+            panels: mapDraperyPanelsCode(rec.openOrControl),
+            returns: rec.mountType && rec.mountType.includes("IM") ? "No Returns" : 'Standard 3 1/2" Return',
+            tieband: "None",
+            notes: [rec.mountType, rec.motorOrTrack].filter(Boolean).join(" · "),
+            specialInstructions: specialNote
+          }));
+        } else {
+          rsRows.push(createDefaultRsRow({
+            room: `${roomBase}${dp.roomSuffix}`,
+            qty: "1",
+            mount: mapMountToImOm(rec.mountType),
+            width: dp.w,
+            height: dp.h,
+            depth: String(rec.depthRaw || "").replace(/"/g, "").trim(),
+            fabricCode: fabric || rec.productModel || "",
+            sheerCode: sheer,
+            shadeStyle: mapRomanStyleCode(`${rec.motorOrTrack} ${rec.linerOrStyle}`),
+            liftControl: mapRomanLiftCode(rec.openOrControl, rec.motorOrTrack),
+            cordLength: /loop|拉珠|循环/i.test(rec.openOrControl) ? '48"' : "",
+            lining: mapLiningCode(rec.linerOrStyle),
+            trimOption: /包边|trim|binding/i.test(rec.linerOrStyle) ? "A (Edge)" : "",
+            sideBySide: dp.sbs,
+            specialInstructions: specialNote
+          }));
+        }
+      });
+    }
+
+    function importFromPhotoMeasureApp(targetMode) {
+      const all = getSavedPhotoMeasures();
+      if (!all.length) {
+        showToast("未检测到本机拍照测量记录，您可以点击右上角【✨ 载入示例客户订单演示】或使用方式 B/C 导入！");
+        return;
+      }
+      const selCust = document.getElementById("savedCustomerSelect").value;
+      const filtered = (selCust === "__ALL__" ? all : all.filter(r => r.customer === selCust)).slice().reverse();
+      if (!filtered.length) {
+        showToast("该客户下暂无窗位记录");
+        return;
+      }
+
+      // 自动填充订单表头客户与收货信息
+      const first = filtered[0];
+      if (first.customer) {
+        document.getElementById("hdrSidemark").value = first.customer;
+        document.getElementById("hdrShipName").value = first.customer;
+      }
+      if (first.phone) document.getElementById("hdrShipPhone").value = first.phone;
+      if (first.address) document.getElementById("hdrShipAddress").value = first.address;
+
+      const splitSegs = document.getElementById("splitMultiSegCheck").checked;
+      filtered.forEach(rec => convertPhotoMeasureRecordToRows(rec, targetMode, splitSegs));
+
+      renderTables();
+      if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
+      else switchTab("rs");
+      showToast(`⚡ 已成功转换并导入 ${filtered.length} 扇窗位到下单模版！`);
+    }
+
+    // ====================================================
+    // 方式 B：上传任意客户订单 Excel / CSV 智能映射
+    // ====================================================
+    function handleExcelUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const targetMode = document.getElementById("uploadTargetSelect").value;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const wb = XLSX.read(data, { type: "array" });
+          let importedCount = 0;
+
+          wb.SheetNames.forEach(sname => {
+            const ws = wb.Sheets[sname];
+            const jsonRows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+            jsonRows.forEach(row => {
+              // 智能匹配列名
+              const getCol = (regex) => {
+                const key = Object.keys(row).find(k => regex.test(k));
+                return key ? String(row[key]).trim() : "";
+              };
+
+              const room = getCol(/room|房间|窗位置|位置|窗号/i);
+              const w = getCol(/单段宽|总宽|实测宽|^width$|^w$|宽度/i) || getCol(/width|宽/i);
+              const h = getCol(/单段高|最大高|实测高|^height$|^h$|高度/i) || getCol(/height|高/i);
+              const d = getCol(/depth|窗深|^d$|深度/i);
+              const qty = getCol(/qty|数量/i) || "1";
+              const cat = getCol(/品类|category|type|产品/i);
+              const model = getCol(/型号|面料|pattern|fabric|model|色号/i);
+              const sheer = getCol(/sheer|白纱|纱帘/i);
+              const mount = getCol(/mount|安装|in\/out|im\/om/i);
+              const ctrl = getCol(/control|lift|操控|开合|panels/i);
+              const track = getCol(/轨道|电机|motor|track|款式/i);
+              const style = getCol(/style|工艺|衬布|褶皱|header|lining/i);
+              const remark = getCol(/remark|special|instruction|备注|说明/i);
+              const cust = getCol(/customer|客户|sidemark/i);
+              const phone = getCol(/phone|电话/i);
+              const addr = getCol(/address|地址/i);
+
+              if (!w && !h && !model) return;
+
+              if (cust && !document.getElementById("hdrShipName").value) {
+                document.getElementById("hdrSidemark").value = cust;
+                document.getElementById("hdrShipName").value = cust;
+              }
+              if (phone && !document.getElementById("hdrShipPhone").value) document.getElementById("hdrShipPhone").value = phone;
+              if (addr && !document.getElementById("hdrShipAddress").value) document.getElementById("hdrShipAddress").value = addr;
+
+              const isDr = targetMode === "dr" || (targetMode === "auto" && (
+                /DRMeasure|窗帘|布帘/i.test(sname) ||
+                /布|纱|drapery|sheer|pleat|ripple/i.test(`${cat} ${model} ${style}`)
+              ));
+
+              const cleanW = w.replace(/^[^:：]+[:：]\s*/, "").replace(/"/g, "").trim();
+              const cleanH = h.replace(/^[^:：]+[:：]\s*/, "").replace(/"/g, "").trim();
+              const { fabric, sheer: splitSheer } = splitFabricAndSheer(cat, model);
+
+              if (isDr) {
+                drRows.push(createDefaultDrRow({
+                  room: room || `W${drRows.length + 1}`,
+                  qty: String(parseInt(qty, 10) || 1),
+                  width: cleanW,
+                  height: cleanH,
+                  fabricCode: fabric,
+                  lining: mapLiningCode(style),
+                  sheerCode: sheer || splitSheer,
+                  headerStyle: mapDraperyHeaderCode(style),
+                  panels: mapDraperyPanelsCode(ctrl),
+                  notes: track,
+                  specialInstructions: remark
+                }));
+              } else {
+                rsRows.push(createDefaultRsRow({
+                  room: room || `W${rsRows.length + 1}`,
+                  qty: String(parseInt(qty, 10) || 1),
+                  mount: mapMountToImOm(mount),
+                  width: cleanW,
+                  height: cleanH,
+                  depth: d.replace(/"/g, "").trim(),
+                  fabricCode: fabric || model,
+                  sheerCode: sheer || splitSheer,
+                  shadeStyle: mapRomanStyleCode(`${track} ${style}`),
+                  liftControl: mapRomanLiftCode(ctrl, track),
+                  lining: mapLiningCode(style),
+                  specialInstructions: remark
+                }));
+              }
+              importedCount++;
+            });
+          });
+
+          renderTables();
+          if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
+          else switchTab("rs");
+          showToast(`📂 已从 ${file.name} 智能转换并导入 ${importedCount} 行订单数据！`);
+        } catch (err) {
+          showToast("解析文件失败，请确认上传的是有效的 Excel 或 CSV 文件");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = "";
+    }
+
+    // ====================================================
+    // 方式 C：粘贴微信 / 短信 / 手写文字智能解析拆单
+    // ====================================================
+    function parseTextOrder(targetMode) {
+      const raw = document.getElementById("rawOrderText").value.trim();
+      if (!raw) {
+        showToast("请先在文本框中粘贴客户订单文字，或点击【✨ 载入示例客户订单演示】");
+        return;
+      }
+
+      // 提取表头客户、电话、地址
+      const custMatch = raw.match(/(?:客户|姓名|Customer|Sidemark)\s*[:：]?\s*([^\n,，；;电话手机地址]+)/i);
+      if (custMatch) {
+        const c = custMatch[1].trim();
+        document.getElementById("hdrSidemark").value = c;
+        document.getElementById("hdrShipName").value = c;
+      }
+      const phoneMatch = raw.match(/(\+?1?\s*\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
+      if (phoneMatch) document.getElementById("hdrShipPhone").value = phoneMatch[1].trim();
+      const addrMatch = raw.match(/(?:地址|Address)\s*[:：]?\s*([^\n；;]+)/i);
+      if (addrMatch) document.getElementById("hdrShipAddress").value = addrMatch[1].trim();
+
+      const lines = raw.split(/\n+|；|;/).map(l => l.trim()).filter(Boolean);
+      let added = 0;
+
+      lines.forEach(line => {
+        // 判断该行是否包含宽高尺寸
+        const wMatch = line.match(/(?:宽|width|\bw\b)\s*[:：=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+        const hMatch = line.match(/(?:高|height|\bh\b)\s*[:：=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+        const byMatch = line.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)\s*(?:×|x|by|\*)\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+        const dMatch = line.match(/(?:深|depth|\bd\b)\s*[:：=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
+
+        const w = wMatch ? wMatch[1].trim() : byMatch ? byMatch[1].trim() : "";
+        const h = hMatch ? hMatch[1].trim() : byMatch ? byMatch[2].trim() : "";
+        if (!w && !h) return;
+
+        // 提取房间名
+        let room = "Living Room";
+        const roomMatch = line.match(/(客厅|主卧|次卧\s*\d*|餐厅|厨房|书房|挑高窗|推拉门|飘窗|Living\s*Room|Master\s*Bedroom|Bedroom\s*\d*|Dining\s*Room|Kitchen|Office|Study|Family\s*Room|W\d+)/i);
+        if (roomMatch) room = roomMatch[1].trim();
+
+        // 提取面料/型号
+        let fabricCode = "Group B";
+        let sheerCode = "";
+        const knownFabrics = line.match(/(Aspen[\s_]*Allure|Chic[\s_]*Charm|Coastal[\s_]*Breeze|Coastal[\s_]*Charm|Cosy[\s_]*Comfort|Fusion|Golden[\s_]*Glamour|Horizon|Liberty[\s_]*Linen|Organic[\s_]*Oasis|Prairie[\s_]*Pride|Provence[\s_]*Pure|Sierra[\s_]*Sunrise|Sunset[\s_]*Serenity|Timeless[\s_]*Tranquillity|Urban[\s_]*Chic|Urban[\s_]*Elegance|Urban[\s_]*Oasis|Modern[\s_]*Serenity|Meadow[\s_]*Linen|Ocean[\s_]*Mist|Canyon[\s_]*Ridge|Soft[\s_]*Haze|Soft[\s_]*Breeze|Group\s*[A-C]|JL\d+|ML-\d+|Yuma\s*\d*%?)/gi);
+        if (knownFabrics && knownFabrics.length) {
+          fabricCode = knownFabrics[0].replace(/_/g, " ");
+          if (knownFabrics[1]) sheerCode = knownFabrics[1].replace(/_/g, " ");
+        }
+        if (/白纱|White\s*Sheer/i.test(line) && !sheerCode) {
+          sheerCode = "White Sheer";
+        }
+
+        const isDr = targetMode === "dr" || (targetMode === "auto" && /双层|布帘|白纱|纱帘|韩褶|波浪帘|对开|单开|drapery|sheer|pleat|ripple/i.test(line));
+
+        if (isDr) {
+          drRows.push(createDefaultDrRow({
+            room,
+            qty: "1",
+            width: w,
+            height: h,
+            fabricCode,
+            lining: mapLiningCode(line),
+            sheerCode,
+            headerStyle: mapDraperyHeaderCode(line),
+            panels: mapDraperyPanelsCode(line),
+            notes: /电动|电机|NOVO|motor/i.test(line) ? "Motorized Track" : "Manual Track",
+            specialInstructions: line
+          }));
+        } else {
+          rsRows.push(createDefaultRsRow({
+            room,
+            qty: "1",
+            mount: mapMountToImOm(line),
+            width: w,
+            height: h,
+            depth: dMatch ? dMatch[1].trim() : "",
+            fabricCode,
+            sheerCode,
+            shadeStyle: mapRomanStyleCode(line),
+            liftControl: mapRomanLiftCode(line, line),
+            lining: mapLiningCode(line),
+            specialInstructions: line
+          }));
+        }
+        added++;
+      });
+
+      renderTables();
+      if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
+      else switchTab("rs");
+      showToast(`✦ 已从文字中智能提取 ${added} 个窗位并填入 2026V1 下单模版！`);
+    }
+
+    // 载入完整演示订单（同时包含 Roman Shade 与 Drapery）
+    function loadDemoOrder() {
+      document.getElementById("hdrDealerName").value = "BRAUN INTERNATIONAL, LLC";
+      document.getElementById("hdrCompanyId").value = "NJ-CWF001";
+      document.getElementById("hdrPoNumber").value = "PO-20261125-88";
+      document.getElementById("hdrOrderDate").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("hdrSidemark").value = "Ignacio (Purrfect Shutters)";
+      document.getElementById("hdrInvoiceNo").value = "INV-2026-108";
+      document.getElementById("hdrShipName").value = "Ignacio";
+      document.getElementById("hdrShipPhone").value = "909-552-0455";
+      document.getElementById("hdrShipAddress").value = "680 W Byron Ct";
+      document.getElementById("hdrShipZip").value = "91762";
+      document.getElementById("hdrSpecialReq").value = "无明线，无纤维棒，后面多竖线，配遥控器及充电线";
+
+      rsRows = [
+        createDefaultRsRow({
+          room: "W1 Master Bedroom",
+          qty: "1",
+          mount: "IM",
+          width: "35 1/2",
+          height: "72",
+          depth: "3 1/2",
+          fabricCode: "Liberty Linen",
+          sheerCode: "",
+          shadeStyle: "Flat_A",
+          liftControl: "[Standard] Cordless",
+          cordLength: "",
+          lining: "BO Lining",
+          trimCode: "T789_1",
+          trimOption: "A (Edge)",
+          sideBySide: "NO",
+          specialInstructions: "窗框内装请按最小宽扣减"
+        }),
+        createDefaultRsRow({
+          room: "W2 Study (Left)",
+          qty: "1",
+          mount: "OM",
+          width: "28",
+          height: "64",
+          depth: "",
+          fabricCode: "Coastal Breeze",
+          sheerCode: "",
+          shadeStyle: "Flat_B",
+          liftControl: "[Standard] Motorized",
+          cordLength: "",
+          lining: "LF Lining",
+          trimCode: "",
+          trimOption: "",
+          sideBySide: "Top Aligned",
+          specialInstructions: "与 W2-Right 并排水平对齐，电机左上出线"
+        }),
+        createDefaultRsRow({
+          room: "W2 Study (Right)",
+          qty: "1",
+          mount: "OM",
+          width: "56",
+          height: "64",
+          depth: "",
+          fabricCode: "Coastal Breeze",
+          sheerCode: "",
+          shadeStyle: "Flat_B",
+          liftControl: "[Standard] Motorized",
+          cordLength: "",
+          lining: "LF Lining",
+          trimCode: "",
+          trimOption: "",
+          sideBySide: "Top Aligned",
+          specialInstructions: "与 W2-Left 并排水平对齐，电机右上出线"
+        })
+      ];
+
+      drRows = [
+        createDefaultDrRow({
+          room: "W3 Living Room Main",
+          qty: "1",
+          width: "144",
+          height: "96",
+          fabricCode: "Aspen Allure",
+          lining: "BO Lining",
+          sheerCode: "Soft Breeze",
+          headerStyle: "Double_Pinch_PLeat",
+          styleOptions: "2.2x Fullness",
+          panels: "Pair",
+          returns: 'Standard 3 1/2" Return',
+          tieband: "B_With_Welt",
+          notes: "NOVO 电动双轨 (左置电源)",
+          trimCode: "T331_1",
+          trimLocation: "A (Leading Edge)",
+          blockCode1: "",
+          blockCode2: "",
+          blockLocation: "",
+          specialInstructions: "扣 80mm 轨道及离地 1\"，双层布+纱同宽对开"
+        }),
+        createDefaultDrRow({
+          room: "W4 Sliding Door",
+          qty: "1",
+          width: "106",
+          height: "84",
+          fabricCode: "Urban Elegance",
+          lining: "LF Lining",
+          sheerCode: "",
+          headerStyle: "Ripple_Fold",
+          styleOptions: "2.0x Fullness",
+          panels: "Single_L",
+          returns: 'Standard 3 1/2" Return',
+          tieband: "None",
+          notes: "黑色静音手拉导轨 (配左拉棒)",
+          trimCode: "",
+          trimLocation: "",
+          blockCode1: "",
+          blockCode2: "",
+          blockLocation: "",
+          specialInstructions: "单开往左收拢，已含推拉门框外加宽 +10\""
+        })
+      ];
+
+      renderTables();
+      showToast("✨ 已载入完整演示订单（3 扇罗马帘 + 2 扇布帘），可直接点击导出 Excel 查看原版模版效果！");
+    }
+
+    // ====================================================
+    // 导出 100% 原版格式 Excel (.xlsx) 核心逻辑
+    // ====================================================
+    function getHeaderValues() {
+      return {
+        dealerName: document.getElementById("hdrDealerName").value.trim(),
+        companyId: document.getElementById("hdrCompanyId").value.trim(),
+        poNumber: document.getElementById("hdrPoNumber").value.trim(),
+        orderDate: document.getElementById("hdrOrderDate").value.trim(),
+        sidemark: document.getElementById("hdrSidemark").value.trim(),
+        invoiceNo: document.getElementById("hdrInvoiceNo").value.trim(),
+        shipName: document.getElementById("hdrShipName").value.trim(),
+        shipPhone: document.getElementById("hdrShipPhone").value.trim(),
+        shipAddress: document.getElementById("hdrShipAddress").value.trim(),
+        shipZip: document.getElementById("hdrShipZip").value.trim(),
+        specialReq: document.getElementById("hdrSpecialReq").value.trim()
+      };
+    }
+
+    function triggerBlobDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }
+
+    // 生成并下载 Roman Shade Order Form 2026V1.xlsx
+    function downloadRomanShadeXlsx() {
+      if (!rsRows.length) {
+        showToast("⚠️ 当前罗马帘表为空，请先导入或新增罗马帘行项目（或点击【✨ 载入示例客户订单演示】）");
+        switchTab("rs");
+        return;
+      }
+      const h = getHeaderValues();
+      const cellMap = {
+        C5: h.dealerName,
+        C6: h.companyId,
+        C7: h.poNumber,
+        C8: h.orderDate,
+        C9: h.sidemark,
+        C10: h.invoiceNo,
+        L6: h.shipName,
+        P6: h.shipPhone,
+        L7: h.shipAddress,
+        P7: h.shipZip,
+        L8: h.specialReq
+      };
+
+      // 清空并写入 15~42 行 (最多 28 行)
+      for (let idx = 0; idx < 28; idx++) {
+        const rNum = 15 + idx;
+        const r = rsRows[idx];
+        cellMap[`A${rNum}`] = r ? String(idx + 1) : "";
+        cellMap[`B${rNum}`] = r ? r.room : "";
+        cellMap[`C${rNum}`] = r ? r.qty : "";
+        cellMap[`D${rNum}`] = r ? r.mount : "";
+        cellMap[`E${rNum}`] = r ? r.width : "";
+        cellMap[`F${rNum}`] = r ? r.height : "";
+        cellMap[`G${rNum}`] = r ? r.depth : "";
+        cellMap[`H${rNum}`] = r ? r.fabricCode : "";
+        cellMap[`I${rNum}`] = r ? r.sheerCode : "";
+        cellMap[`J${rNum}`] = r ? r.shadeStyle : "";
+        cellMap[`K${rNum}`] = r ? r.liftControl : "";
+        cellMap[`L${rNum}`] = r ? r.cordLength : "";
+        cellMap[`M${rNum}`] = r ? r.lining : "";
+        cellMap[`N${rNum}`] = r ? r.trimCode : "";
+        cellMap[`O${rNum}`] = r ? r.trimOption : "";
+        cellMap[`P${rNum}`] = r ? r.sideBySide : "";
+        cellMap[`Q${rNum}`] = r ? r.specialInstructions : "";
+      }
+
+      const blob = window.generateTemplateXlsxBlob("rs", cellMap);
+      const custSafe = (h.sidemark || h.shipName || "Customer").replace(/[\\/:*?"<>|\s]+/g, "_");
+      const dateSafe = h.orderDate || new Date().toISOString().slice(0, 10);
+      const fn = `Roman_Shade_Order_Form_2026V1_${custSafe}_${dateSafe}.xlsx`;
+      triggerBlobDownload(blob, fn);
+      showToast(`📥 已生成原版格式罗马帘下单表：${fn}`);
+    }
+
+    // 生成并下载 Drapery Order Form 2026V1.xlsx
+    function downloadDraperyXlsx() {
+      if (!drRows.length) {
+        showToast("⚠️ 当前布帘/纱帘表为空，请先导入或新增布帘行项目（或点击【✨ 载入示例客户订单演示】）");
+        switchTab("dr");
+        return;
+      }
+      const h = getHeaderValues();
+      const cellMap = {
+        C5: h.dealerName,
+        C6: h.companyId,
+        C7: h.poNumber,
+        C8: h.orderDate,
+        C9: h.sidemark,
+        C10: h.invoiceNo,
+        L6: h.shipName,
+        S6: h.shipPhone,
+        L7: h.shipAddress,
+        S7: h.shipZip,
+        L8: h.specialReq
+      };
+
+      // 清空并写入 15~25 行 (共 11 行)
+      for (let idx = 0; idx < 11; idx++) {
+        const rNum = 15 + idx;
+        const r = drRows[idx];
+        cellMap[`A${rNum}`] = r ? String(idx + 1) : "";
+        cellMap[`B${rNum}`] = r ? r.room : "";
+        cellMap[`C${rNum}`] = r ? r.qty : "";
+        cellMap[`D${rNum}`] = r ? r.width : "";
+        cellMap[`E${rNum}`] = r ? r.height : "";
+        cellMap[`F${rNum}`] = r ? r.fabricCode : "";
+        cellMap[`G${rNum}`] = r ? r.lining : "";
+        cellMap[`H${rNum}`] = r ? r.sheerCode : "";
+        cellMap[`I${rNum}`] = r ? r.headerStyle : "";
+        cellMap[`J${rNum}`] = r ? r.styleOptions : "";
+        cellMap[`K${rNum}`] = r ? r.panels : "";
+        cellMap[`L${rNum}`] = r ? r.returns : "";
+        cellMap[`M${rNum}`] = r ? r.tieband : "";
+        cellMap[`N${rNum}`] = r ? r.notes : "";
+        cellMap[`O${rNum}`] = r ? r.trimCode : "";
+        cellMap[`P${rNum}`] = r ? r.trimLocation : "";
+        cellMap[`Q${rNum}`] = r ? r.blockCode1 : "";
+        cellMap[`R${rNum}`] = r ? r.blockCode2 : "";
+        cellMap[`S${rNum}`] = r ? r.blockLocation : "";
+        cellMap[`T${rNum}`] = r ? r.specialInstructions : "";
+      }
+
+      const blob = window.generateTemplateXlsxBlob("dr", cellMap);
+      const custSafe = (h.sidemark || h.shipName || "Customer").replace(/[\\/:*?"<>|\s]+/g, "_");
+      const dateSafe = h.orderDate || new Date().toISOString().slice(0, 10);
+      const fn = `Drapery_Order_Form_2026V1_${custSafe}_${dateSafe}.xlsx`;
+      triggerBlobDownload(blob, fn);
+      showToast(`📥 已生成原版格式布帘下单表：${fn}`);
+    }
+
+    function downloadBothXlsx() {
+      if (!rsRows.length && !drRows.length) {
+        loadDemoOrder();
+      }
+      if (rsRows.length) downloadRomanShadeXlsx();
+      if (drRows.length) {
+        setTimeout(() => downloadDraperyXlsx(), 450);
+      }
+    }
+
+    function persistState() {
+      try {
+        const state = {
+          header: getHeaderValues(),
+          rsRows,
+          drRows
+        };
+        localStorage.setItem(CONVERTER_STATE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function restoreState() {
+      document.getElementById("hdrOrderDate").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("hdrPoNumber").value = "PO-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-01";
+      try {
+        const raw = localStorage.getItem(CONVERTER_STATE_KEY);
+        if (raw) {
+          const st = JSON.parse(raw);
+          if (st.header) {
+            if (st.header.dealerName) document.getElementById("hdrDealerName").value = st.header.dealerName;
+            if (st.header.companyId) document.getElementById("hdrCompanyId").value = st.header.companyId;
+            if (st.header.poNumber) document.getElementById("hdrPoNumber").value = st.header.poNumber;
+            if (st.header.orderDate) document.getElementById("hdrOrderDate").value = st.header.orderDate;
+            if (st.header.sidemark) document.getElementById("hdrSidemark").value = st.header.sidemark;
+            if (st.header.invoiceNo) document.getElementById("hdrInvoiceNo").value = st.header.invoiceNo;
+            if (st.header.shipName) document.getElementById("hdrShipName").value = st.header.shipName;
+            if (st.header.shipPhone) document.getElementById("hdrShipPhone").value = st.header.shipPhone;
+            if (st.header.shipAddress) document.getElementById("hdrShipAddress").value = st.header.shipAddress;
+            if (st.header.shipZip) document.getElementById("hdrShipZip").value = st.header.shipZip;
+            if (st.header.specialReq) document.getElementById("hdrSpecialReq").value = st.header.specialReq;
+          }
+          if (Array.isArray(st.rsRows)) rsRows = st.rsRows;
+          if (Array.isArray(st.drRows)) drRows = st.drRows;
+        }
+      } catch (e) {}
+
+      refreshSavedMeasureList();
+
+      // 如果当前没有任何行，优先检查是否有拍照测量记录可自动导入，否则载入演示数据方便立即体验
+      if (!rsRows.length && !drRows.length) {
+        const savedMeasures = getSavedPhotoMeasures();
+        if (savedMeasures.length > 0) {
+          importFromPhotoMeasureApp("auto");
+        } else {
+          loadDemoOrder();
+        }
+      } else {
+        renderTables();
+      }
+    }
+
+    [
+      "hdrDealerName", "hdrCompanyId", "hdrPoNumber", "hdrOrderDate",
+      "hdrSidemark", "hdrInvoiceNo", "hdrShipName", "hdrShipPhone",
+      "hdrShipAddress", "hdrShipZip", "hdrSpecialReq"
+    ].forEach(id => {
+      document.getElementById(id).addEventListener("input", persistState);
+    });
+
+    restoreState();
+  </script>
+</body>
+</html>
