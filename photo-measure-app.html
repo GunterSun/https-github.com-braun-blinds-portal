@@ -227,43 +227,69 @@
       -webkit-touch-callout: default;
       user-select: auto;
     }
+    .lang-switch {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .lang-btn.active {
+      background: var(--gold);
+      color: #153f34;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header">
       <div>
-        <small>BRAUN INTERNATIONAL · 手机与平板现场测量 APP</small>
-        <h1>📱 拍照画线 · 语音 · 手写尺寸与选品工作台</h1>
-        <p>支持宽/高多段分窗 · 各品类专属操控方式 · 现场备注 · 一键保存标注图片 & 生成 Excel 报价下单表</p>
+        <small data-i18n="hdrSmall">BRAUN INTERNATIONAL · 手机与平板现场测量 APP</small>
+        <h1 data-i18n="hdrTitle">📱 拍照画线 · 语音 · 手写尺寸与选品工作台</h1>
+        <p data-i18n="hdrSub">支持宽/高多段分窗 · 各品类专属操控方式 · 现场备注 · 一键保存标注图片 &amp; 生成 Excel 报价下单表</p>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a class="btn btn-gold" style="text-decoration:none;background:#fde047;color:#153f34;" href="./order-converter.html">🔄 转 2026V1 下单模版 (Roman/Drapery) ↗</a>
-        <a class="btn btn-secondary" style="background:#102b42;color:#fff;border-color:#b68b50;text-decoration:none;" href="./cornice.html">🏛️ 软包窗帘盒报价 ↗</a>
-        <button class="btn btn-secondary" style="background:#fff;color:#153f34;" onclick="saveCurrentCanvasImage('download')">🖼️ 保存当前图片 (JPG)</button>
-        <button class="btn btn-gold" onclick="exportExcelXlsx()">📊 生成 Excel (.xlsx)</button>
-        <button class="btn btn-secondary" style="background:#dcfce7;color:#14532d;border-color:#86efac;" onclick="exportPhotoExcelHtml()">🖼️ 生成带图 Excel (.xls)</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div class="lang-switch" title="切换中英文 / Switch Language">
+          <button type="button" class="lang-btn active" id="langBtnZh" onclick="setPhotoAppLang('zh')">中文</button>
+          <button type="button" class="lang-btn" id="langBtnEn" onclick="setPhotoAppLang('en')">English</button>
+        </div>
+        <a class="btn btn-gold" style="text-decoration:none;background:#fde047;color:#153f34;" href="./order-converter.html" data-i18n="btnNavConverter">🔄 转 2026V1 下单模版 (Roman/Drapery) ↗</a>
+        <a class="btn btn-secondary" style="background:#102b42;color:#fff;border-color:#b68b50;text-decoration:none;" href="./cornice.html" data-i18n="btnNavCornice">🏛️ 软包窗帘盒报价 ↗</a>
+        <button class="btn btn-secondary" style="background:#fff;color:#153f34;" onclick="saveCurrentCanvasImage('download')" data-i18n="btnTopSaveImg">🖼️ 保存当前图片 (JPG)</button>
+        <button class="btn btn-gold" onclick="exportExcelXlsx()" data-i18n="btnTopExcel">📊 生成 Excel (.xlsx)</button>
+        <button class="btn btn-secondary" style="background:#dcfce7;color:#14532d;border-color:#86efac;" onclick="exportPhotoExcelHtml()" data-i18n="btnTopPhotoExcel">🖼️ 生成带图 Excel (.xls)</button>
       </div>
     </header>
 
     <!-- ① 客户与窗位置 -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-        <h2 style="margin:0;">① 客户录入与窗位置</h2>
+        <h2 style="margin:0;" data-i18n="sec1Title">① 客户录入与窗位置</h2>
         <div class="chips" style="margin:0;">
-          <span style="font-size:12px;color:#64748b;">老客户快选：</span>
+          <span style="font-size:12px;color:#64748b;" data-i18n="lblQuickCust">老客户快选：</span>
           <button class="chip" onclick="fillCustomer('Ignacio (Purrfect Shutters)','+1 909-552-0455','680 W Byron Ct')">Ignacio</button>
           <button class="chip" onclick="fillCustomer('Jose','+1 310-484-4816','')">Jose</button>
-          <button class="chip" onclick="fillCustomer('李先生 (李度恒)','+1 213-770-3111','')">李先生</button>
+          <button class="chip" onclick="fillCustomer('李先生 (Mr. Li)','+1 213-770-3111','')">Mr. Li / 李先生</button>
           <button class="chip" onclick="fillCustomer('Alex','+1 951-703-5046','')">Alex</button>
         </div>
       </div>
       <div class="grid-form">
-        <label>客户姓名 / 公司 *<input id="customerInput" placeholder="如：Ignacio / 李先生" oninput="renderCanvas()" /></label>
-        <label>联系电话<input id="phoneInput" placeholder="+1 909-xxx-xxxx" /></label>
-        <label>测量/安装地址<input id="addressInput" placeholder="如：680 W Byron Ct" /></label>
-        <label>窗位编号 (自动递增)<input id="windowCodeInput" value="W1" style="font-weight:800;color:#153f34;" oninput="renderCanvas()" /></label>
-        <label>窗位置 / 房间 *<input id="locationInput" value="客厅主窗 (Living Room)" oninput="renderCanvas()" /></label>
+        <label><span data-i18n="lblCustName">客户姓名 / 公司 *</span><input id="customerInput" placeholder="Ignacio / Mr. Li" oninput="renderCanvas()" /></label>
+        <label><span data-i18n="lblPhone">联系电话</span><input id="phoneInput" placeholder="+1 909-xxx-xxxx" /></label>
+        <label><span data-i18n="lblAddr">测量/安装地址</span><input id="addressInput" placeholder="680 W Byron Ct" /></label>
+        <label><span data-i18n="lblWinCode">窗位编号 (自动递增)</span><input id="windowCodeInput" value="W1" style="font-weight:800;color:#153f34;" oninput="renderCanvas()" /></label>
+        <label><span data-i18n="lblWinLoc">窗位置 / 房间 *</span><input id="locationInput" value="客厅主窗 (Living Room)" oninput="renderCanvas()" /></label>
       </div>
       <div class="chips" id="locationChips"></div>
     </section>
@@ -272,39 +298,39 @@
       <!-- ② 左侧：拍照 + 画线标尺寸 + 手写涂鸦 -->
       <section class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-          <h2 style="margin:0;">② 拍照 · 画多段尺寸线 · 手写圈注</h2>
+          <h2 style="margin:0;" data-i18n="sec2Title">② 拍照 · 画多段尺寸线 · 手写圈注</h2>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <label class="btn btn-primary" style="cursor:pointer;">
-              📷 拍照窗户
+              <span data-i18n="btnTakePhoto">📷 拍照窗户</span>
               <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)" />
             </label>
             <label class="btn btn-secondary" style="cursor:pointer;">
-              🖼️ 相册选图
+              <span data-i18n="btnPickAlbum">🖼️ 相册选图</span>
               <input type="file" accept="image/*" style="display:none;" onchange="handlePhoto(event)" />
             </label>
-            <button class="btn btn-secondary" onclick="resetBlankCanvas()">🪟 空白窗型纸</button>
+            <button class="btn btn-secondary" onclick="resetBlankCanvas()" data-i18n="btnBlankCanvas">🪟 空白窗型纸</button>
           </div>
         </div>
 
         <div class="toolbar">
-          <button id="modeLineBtn" class="btn btn-primary" onclick="setMode('line')">📏 画尺寸线 (支持多条)</button>
-          <button id="modePenBtn" class="btn btn-secondary" onclick="setMode('pen')">✍️ 手写笔涂鸦</button>
-          <button id="modePinBtn" class="btn btn-secondary" onclick="setMode('pin')">🏷️ 点图贴字</button>
+          <button id="modeLineBtn" class="btn btn-primary" onclick="setMode('line')" data-i18n="btnModeLine">📏 画尺寸线 (支持多条)</button>
+          <button id="modePenBtn" class="btn btn-secondary" onclick="setMode('pen')" data-i18n="btnModePen">✍️ 手写笔涂鸦</button>
+          <button id="modePinBtn" class="btn btn-secondary" onclick="setMode('pin')" data-i18n="btnModePin">🏷️ 点图贴字</button>
           <div style="display:flex;gap:5px;margin-left:4px;" id="colorPalette"></div>
           <div style="margin-left:auto;display:flex;gap:5px;">
-            <button class="btn btn-secondary" onclick="autoDrawWH()">⚡ 自动标多段宽高</button>
-            <button class="btn btn-secondary" onclick="undoCanvas()">↶ 撤销</button>
-            <button class="btn btn-secondary" onclick="clearAnnotations()">清空</button>
+            <button class="btn btn-secondary" onclick="autoDrawWH()" data-i18n="btnAutoDraw">⚡ 自动标多段宽高</button>
+            <button class="btn btn-secondary" onclick="undoCanvas()" data-i18n="btnUndo">↶ 撤销</button>
+            <button class="btn btn-secondary" onclick="clearAnnotations()" data-i18n="btnClearCanvas">清空</button>
           </div>
         </div>
 
         <!-- 画完尺寸线弹出的尺寸编辑条 -->
         <div id="lineEditorBox" style="display:none;background:#fffbeb;border:2px solid #f59e0b;padding:10px;border-radius:12px;margin-bottom:10px;">
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <strong style="font-size:13px;color:#92400e;">📏 输入该线尺寸 (自动同步对应分段)：</strong>
-            <input id="lineLabelInput" style="flex:1;font-weight:800;" placeholder="如 W1: 35 1/2&quot; 或 H2: 84&quot;" onkeydown="if(event.key==='Enter')confirmLineEdit()" />
-            <button class="btn btn-primary" onclick="confirmLineEdit()">确定 ✓</button>
-            <button class="btn btn-danger" onclick="deleteEditingLine()">删除此线</button>
+            <strong style="font-size:13px;color:#92400e;" data-i18n="lblEditLine">📏 输入该线尺寸 (自动同步对应分段)：</strong>
+            <input id="lineLabelInput" style="flex:1;font-weight:800;" placeholder="W1: 35 1/2&quot; / H2: 84&quot;" onkeydown="if(event.key==='Enter')confirmLineEdit()" />
+            <button class="btn btn-primary" onclick="confirmLineEdit()" data-i18n="btnConfirmLine">确定 ✓</button>
+            <button class="btn btn-danger" onclick="deleteEditingLine()" data-i18n="btnDelLine">删除此线</button>
           </div>
           <div class="chips" id="lineFractionChips"></div>
         </div>
@@ -315,13 +341,13 @@
 
         <!-- 画布下方一键保存标注图片工具条 -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding:10px;background:#eef6f2;border:1px solid #bdd5c8;border-radius:12px;align-items:center;">
-          <button class="btn btn-primary" style="flex:1;min-width:165px;" onclick="saveCurrentCanvasImage('download')">🖼️ 保存当前标注图片 (下载 JPG)</button>
-          <button class="btn btn-gold" style="flex:1;min-width:165px;" onclick="saveCurrentCanvasImage('share')">📱 存手机相册 / 发微信 (iOS/平板)</button>
-          <button class="btn btn-secondary" onclick="openCurrentCanvasPreview()">🔍 放大长按存图</button>
+          <button class="btn btn-primary" style="flex:1;min-width:165px;" onclick="saveCurrentCanvasImage('download')" data-i18n="btnSaveImgDl">🖼️ 保存当前标注图片 (下载 JPG)</button>
+          <button class="btn btn-gold" style="flex:1;min-width:165px;" onclick="saveCurrentCanvasImage('share')" data-i18n="btnSaveImgShare">📱 存手机相册 / 发微信 (iOS/平板)</button>
+          <button class="btn btn-secondary" onclick="openCurrentCanvasPreview()" data-i18n="btnPreviewImg">🔍 放大长按存图</button>
         </div>
 
-        <p style="margin:8px 0 0;font-size:12px;color:#64748b;">
-          💡 在照片上画第 1、2、3 条横线会自动归入 <b>W1、W2、W3</b>；画第 1、2、3 条竖线会自动归入 <b>H1、H2、H3</b>！点上方【🖼️ 保存当前标注图片】即可将带客户、尺寸线、操控方式与备注的高清图保存到手机相册或电脑。
+        <p style="margin:8px 0 0;font-size:12px;color:#64748b;" data-i18n="canvasTip">
+          💡 在照片上画第 1、2、3 条横线会自动归入 W1、W2、W3；画第 1、2、3 条竖线会自动归入 H1、H2、H3！点上方【🖼️ 保存当前标注图片】即可保存高清图。
         </p>
       </section>
 
@@ -330,37 +356,37 @@
         <!-- ③ 语音 + 手写速记 -->
         <section class="card" style="background:#f7faf8;border-color:#bdd5c8;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-            <h2 style="margin:0;">③ 拍照后语音 + 手写速记 (支持多段宽高)</h2>
+            <h2 style="margin:0;" data-i18n="sec3Title">③ 拍照后语音 + 手写速记 (支持多段宽高)</h2>
             <div style="display:flex;gap:6px;">
               <select id="voiceLangSelect" style="width:auto;padding:6px 8px;font-size:12px;">
-                <option value="zh-CN">中文语音</option>
-                <option value="en-US">English</option>
+                <option value="zh-CN">中文语音 (Chinese)</option>
+                <option value="en-US">English Voice</option>
               </select>
-              <button id="voiceBtn" class="btn btn-primary" onclick="toggleSpeech()">🎤 点此说话转尺寸</button>
+              <button id="voiceBtn" class="btn btn-primary" onclick="toggleSpeech()" data-i18n="btnVoice">🎤 点此说话转尺寸</button>
             </div>
           </div>
-          <textarea id="voiceText" rows="3" placeholder="点击【🎤 点此说话转尺寸】或直接手写多段数据：&#10;• 多段分窗示例：“客厅飘窗 宽 28 56 28 高 72 84 72 斑马帘 口内安装”&#10;• 三点测框示例：“主卧 上宽 35 1/2 中宽 35 1/4 下宽 35 3/8 左高 72 右高 72 1/4”"></textarea>
+          <textarea id="voiceText" rows="3" placeholder="Click [🎤 Speak] or type multi-segment dimensions:&#10;• Bay Window W 28 56 28 H 72 84 72 Zebra Shade IM&#10;• Master Bedroom W1 35 1/2 W2 35 1/4 W3 35 3/8 H 72"></textarea>
           <div style="margin-top:8px;">
-            <button class="btn btn-secondary" style="width:100%;" onclick="parseTextAndFill()">✦ 智能识别多段宽/高与产品型号，自动生成分段并标到照片上</button>
+            <button class="btn btn-secondary" style="width:100%;" onclick="parseTextAndFill()" data-i18n="btnParseVoice">✦ 智能识别多段宽/高与产品型号，自动生成分段并标到照片上</button>
           </div>
         </section>
 
         <!-- ④ 窗户宽高尺寸（支持多段分幅 & 上中下/左中右多点测量） -->
         <section class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
-            <h2 style="margin:0;">④ 实测宽/高尺寸 — 支持多段分窗 & 多点测量 (Inches)</h2>
-            <button class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="autoDrawWH()">📏 将全部宽高分段画到照片上</button>
+            <h2 style="margin:0;" data-i18n="sec4Title">④ 实测宽/高尺寸 — 支持多段分窗 &amp; 多点测量 (Inches)</h2>
+            <button class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="autoDrawWH()" data-i18n="btnDrawAllSegs">📏 将全部宽高分段画到照片上</button>
           </div>
 
           <!-- 宽度多段区 -->
           <div class="seg-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-              <strong style="font-size:13px;color:#153f34;">↔️ 宽度 Width (支持单段 / 多段拼接 / 上中下三点测宽)</strong>
+              <strong style="font-size:13px;color:#153f34;" data-i18n="lblWidthBox">↔️ 宽度 Width (支持单段 / 多段拼接 / 上中下三点测宽)</strong>
               <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                <button class="chip" style="background:#153f34;color:#fff;" onclick="addWidthSeg()">+ 加一段宽</button>
-                <button class="chip" onclick="applyWidthPreset('split3')">🪟 左·中·右三段窗</button>
-                <button class="chip" onclick="applyWidthPreset('3pt')">📐 上·中·下三点测宽</button>
-                <button class="chip" onclick="applyWidthPreset('single')">仅单宽</button>
+                <button class="chip" style="background:#153f34;color:#fff;" onclick="addWidthSeg()" data-i18n="btnAddW">+ 加一段宽</button>
+                <button class="chip" onclick="applyWidthPreset('split3')" data-i18n="btnWSplit3">🪟 左·中·右三段窗</button>
+                <button class="chip" onclick="applyWidthPreset('3pt')" data-i18n="btnW3Pt">📐 上·中·下三点测宽</button>
+                <button class="chip" onclick="applyWidthPreset('single')" data-i18n="btnWSingle">仅单宽</button>
               </div>
             </div>
             <div id="widthSegContainer"></div>
@@ -370,13 +396,13 @@
           <!-- 高度多段区 -->
           <div class="seg-box">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-              <strong style="font-size:13px;color:#153f34;">↕️ 高度 Height (支持单段 / 多段分高 / 左中右三点 / 窗高+杆高)</strong>
+              <strong style="font-size:13px;color:#153f34;" data-i18n="lblHeightBox">↕️ 高度 Height (支持单段 / 多段分高 / 左中右三点 / 窗高+杆高)</strong>
               <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                <button class="chip" style="background:#153f34;color:#fff;" onclick="addHeightSeg()">+ 加一段高</button>
-                <button class="chip" onclick="applyHeightPreset('split3')">🪟 左·中·右三段高</button>
-                <button class="chip" onclick="applyHeightPreset('3pt')">📐 左·中·右三点测高</button>
-                <button class="chip" onclick="applyHeightPreset('rod')">🏛️ 窗框高+装杆高+墙高</button>
-                <button class="chip" onclick="applyHeightPreset('single')">仅单高</button>
+                <button class="chip" style="background:#153f34;color:#fff;" onclick="addHeightSeg()" data-i18n="btnAddH">+ 加一段高</button>
+                <button class="chip" onclick="applyHeightPreset('split3')" data-i18n="btnHSplit3">🪟 左·中·右三段高</button>
+                <button class="chip" onclick="applyHeightPreset('3pt')" data-i18n="btnH3Pt">📐 左·中·右三点测高</button>
+                <button class="chip" onclick="applyHeightPreset('rod')" data-i18n="btnHRod">🏛️ 窗框高+装杆高+墙高</button>
+                <button class="chip" onclick="applyHeightPreset('single')" data-i18n="btnHSingle">仅单高</button>
               </div>
             </div>
             <div id="heightSegContainer"></div>
@@ -385,12 +411,12 @@
 
           <!-- 窗深与推拉门外延选项 -->
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px;">
-            <label style="flex:1;min-width:140px;">窗框深度 Depth (选填)
-              <input id="depthInput" placeholder="如 3 1/2" onfocus="setFocusTarget('depth',0)" />
+            <label style="flex:1;min-width:140px;"><span data-i18n="lblDepth">窗框深度 Depth (选填)</span>
+              <input id="depthInput" placeholder="3 1/2" onfocus="setFocusTarget('depth',0)" />
             </label>
             <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:800;color:#153f34;padding-top:16px;">
               <input type="checkbox" id="addTenCheck" style="width:18px;height:18px;" onchange="updateDeductionHint();renderCanvas()" />
-              推拉门/框外总宽 +10"
+              <span data-i18n="chkAddTen">推拉门/框外总宽 +10"</span>
             </label>
           </div>
 
@@ -404,16 +430,16 @@
 
         <!-- ⑤ 客户选择产品型号、专属操控方式与现场备注 -->
         <section class="card">
-          <h2>⑤ 客户选择产品型号 · 专属操控方式 · 现场备注</h2>
+          <h2 data-i18n="sec5Title">⑤ 客户选择产品型号 · 专属操控方式 · 现场备注</h2>
           <div class="chips" id="categoryChips" style="margin-bottom:10px;"></div>
           <div class="grid-form">
-            <label style="grid-column:1 / -1;">客户选定产品型号 / 面料色号 *<input id="modelInput" value="Group B 布帘 + White Sheer 白纱" style="font-weight:700;" oninput="renderCanvas()" /></label>
+            <label style="grid-column:1 / -1;"><span data-i18n="lblModel">客户选定产品型号 / 面料色号 *</span><input id="modelInput" value="Group B 布帘 + White Sheer 白纱" style="font-weight:700;" oninput="renderCanvas()" /></label>
             <div id="quickModelChips" class="chips" style="grid-column:1 / -1;margin-top:0;"></div>
-            <label>安装方式 (Mount)
+            <label><span data-i18n="lblMount">安装方式 (Mount)</span>
               <select id="mountSelect" onchange="renderCanvas();updateDeductionHint()">
-                <option value="口外安装 (OM)">口外安装 (OM / Outside)</option>
-                <option value="口内安装 (IM)">口内安装 (IM / Inside)</option>
-                <option value="顶装 (Ceiling)">顶装 (Ceiling)</option>
+                <option value="口外安装 (OM)">口外安装 (OM / Outside Mount)</option>
+                <option value="口内安装 (IM)">口内安装 (IM / Inside Mount)</option>
+                <option value="顶装 (Ceiling)">顶装 (Ceiling Mount)</option>
               </select>
             </label>
             <label><span id="controlLabelText">开合与收拢方向 (Opening)</span>
@@ -423,15 +449,15 @@
               <select id="motorSelect" onchange="renderCanvas()"></select>
             </label>
             <label><span id="styleLabelText">褶皱款式 / 衬布 / 罩壳配件</span>
-              <input id="styleInput" value="双韩褶 + 遮光衬" placeholder="可点下方快捷项或自由输入" oninput="renderCanvas();updateDeductionHint()" />
+              <input id="styleInput" value="双韩褶 + 遮光衬" placeholder="Click quick chips or type freely" oninput="renderCanvas();updateDeductionHint()" />
             </label>
             <div id="quickStyleChips" class="chips" style="grid-column:1 / -1;margin-top:0;"></div>
 
             <!-- 新增：专属现场测量/加工/安装备注栏 -->
             <div style="grid-column:1 / -1;margin-top:4px;padding:10px 12px;border-radius:12px;background:#fffdf5;border:1px solid #e5c168;">
               <label style="color:#78350f;font-size:13px;font-weight:800;">
-                📝 现场测量 / 加工 / 安装备注 (Remarks — 自动印在测量图与订单上)
-                <textarea id="remarkInput" rows="2" placeholder="输入现场特殊要求：如窗户有摇把需加厚支架、电机插座在左上角、需拆旧帘、中横梁高度距离底部36&quot;等..." oninput="renderCanvas()" style="margin-top:4px;font-size:14px;"></textarea>
+                <span data-i18n="lblRemark">📝 现场测量 / 加工 / 安装备注 (Remarks — 自动印在测量图与订单上)</span>
+                <textarea id="remarkInput" rows="2" placeholder="输入现场特殊要求 / Enter special remarks (crank handle, motor outlet top-left, take down old blinds, divider rail...)" oninput="renderCanvas()" style="margin-top:4px;font-size:14px;"></textarea>
               </label>
               <div class="chips" id="quickRemarkChips" style="margin-top:6px;"></div>
             </div>
@@ -439,15 +465,15 @@
           <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:8px 12px;background:#f1f5f3;border-radius:10px;">
             <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:800;color:#153f34;margin:0;">
               <input type="checkbox" id="autoDownloadImgCheck" style="width:18px;height:18px;" />
-              保存窗位时，同时自动下载该窗位的 JPG 标注图片
+              <span data-i18n="chkAutoDl">保存窗位时，同时自动下载该窗位的 JPG 标注图片</span>
             </label>
-            <span style="font-size:12px;color:#64748b;">也可随时单独点下方按钮保存图片或生成 Excel</span>
+            <span style="font-size:12px;color:#64748b;" data-i18n="lblAutoDlHint">也可随时单独点下方按钮保存图片或生成 Excel</span>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-            <button class="btn btn-primary" style="flex:2;min-width:210px;padding:13px;" onclick="saveWindowRecord(true)">✓ 保存此窗位并继续拍下一扇窗</button>
-            <button class="btn btn-secondary" style="flex:1;min-width:130px;padding:13px;" onclick="saveWindowRecord(false)">仅保存当前窗位</button>
-            <button class="btn btn-secondary" style="background:#eef6f2;padding:13px;" onclick="saveCurrentCanvasImage('download')">🖼️ 保存图片</button>
-            <button class="btn btn-gold" style="padding:13px;" onclick="exportExcelXlsx()">📊 生成 Excel</button>
+            <button class="btn btn-primary" style="flex:2;min-width:210px;padding:13px;" onclick="saveWindowRecord(true)" data-i18n="btnSaveNext">✓ 保存此窗位并继续拍下一扇窗</button>
+            <button class="btn btn-secondary" style="flex:1;min-width:130px;padding:13px;" onclick="saveWindowRecord(false)" data-i18n="btnSaveOnly">仅保存当前窗位</button>
+            <button class="btn btn-secondary" style="background:#eef6f2;padding:13px;" onclick="saveCurrentCanvasImage('download')" data-i18n="btnSaveImgBottom">🖼️ 保存图片</button>
+            <button class="btn btn-gold" style="padding:13px;" onclick="exportExcelXlsx()" data-i18n="btnExcelBottom">📊 生成 Excel</button>
           </div>
         </section>
       </div>
@@ -456,13 +482,13 @@
     <!-- ⑥ 已保存窗位列表与批量导出中心 -->
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-        <h2 style="margin:0;">📋 已保存的现场拍照测量单 (<span id="recordCount">0</span> 扇窗)</h2>
+        <h2 style="margin:0;"><span data-i18n="sec6Title">📋 已保存的现场拍照测量单</span> (<span id="recordCount">0</span>)</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a class="btn btn-gold" style="text-decoration:none;background:#fde047;color:#153f34;" href="./order-converter.html">🔄 一键转换到 2026V1 工厂下单模版 (Roman Shade / Drapery)</a>
-          <button class="btn btn-primary" onclick="exportExcelXlsx()">📊 生成标准 Excel 表格 (.xlsx 含多段拆单)</button>
-          <button class="btn btn-gold" onclick="exportPhotoExcelHtml()">🖼️ 生成【带现场照片】图文 Excel 工单 (.xls)</button>
-          <button class="btn btn-secondary" onclick="downloadAllImages()">📦 批量保存全部窗位图片 (JPG)</button>
-          <button class="btn btn-secondary" onclick="exportAllRecordsCsv()">📄 导出 CSV</button>
+          <a class="btn btn-gold" style="text-decoration:none;background:#fde047;color:#153f34;" href="./order-converter.html" data-i18n="btnBottomConverter">🔄 一键转换到 2026V1 工厂下单模版 (Roman Shade / Drapery)</a>
+          <button class="btn btn-primary" onclick="exportExcelXlsx()" data-i18n="btnBottomXlsx">📊 生成标准 Excel 表格 (.xlsx 含多段拆单)</button>
+          <button class="btn btn-gold" onclick="exportPhotoExcelHtml()" data-i18n="btnBottomXls">🖼️ 生成【带现场照片】图文 Excel 工单 (.xls)</button>
+          <button class="btn btn-secondary" onclick="downloadAllImages()" data-i18n="btnBottomAllImgs">📦 批量保存全部窗位图片 (JPG)</button>
+          <button class="btn btn-secondary" onclick="exportAllRecordsCsv()" data-i18n="btnBottomCsv">📄 导出 CSV</button>
         </div>
       </div>
       <div id="galleryGrid" class="gallery-grid"></div>
@@ -671,11 +697,14 @@
 
     // 渲染多段宽与多段高输入框
     function renderSegmentInputs() {
+      const isEn = typeof currentLang !== "undefined" && currentLang === "en";
+      const wPh = isEn ? "Seg W (or type 28+56+28 to auto-split)" : "输入该段宽 (或直接填 28+56+28 自动拆分)";
+      const hPh = isEn ? "Seg H (or type 72+84 to auto-split)" : "输入该段高 (或直接填 72+84 自动拆分)";
       const wWrap = document.getElementById("widthSegContainer");
       wWrap.innerHTML = widthSegments.map((seg, i) => `
         <div class="seg-row">
-          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('width',${i},this.value)" title="点击可改名，如 左宽/中宽/右宽 或 上宽/中宽/下宽" />
-          <input id="wSegInput_${i}" class="seg-val ${focusTarget.type==='width'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="输入第 ${i+1} 段宽 (或直接填 28+56+28 自动拆分)" onfocus="setFocusTarget('width',${i})" oninput="updateSegVal('width',${i},this.value)" />
+          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('width',${i},this.value)" title="W1 / W2 / W3" />
+          <input id="wSegInput_${i}" class="seg-val ${focusTarget.type==='width'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="${wPh}" onfocus="setFocusTarget('width',${i})" oninput="updateSegVal('width',${i},this.value)" />
           ${widthSegments.length > 1 ? `<button class="btn btn-danger" style="padding:8px 10px;" onclick="removeSeg('width',${i})">×</button>` : ''}
         </div>
       `).join("");
@@ -683,8 +712,8 @@
       const hWrap = document.getElementById("heightSegContainer");
       hWrap.innerHTML = heightSegments.map((seg, i) => `
         <div class="seg-row">
-          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('height',${i},this.value)" title="点击可改名，如 左高/中高/右高 或 窗高/杆高" />
-          <input id="hSegInput_${i}" class="seg-val ${focusTarget.type==='height'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="输入第 ${i+1} 段高 (或直接填 72/84 自动拆分)" onfocus="setFocusTarget('height',${i})" oninput="updateSegVal('height',${i},this.value)" />
+          <input class="seg-tag" value="${seg.tag}" oninput="updateSegTag('height',${i},this.value)" title="H1 / H2 / H3" />
+          <input id="hSegInput_${i}" class="seg-val ${focusTarget.type==='height'&&focusTarget.index===i?'focused':''}" value="${seg.val}" placeholder="${hPh}" onfocus="setFocusTarget('height',${i})" oninput="updateSegVal('height',${i},this.value)" />
           ${heightSegments.length > 1 ? `<button class="btn btn-danger" style="padding:8px 10px;" onclick="removeSeg('height',${i})">×</button>` : ''}
         </div>
       `).join("");
@@ -848,19 +877,47 @@
       lineFracWrap.innerHTML = tokens.map(t => `<button class="chip" onclick="appendLineToken('${t}')">${t}</button>`).join("");
     }
 
+    const QUICK_REMARKS_EN = [
+      "Window has crank/handle, use extended brackets or reverse roll",
+      "Motor power outlet at top-left",
+      "Motor power outlet at top-right",
+      "Frame out of square: inside mount deduct strictly from Min W",
+      "High ceiling window: tall ladder required",
+      "Take down old blinds on site",
+      "Side-by-side windows: minimize center gap",
+      "Tile/molding wall: bring special anchors",
+      "Divider rail height from bottom: __\""
+    ];
+
+    function displayBilingualChip(str) {
+      const isEn = typeof currentLang !== "undefined" && currentLang === "en";
+      if (!isEn) return str;
+      const m = String(str).match(/\(([^)]+)\)/);
+      return m ? m[1] : str;
+    }
+
     function initChips() {
+      const isEn = typeof currentLang !== "undefined" && currentLang === "en";
       const locWrap = document.getElementById("locationChips");
-      locWrap.innerHTML = LOCATIONS.map(l => `<button class="chip" onclick="document.getElementById('locationInput').value='${l}';renderCanvas()">${l}</button>`).join("");
+      locWrap.innerHTML = LOCATIONS.map(l => {
+        const disp = displayBilingualChip(l);
+        return `<button class="chip" onclick="document.getElementById('locationInput').value='${disp.replace(/'/g,"\\'")}';renderCanvas()">${disp}</button>`;
+      }).join("");
 
       const fracWrap = document.getElementById("dimFractionChips");
-      fracWrap.innerHTML = `<small style="color:#64748b;font-weight:700;">点选分数 (加入 <span id="activeFracTargetLabel" style="color:#153f34;">W1</span>)：</small>` + FRACTIONS.map(f => `<button class="chip" onclick="appendFraction('${f}')">+${f}</button>`).join("");
+      const fracTitle = isEn
+        ? `<small style="color:#64748b;font-weight:700;">Tap Fraction (adds to <span id="activeFracTargetLabel" style="color:#153f34;">W1</span>):</small>`
+        : `<small style="color:#64748b;font-weight:700;">点选分数 (加入 <span id="activeFracTargetLabel" style="color:#153f34;">W1</span>)：</small>`;
+      fracWrap.innerHTML = fracTitle + FRACTIONS.map(f => `<button class="chip" onclick="appendFraction('${f}')">+${f}</button>`).join("");
 
       const colorWrap = document.getElementById("colorPalette");
       colorWrap.innerHTML = COLORS.map(c => `<div class="color-dot ${c===penColor?'active':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`).join("");
 
       const remWrap = document.getElementById("quickRemarkChips");
       if (remWrap) {
-        remWrap.innerHTML = `<small style="color:#92400e;font-weight:700;">快捷备注点选 (可叠加)：</small>` + QUICK_REMARKS.map(r => `<button class="chip" style="background:#fff;border-color:#f59e0b;color:#78350f;" onclick="appendRemark('${r.replace(/"/g,'&quot;')}')">+ ${r}</button>`).join("");
+        const rems = isEn ? QUICK_REMARKS_EN : QUICK_REMARKS;
+        const remTitle = isEn ? `<small style="color:#92400e;font-weight:700;">Quick Remarks:</small>` : `<small style="color:#92400e;font-weight:700;">快捷备注点选 (可叠加)：</small>`;
+        remWrap.innerHTML = remTitle + rems.map(r => `<button class="chip" style="background:#fff;border-color:#f59e0b;color:#78350f;" onclick="appendRemark('${r.replace(/"/g,'&quot;')}')">+ ${r}</button>`).join("");
       }
 
       renderCategoryChips();
@@ -882,17 +939,19 @@
     }
 
     function renderCategoryChips() {
+      const isEn = typeof currentLang !== "undefined" && currentLang === "en";
       const wrap = document.getElementById("categoryChips");
-      wrap.innerHTML = CATEGORIES.map(c => `<button class="chip ${c===currentCategory?'active':''}" onclick="selectCategory('${c}')">${c}</button>`).join("");
+      wrap.innerHTML = CATEGORIES.map(c => `<button class="chip ${c===currentCategory?'active':''}" onclick="selectCategory('${c}')">${displayBilingualChip(c)}</button>`).join("");
       const mWrap = document.getElementById("quickModelChips");
       const list = MODELS[currentCategory] || [];
-      mWrap.innerHTML = `<small style="color:#64748b;font-weight:700;">常用型号点选：</small>` + list.map(m => `<button class="chip" onclick="document.getElementById('modelInput').value='${m.replace(/"/g,'&quot;')}';renderCanvas()">${m}</button>`).join("");
+      const mTitle = isEn ? `<small style="color:#64748b;font-weight:700;">Quick Models:</small>` : `<small style="color:#64748b;font-weight:700;">常用型号点选：</small>`;
+      mWrap.innerHTML = mTitle + list.map(m => `<button class="chip" onclick="document.getElementById('modelInput').value='${m.replace(/"/g,'&quot;')}';renderCanvas()">${m}</button>`).join("");
 
       // 动态渲染当前窗帘品类专属的【操控方式】【驱动轨道/扇数】【款式衬布/罩壳】
       const spec = CATEGORY_SPECS[currentCategory] || CATEGORY_SPECS["双层布帘+纱 (Double Layer)"];
-      document.getElementById("controlLabelText").textContent = spec.controlLabel;
-      document.getElementById("motorLabelText").textContent = spec.motorLabel;
-      document.getElementById("styleLabelText").textContent = spec.styleLabel;
+      document.getElementById("controlLabelText").textContent = isEn ? "Opening / Lift Control & Position" : spec.controlLabel;
+      document.getElementById("motorLabelText").textContent = isEn ? "Track / Roll / Panel / Motor Spec" : spec.motorLabel;
+      document.getElementById("styleLabelText").textContent = isEn ? "Header Pleat / Lining / Valance" : spec.styleLabel;
 
       const ctrlSel = document.getElementById("controlSelect");
       ctrlSel.innerHTML = spec.controls.map(opt => `<option value="${opt.replace(/"/g,'&quot;')}">${opt}</option>`).join("");
@@ -905,7 +964,8 @@
         styleInput.value = spec.styles[0];
         const sWrap = document.getElementById("quickStyleChips");
         if (sWrap) {
-          sWrap.innerHTML = `<small style="color:#64748b;font-weight:700;">${spec.styleLabel}快选：</small>` + spec.styles.map(st => `<button class="chip" onclick="document.getElementById('styleInput').value='${st.replace(/"/g,'&quot;')}';renderCanvas();updateDeductionHint()">${st}</button>`).join("");
+          const sTitle = isEn ? `<small style="color:#64748b;font-weight:700;">Quick Specs:</small>` : `<small style="color:#64748b;font-weight:700;">${spec.styleLabel}快选：</small>`;
+          sWrap.innerHTML = sTitle + spec.styles.map(st => `<button class="chip" onclick="document.getElementById('styleInput').value='${st.replace(/"/g,'&quot;')}';renderCanvas();updateDeductionHint()">${st}</button>`).join("");
         }
       }
     }
@@ -1067,8 +1127,9 @@
       ctx.clearRect(0, 0, W, H);
       ctx.drawImage(baseImg, 0, 0, W, H);
 
-      // 顶部工程信息水印栏（完整展示多段宽、多段高、专属操控方式与现场备注）
-      const cust = document.getElementById("customerInput").value || "未填客户";
+      // 顶部工程信息水印栏（完整展示多段宽、多段高、专属操控方式与现场备注，自动跟随中英文）
+      const isEn = typeof currentLang !== "undefined" && currentLang === "en";
+      const cust = document.getElementById("customerInput").value || (isEn ? "Customer" : "未填客户");
       const code = document.getElementById("windowCodeInput").value || "W1";
       const loc = document.getElementById("locationInput").value || "";
       const mod = document.getElementById("modelInput").value || "";
@@ -1085,17 +1146,24 @@
       ctx.fillRect(0, 0, W, bannerH);
       ctx.fillStyle = "#facc15";
       ctx.font = "bold 22px sans-serif";
-      ctx.fillText(`${code} · ${loc}  |  客户: ${cust}  |  ${currentCategory} (${mod})`, 18, 28);
+      const custLbl = isEn ? "Customer" : "客户";
+      const catDisp = isEn ? displayBilingualChip(currentCategory) : currentCategory;
+      ctx.fillText(`${code} · ${loc}  |  ${custLbl}: ${cust}  |  ${catDisp} (${mod})`, 18, 28);
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 17px sans-serif";
-      ctx.fillText(`↔ 宽 W: ${wStats.summaryText || "待测"}    ↕ 高 H: ${hStats.summaryText || "待测"}`, 18, 55);
+      const wLbl = isEn ? "↔ Width W" : "↔ 宽 W";
+      const hLbl = isEn ? "↕ Height H" : "↕ 高 H";
+      const tbdLbl = isEn ? "TBD" : "待测";
+      ctx.fillText(`${wLbl}: ${wStats.summaryText || tbdLbl}    ${hLbl}: ${hStats.summaryText || tbdLbl}`, 18, 55);
       ctx.fillStyle = "#cbd5e1";
       ctx.font = "16px sans-serif";
-      ctx.fillText(`⚙️ 操控与配置: ${mount} · ${ctrl} · ${motor} · ${styleVal}`, 18, 80);
+      const specLbl = isEn ? "⚙️ Controls & Specs" : "⚙️ 操控与配置";
+      ctx.fillText(`${specLbl}: ${mount} · ${ctrl} · ${motor} · ${styleVal}`, 18, 80);
       if (remarkVal) {
         ctx.fillStyle = "#fde047";
         ctx.font = "bold 16px sans-serif";
-        ctx.fillText(`📝 现场备注: ${remarkVal}`, 18, 105);
+        const remLbl = isEn ? "📝 Remarks" : "📝 现场备注";
+        ctx.fillText(`${remLbl}: ${remarkVal}`, 18, 105);
       }
 
       // 手写涂鸦
@@ -1914,10 +1982,172 @@
       showToast("📄 已导出 CSV 测量汇总表！");
     }
 
+    const LANG_STORAGE_KEY = "braun_app_lang";
+    let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || "zh";
+
+    const PHOTO_APP_I18N = {
+      zh: {
+        hdrSmall: "BRAUN INTERNATIONAL · 手机与平板现场测量 APP",
+        hdrTitle: "📱 拍照画线 · 语音 · 手写尺寸与选品工作台",
+        hdrSub: "支持宽/高多段分窗 · 各品类专属操控方式 · 现场备注 · 一键保存标注图片 & 生成 Excel 报价下单表",
+        btnNavConverter: "🔄 转 2026V1 下单模版 (Roman/Drapery) ↗",
+        btnNavCornice: "🏛️ 软包窗帘盒报价 ↗",
+        btnTopSaveImg: "🖼️ 保存当前图片 (JPG)",
+        btnTopExcel: "📊 生成 Excel (.xlsx)",
+        btnTopPhotoExcel: "🖼️ 生成带图 Excel (.xls)",
+        sec1Title: "① 客户录入与窗位置",
+        lblQuickCust: "老客户快选：",
+        lblCustName: "客户姓名 / 公司 *",
+        lblPhone: "联系电话",
+        lblAddr: "测量/安装地址",
+        lblWinCode: "窗位编号 (自动递增)",
+        lblWinLoc: "窗位置 / 房间 *",
+        sec2Title: "② 拍照 · 画多段尺寸线 · 手写圈注",
+        btnTakePhoto: "📷 拍照窗户",
+        btnPickAlbum: "🖼️ 相册选图",
+        btnBlankCanvas: "🪟 空白窗型纸",
+        btnModeLine: "📏 画尺寸线 (支持多条)",
+        btnModePen: "✍️ 手写笔涂鸦",
+        btnModePin: "🏷️ 点图贴字",
+        btnAutoDraw: "⚡ 自动标多段宽高",
+        btnUndo: "↶ 撤销",
+        btnClearCanvas: "清空",
+        lblEditLine: "📏 输入该线尺寸 (自动同步对应分段)：",
+        btnConfirmLine: "确定 ✓",
+        btnDelLine: "删除此线",
+        btnSaveImgDl: "🖼️ 保存当前标注图片 (下载 JPG)",
+        btnSaveImgShare: "📱 存手机相册 / 发微信 (iOS/平板)",
+        btnPreviewImg: "🔍 放大长按存图",
+        canvasTip: "💡 在照片上画第 1、2、3 条横线会自动归入 W1、W2、W3；画第 1、2、3 条竖线会自动归入 H1、H2、H3！点上方【🖼️ 保存当前标注图片】即可保存高清图。",
+        sec3Title: "③ 拍照后语音 + 手写速记 (支持多段宽高)",
+        btnVoice: "🎤 点此说话转尺寸",
+        btnParseVoice: "✦ 智能识别多段宽/高与产品型号，自动生成分段并标到照片上",
+        sec4Title: "④ 实测宽/高尺寸 — 支持多段分窗 & 多点测量 (Inches)",
+        btnDrawAllSegs: "📏 将全部宽高分段画到照片上",
+        lblWidthBox: "↔️ 宽度 Width (支持单段 / 多段拼接 / 上中下三点测宽)",
+        btnAddW: "+ 加一段宽",
+        btnWSplit3: "🪟 左·中·右三段窗",
+        btnW3Pt: "📐 上·中·下三点测宽",
+        btnWSingle: "仅单宽",
+        lblHeightBox: "↕️ 高度 Height (支持单段 / 多段分高 / 左中右三点 / 窗高+杆高)",
+        btnAddH: "+ 加一段高",
+        btnHSplit3: "🪟 左·中·右三段高",
+        btnH3Pt: "📐 左·中·右三点测高",
+        btnHRod: "🏛️ 窗框高+装杆高+墙高",
+        btnHSingle: "仅单高",
+        lblDepth: "窗框深度 Depth (选填)",
+        chkAddTen: "推拉门/框外总宽 +10\"",
+        sec5Title: "⑤ 客户选择产品型号 · 专属操控方式 · 现场备注",
+        lblModel: "客户选定产品型号 / 面料色号 *",
+        lblMount: "安装方式 (Mount)",
+        lblRemark: "📝 现场测量 / 加工 / 安装备注 (Remarks — 自动印在测量图与订单上)",
+        chkAutoDl: "保存窗位时，同时自动下载该窗位的 JPG 标注图片",
+        lblAutoDlHint: "也可随时单独点下方按钮保存图片或生成 Excel",
+        btnSaveNext: "✓ 保存此窗位并继续拍下一扇窗",
+        btnSaveOnly: "仅保存当前窗位",
+        btnSaveImgBottom: "🖼️ 保存图片",
+        btnExcelBottom: "📊 生成 Excel",
+        sec6Title: "📋 已保存的现场拍照测量单",
+        btnBottomConverter: "🔄 一键转换到 2026V1 工厂下单模版 (Roman Shade / Drapery)",
+        btnBottomXlsx: "📊 生成标准 Excel 表格 (.xlsx 含多段拆单)",
+        btnBottomXls: "🖼️ 生成【带现场照片】图文 Excel 工单 (.xls)",
+        btnBottomAllImgs: "📦 批量保存全部窗位图片 (JPG)",
+        btnBottomCsv: "📄 导出 CSV"
+      },
+      en: {
+        hdrSmall: "BRAUN INTERNATIONAL · MOBILE & TABLET FIELD MEASURE APP",
+        hdrTitle: "📱 Photo Dimension Drawing · Voice · Handwriting & Product Selector",
+        hdrSub: "Multi-Segment W/H · Category-Specific Controls · Site Remarks · Save Annotated Photo & Export Excel Order Sheet",
+        btnNavConverter: "🔄 Convert to 2026V1 Order Form (Roman/Drapery) ↗",
+        btnNavCornice: "🏛️ Cornice Quote & Drawing ↗",
+        btnTopSaveImg: "🖼️ Save Photo (JPG)",
+        btnTopExcel: "📊 Export Excel (.xlsx)",
+        btnTopPhotoExcel: "🖼️ Photo Excel (.xls)",
+        sec1Title: "① Customer & Window Location",
+        lblQuickCust: "Quick Customer:",
+        lblCustName: "Customer / Company *",
+        lblPhone: "Phone Number",
+        lblAddr: "Measure / Install Address",
+        lblWinCode: "Window Code (Auto +1)",
+        lblWinLoc: "Window Location / Room *",
+        sec2Title: "② Take Photo · Draw Dimension Lines · Freehand Sketch",
+        btnTakePhoto: "📷 Take Photo",
+        btnPickAlbum: "🖼️ Photo Album",
+        btnBlankCanvas: "🪟 Blank Template",
+        btnModeLine: "📏 Draw Dim Line (Multi)",
+        btnModePen: "✍️ Freehand Pen",
+        btnModePin: "🏷️ Text Pin",
+        btnAutoDraw: "⚡ Auto Draw W/H Lines",
+        btnUndo: "↶ Undo",
+        btnClearCanvas: "Clear",
+        lblEditLine: "📏 Enter Line Dimension (Syncs to segment):",
+        btnConfirmLine: "Apply ✓",
+        btnDelLine: "Delete Line",
+        btnSaveImgDl: "🖼️ Save Annotated Photo (Download JPG)",
+        btnSaveImgShare: "📱 Save to Phone Album / Share (iOS/iPad)",
+        btnPreviewImg: "🔍 Full-Screen Preview",
+        canvasTip: "💡 Horizontal lines 1, 2, 3 automatically map to W1, W2, W3; vertical lines map to H1, H2, H3! Tap [🖼️ Save Annotated Photo] above to save high-res JPG.",
+        sec3Title: "③ Voice & Handwriting Quick Entry (Multi-Segment Supported)",
+        btnVoice: "🎤 Tap to Speak Dimensions",
+        btnParseVoice: "✦ Smart Extract Multi-Segment W/H & Product Model onto Photo",
+        sec4Title: "④ Measured Width & Height — Multi-Segment & 3-Point (Inches)",
+        btnDrawAllSegs: "📏 Draw All W/H Segments on Photo",
+        lblWidthBox: "↔️ Width (Single / Multi-Segment Split / Top-Mid-Bottom 3-Point)",
+        btnAddW: "+ Add Width Seg",
+        btnWSplit3: "🪟 Left·Mid·Right 3-Split",
+        btnW3Pt: "📐 Top·Mid·Bot 3-Point W",
+        btnWSingle: "Single W",
+        lblHeightBox: "↕️ Height (Single / Multi-Drop / Left-Mid-Right 3-Point / Frame+Rod+Wall)",
+        btnAddH: "+ Add Height Seg",
+        btnHSplit3: "🪟 Left·Mid·Right 3-Drop",
+        btnH3Pt: "📐 Left·Mid·Right 3-Point H",
+        btnHRod: "🏛️ Frame + Rod + Wall H",
+        btnHSingle: "Single H",
+        lblDepth: "Window Depth D (Optional)",
+        chkAddTen: "Sliding Door / Outside Mount +10\" W",
+        sec5Title: "⑤ Product Model · Category-Specific Controls · Site Remarks",
+        lblModel: "Selected Product Model / Fabric Color *",
+        lblMount: "Mount Type (IM / OM / Ceiling)",
+        lblRemark: "📝 Field Measurement / Production / Installation Remarks (Printed on Photo & Excel)",
+        chkAutoDl: "Automatically download annotated JPG photo when saving window",
+        lblAutoDlHint: "Or tap Save Photo / Export Excel anytime below",
+        btnSaveNext: "✓ Save Window & Next Window (+1)",
+        btnSaveOnly: "Save Current Window",
+        btnSaveImgBottom: "🖼️ Save Photo",
+        btnExcelBottom: "📊 Export Excel",
+        sec6Title: "📋 Saved Field Photo Measurement Windows",
+        btnBottomConverter: "🔄 One-Click Convert to 2026V1 Factory Order Form (Roman Shade / Drapery)",
+        btnBottomXlsx: "📊 Export Standard Excel (.xlsx with Multi-Segment Breakdown)",
+        btnBottomXls: "🖼️ Export Photo-Embedded Excel Work Order (.xls)",
+        btnBottomAllImgs: "📦 Batch Download All Window Photos (JPG)",
+        btnBottomCsv: "📄 Export CSV"
+      }
+    };
+
+    function setPhotoAppLang(lang) {
+      currentLang = lang === "en" ? "en" : "zh";
+      localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+      document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+      document.getElementById("langBtnZh").className = currentLang === "zh" ? "lang-btn active" : "lang-btn";
+      document.getElementById("langBtnEn").className = currentLang === "en" ? "lang-btn active" : "lang-btn";
+
+      const dict = PHOTO_APP_I18N[currentLang];
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key && dict[key]) el.textContent = dict[key];
+      });
+      const vSel = document.getElementById("voiceLangSelect");
+      if (vSel) vSel.value = currentLang === "en" ? "en-US" : "zh-CN";
+      initChips();
+      updateDeductionHint();
+      renderCanvas();
+      renderGallery();
+    }
+
     try { records = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { records = []; }
     initChips();
     resetBlankCanvas();
-    renderGallery();
+    setPhotoAppLang(currentLang);
   </script>
 </body>
 </html>

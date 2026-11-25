@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="博朗智能转单" />
-  <title>博朗窗饰 · 客户订单智能转换工厂下单模版 App (Roman Shade 2026V1 &amp; Drapery 2026V1)</title>
+  <meta name="apple-mobile-web-app-title" content="Braun Order Converter" />
+  <title>Braun Smart Order Converter 2026V1 · 博朗智能订单转换工作台 (中/EN)</title>
   <script src="./xlsx.full.min.js"></script>
   <script src="./order-templates-bundle.js"></script>
   <style>
@@ -45,6 +45,28 @@
     .header small { color: var(--gold); font-weight: 800; letter-spacing: 0.8px; display: block; font-size: 11px; }
     .header h1 { margin: 4px 0; font-size: 22px; }
     .header p { margin: 0; color: #d1e2dc; font-size: 13px; }
+    .lang-switch {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .lang-btn.active {
+      background: var(--gold);
+      color: #153f34;
+    }
     .card {
       background: #fff;
       border: 1px solid #ded9ce;
@@ -66,7 +88,7 @@
     .btn {
       border: none;
       border-radius: 10px;
-      padding: 10px 15px;
+      padding: 10px 14px;
       font-size: 13px;
       font-weight: 800;
       cursor: pointer;
@@ -147,6 +169,7 @@
       margin-bottom: 12px;
       border-bottom: 2px solid #e2e8f0;
       padding-bottom: 10px;
+      align-items: center;
     }
     .tab-btn {
       padding: 11px 18px;
@@ -228,6 +251,7 @@
     }
     .warn-bar {
       margin-top: 10px;
+      margin-bottom: 10px;
       padding: 10px 14px;
       background: #fef2f2;
       border: 1px solid #fecaca;
@@ -260,77 +284,81 @@
   <div class="container">
     <header class="header">
       <div>
-        <small>BRAUN INTERNATIONAL · SMART ORDER FORM CONVERTER 2026V1</small>
-        <h1>🔄 客户订单智能转换工厂下单模版工作台</h1>
-        <p>一键将【拍照测量单 / 客户 Excel / 微信短信订单】自动转换为 100% 原版样式 <b>Roman Shade Order Form 2026V1.xlsx</b> 与 <b>Drapery Order Form 2026V1.xlsx</b></p>
+        <small data-i18n="hdrTag">BRAUN INTERNATIONAL · SMART ORDER FORM CONVERTER 2026V1</small>
+        <h1 data-i18n="hdrTitle">🔄 客户订单智能转换工厂下单模版工作台</h1>
+        <p data-i18n="hdrDesc">一键将【拍照测量单 / 客户 Excel / 微信短信订单】转换为 100% 原版样式 Roman Shade 2026V1.xlsx 与 Drapery 2026V1.xlsx</p>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-gold" onclick="downloadRomanShadeXlsx()">📥 下载 Roman Shade 2026V1.xlsx</button>
-        <button class="btn btn-gold" style="background:#fde047;" onclick="downloadDraperyXlsx()">📥 下载 Drapery 2026V1.xlsx</button>
-        <a class="btn btn-secondary" href="./photo-measure-app.html">📱 返回拍照画线测量 App</a>
-        <a class="btn btn-secondary" href="./cornice.html">🏛️ 软包窗帘盒报价</a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div class="lang-switch" title="切换中英文 / Switch Language">
+          <button type="button" class="lang-btn active" id="langBtnZh" onclick="setLanguage('zh')">中文</button>
+          <button type="button" class="lang-btn" id="langBtnEn" onclick="setLanguage('en')">English</button>
+        </div>
+        <button class="btn btn-gold" onclick="downloadRomanShadeXlsx()" data-i18n="btnDlRsTop">📥 下载 Roman Shade 2026V1.xlsx</button>
+        <button class="btn btn-gold" style="background:#fde047;" onclick="downloadDraperyXlsx()" data-i18n="btnDlDrTop">📥 下载 Drapery 2026V1.xlsx</button>
+        <a class="btn btn-secondary" href="./photo-measure-app.html" data-i18n="navPhotoApp">📱 拍照测量 App</a>
+        <a class="btn btn-secondary" href="./cornice.html" data-i18n="navCorniceApp">🏛️ 窗帘盒报价</a>
       </div>
     </header>
 
     <!-- ① 三合一智能订单导入与转换中心 -->
     <section class="card">
       <h2>
-        <span>① 选择订单来源 · 一键智能识别并转换到标准模版</span>
+        <span data-i18n="sec1Title">① 选择订单来源 · 一键智能识别并转换到标准模版</span>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="loadDemoOrder()">✨ 载入示例客户订单演示 (Roman + Drapery)</button>
-          <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="clearAllRows()">🗑️ 清空当前表格</button>
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="translateTableContentToCurrentLang()" data-i18n="btnTranslateData">🌐 将表内房间/备注一键转当前语言</button>
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="loadDemoOrder()" data-i18n="btnLoadDemo">✨ 载入示例客户订单演示</button>
+          <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="clearAllRows()" data-i18n="btnClearAll">🗑️ 清空当前表格</button>
         </div>
       </h2>
 
       <div class="import-grid">
         <!-- 方式 A：从拍照测量 App 导入 -->
         <div class="import-box">
-          <h3>📱 方式 A：从【拍照画线测量 App】一键同步</h3>
-          <p>自动读取您在本机拍照测量保存的客户窗位（含多段宽 W1/W2/W3、高度、安装方式、衬布、操控及现场备注），自动分流至罗马帘表与布帘表。</p>
+          <h3 data-i18n="boxATitle">📱 方式 A：从【拍照画线测量 App】一键同步</h3>
+          <p data-i18n="boxADesc">自动读取本机拍照测量保存的客户窗位（含多段宽 W1/W2/W3、高度、安装方式、衬布、操控及备注），自动分流至罗马帘表与布帘表。</p>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <select id="savedCustomerSelect" style="flex:1;">
-              <option value="__ALL__">全部已保存测量客户 (0 扇窗)</option>
-            </select>
-            <button class="btn btn-secondary" style="padding:8px 10px;" onclick="refreshSavedMeasureList()" title="刷新列表">🔄</button>
+            <select id="savedCustomerSelect" style="flex:1;"></select>
+            <button class="btn btn-secondary" style="padding:8px 10px;" onclick="refreshSavedMeasureList()" title="Refresh">🔄</button>
           </div>
           <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#153f34;">
             <input type="checkbox" id="splitMultiSegCheck" checked style="width:16px;height:16px;" />
-            遇到多段分窗 (W1 / W2 / W3) 时，自动拆分为多行独立窗位下单
+            <span data-i18n="chkSplitSeg">遇到多段分窗 (W1 / W2 / W3) 时，自动拆分为多行独立窗位下单</span>
           </label>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;">
-            <button class="btn btn-primary" style="flex:1;" onclick="importFromPhotoMeasureApp('auto')">⚡ 智能分流导入 (按品类自动入表)</button>
-            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('rs')">全转罗马帘</button>
-            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('dr')">全转布帘</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="importFromPhotoMeasureApp('auto')" data-i18n="btnImportAuto">⚡ 智能分流导入</button>
+            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('rs')" data-i18n="btnImportRs">全转罗马帘</button>
+            <button class="btn btn-secondary" onclick="importFromPhotoMeasureApp('dr')" data-i18n="btnImportDr">全转布帘</button>
           </div>
         </div>
 
         <!-- 方式 B：上传任意客户订单 Excel / CSV -->
         <div class="import-box">
-          <h3>📂 方式 B：上传客户订单 Excel / CSV 自动转换</h3>
-          <p>支持上传拍照测量导出的 `.xlsx/.csv`、客户的尺寸清单或旧版报价表。系统自动识别中英文表头并将中文款式/褶皱/衬布转换成模版英文代码。</p>
+          <h3 data-i18n="boxBTitle">📂 方式 B：上传客户订单 Excel / CSV 自动转换</h3>
+          <p data-i18n="boxBDesc">支持上传拍照测量导出的 .xlsx/.csv、客户尺寸清单或旧报价表。自动识别中英文表头并将中文款式/褶皱/衬布转换成模版标准英文代码。</p>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <label style="flex:1;font-size:12px;">导入目标模版：
+            <label style="flex:1;font-size:12px;">
+              <span data-i18n="lblUploadTarget">导入目标模版：</span>
               <select id="uploadTargetSelect">
-                <option value="auto">智能自动判断 (Roman Shade / Drapery)</option>
-                <option value="rs">全部导入 Roman Shade Order Form 2026V1</option>
-                <option value="dr">全部导入 Drapery Order Form 2026V1</option>
+                <option value="auto" data-i18n="optTargetAuto">智能自动判断 (Auto Detect Roman / Drapery)</option>
+                <option value="rs" data-i18n="optTargetRs">全部导入 Roman Shade Order Form 2026V1</option>
+                <option value="dr" data-i18n="optTargetDr">全部导入 Drapery Order Form 2026V1</option>
               </select>
             </label>
           </div>
           <label class="btn btn-navy" style="cursor:pointer;margin-top:auto;width:100%;">
-            📤 点击选择客户 Excel / CSV 文件 (.xlsx / .xls / .csv)
+            <span data-i18n="btnUploadFile">📤 点击选择客户 Excel / CSV 文件 (.xlsx / .xls / .csv)</span>
             <input type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelUpload(event)" />
           </label>
         </div>
 
         <!-- 方式 C：粘贴微信/短信/邮件文字智能拆单 -->
         <div class="import-box">
-          <h3>💬 方式 C：粘贴微信 / 短信 / 手写文字智能转表</h3>
-          <textarea id="rawOrderText" rows="3" placeholder="直接粘贴客户发来的微信/短信尺寸（支持多行）：&#10;例如：客户 Ignacio 电话 909-552-0455 地址 680 W Byron Ct&#10;1. Living Room 宽 120 高 96 双层布帘 Aspen Allure + 白纱 Soft Breeze 遮光衬 双韩褶 对开&#10;2. Master Room 宽 35 1/2 高 72 深 3 1/2 罗马帘 Liberty Linen 口内 平折带骨 无拉绳 透光衬"></textarea>
+          <h3 data-i18n="boxCTitle">💬 方式 C：粘贴微信 / 短信 / 邮件文字智能转表</h3>
+          <textarea id="rawOrderText" rows="3" data-i18n-placeholder="phRawOrderText" placeholder="直接粘贴客户发来的微信/短信/英文尺寸（支持多行）：&#10;例如：Customer Ignacio 909-552-0455 680 W Byron Ct&#10;1. Living Room W 120 H 96 Double Drapery Aspen Allure + Sheer Soft Breeze BO Lining Double Pinch Pair&#10;2. Master Room W 35 1/2 H 72 D 3 1/2 Roman Shade Liberty Linen IM Flat_A Cordless LF Lining"></textarea>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;">
-            <button class="btn btn-primary" style="flex:1;" onclick="parseTextOrder('auto')">✦ 智能识别文字并填入对应下单模版</button>
-            <button class="btn btn-secondary" onclick="parseTextOrder('rs')">转罗马帘</button>
-            <button class="btn btn-secondary" onclick="parseTextOrder('dr')">转布帘</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="parseTextOrder('auto')" data-i18n="btnParseAuto">✦ 智能识别文字并填入模版</button>
+            <button class="btn btn-secondary" onclick="parseTextOrder('rs')" data-i18n="btnImportRs">转罗马帘</button>
+            <button class="btn btn-secondary" onclick="parseTextOrder('dr')" data-i18n="btnImportDr">转布帘</button>
           </div>
         </div>
       </div>
@@ -339,31 +367,32 @@
     <!-- ② 模版公共订单表头 (DEALER & SHIP TO，对应 Excel 第 5~10 行) -->
     <section class="card">
       <h2>
-        <span>② 订单表头信息 (自动写入 Excel 顶部 DEALER &amp; SHIP TO 区域 C5:R10)</span>
-        <span style="font-size:12px;color:#64748b;">修改此处会同时同步到 Roman Shade 与 Drapery 两张下单表表头</span>
+        <span data-i18n="sec2Title">② 订单表头信息 (自动写入 Excel 顶部 DEALER &amp; SHIP TO 区域 C5:R10)</span>
+        <span style="font-size:12px;color:#64748b;" data-i18n="sec2Hint">修改此处会同时同步到 Roman Shade 与 Drapery 两张下单表表头</span>
       </h2>
       <div class="header-grid">
         <div class="header-subbox">
-          <h4>DEALER &amp; ORDER INFO (左侧表头 C5:C10)</h4>
+          <h4 data-i18n="subHdrDealer">DEALER &amp; ORDER INFO (左侧表头 C5:C10)</h4>
           <div class="form-grid">
-            <label>DEALER NAME (C5)<input id="hdrDealerName" value="BRAUN INTERNATIONAL, LLC" /></label>
-            <label>COMPANY ID (C6)<input id="hdrCompanyId" value="NJ-CWF001" /></label>
-            <label>PO NUMBER (C7)<input id="hdrPoNumber" placeholder="如 PO-20261125-01" /></label>
-            <label>ORDER DATE (C8)<input id="hdrOrderDate" /></label>
-            <label>SIDEMARK / 客户项目标识 (C9)<input id="hdrSidemark" placeholder="如 Ignacio / Living Room" /></label>
-            <label>INVOICE # (C10)<input id="hdrInvoiceNo" placeholder="选填 Invoice 编号" /></label>
+            <label><span data-i18n="lblDealerName">DEALER NAME / 经销商 (C5)</span><input id="hdrDealerName" value="BRAUN INTERNATIONAL, LLC" /></label>
+            <label><span data-i18n="lblCompanyId">COMPANY ID / 公司编号 (C6)</span><input id="hdrCompanyId" value="NJ-CWF001" /></label>
+            <label><span data-i18n="lblPoNumber">PO NUMBER / 采购单号 (C7)</span><input id="hdrPoNumber" placeholder="PO-20261125-01" /></label>
+            <label><span data-i18n="lblOrderDate">ORDER DATE / 下单日期 (C8)</span><input id="hdrOrderDate" /></label>
+            <label><span data-i18n="lblSidemark">SIDEMARK / 客户项目标识 (C9)</span><input id="hdrSidemark" data-i18n-placeholder="phSidemark" placeholder="如 Ignacio / Living Room" /></label>
+            <label><span data-i18n="lblInvoiceNo">INVOICE # / 发票号 (C10)</span><input id="hdrInvoiceNo" data-i18n-placeholder="phInvoiceNo" placeholder="选填 Invoice 编号" /></label>
           </div>
         </div>
 
         <div class="header-subbox">
-          <h4>SHIP TO &amp; SPECIAL REQUIREMENT (右侧收货信息 L6:T10)</h4>
+          <h4 data-i18n="subHdrShip">SHIP TO &amp; SPECIAL REQUIREMENT (右侧收货信息 L6:T10)</h4>
           <div class="form-grid">
-            <label>SHIP TO NAME / 收件人 (L6)<input id="hdrShipName" placeholder="客户或收货人姓名" /></label>
-            <label>PHONE / 联系电话 (P6 / S6)<input id="hdrShipPhone" placeholder="如 909-552-0455" /></label>
-            <label>ADDRESS / 收货地址 (L7)<input id="hdrShipAddress" placeholder="如 680 W Byron Ct" /></label>
-            <label>ZIP / 邮编 (P7 / S7)<input id="hdrShipZip" placeholder="如 91762" /></label>
-            <label style="grid-column: 1 / -1;">SPECIAL REQUIREMENT / 整单特殊要求 (L8:R10 / L8:T10)
-              <input id="hdrSpecialReq" placeholder="如：无明线，无纤维棒，后面多竖线，配遥控器与充电线等整单要求" />
+            <label><span data-i18n="lblShipName">SHIP TO NAME / 收件人 (L6)</span><input id="hdrShipName" data-i18n-placeholder="phShipName" placeholder="客户或收货人姓名" /></label>
+            <label><span data-i18n="lblShipPhone">PHONE / 联系电话 (P6 / S6)</span><input id="hdrShipPhone" placeholder="909-552-0455" /></label>
+            <label><span data-i18n="lblShipAddr">ADDRESS / 收货地址 (L7)</span><input id="hdrShipAddress" placeholder="680 W Byron Ct" /></label>
+            <label><span data-i18n="lblShipZip">ZIP / 邮编 (P7 / S7)</span><input id="hdrShipZip" placeholder="91762" /></label>
+            <label style="grid-column: 1 / -1;">
+              <span data-i18n="lblSpecialReq">SPECIAL REQUIREMENT / 整单特殊要求 (L8:R10 / L8:T10)</span>
+              <input id="hdrSpecialReq" data-i18n-placeholder="phSpecialReq" placeholder="如：无明线，无纤维棒，后面多竖线，配遥控器与充电线 / No exposed stitching, motorized..." />
             </label>
           </div>
         </div>
@@ -374,17 +403,17 @@
     <section class="card">
       <div class="tabs">
         <button id="tabBtnRs" class="tab-btn active" onclick="switchTab('rs')">
-          🪟 Roman Shade Order Form 2026V1 (罗马帘下单模版 · RSMeasure)
+          <span data-i18n="tabRsTitle">🪟 Roman Shade Order Form 2026V1 (罗马帘模版 · RSMeasure)</span>
           <span class="badge" id="badgeRsCount">0</span>
         </button>
         <button id="tabBtnDr" class="tab-btn" onclick="switchTab('dr')">
-          🪡 Drapery Order Form 2026V1 (布帘/纱帘下单模版 · DRMeasure)
+          <span data-i18n="tabDrTitle">🪡 Drapery Order Form 2026V1 (布帘/纱帘模版 · DRMeasure)</span>
           <span class="badge" id="badgeDrCount">0</span>
         </button>
         <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="downloadRomanShadeXlsx()">📥 导出 Roman Shade Order Form 2026V1.xlsx</button>
-          <button class="btn btn-navy" onclick="downloadDraperyXlsx()">📥 导出 Drapery Order Form 2026V1.xlsx</button>
-          <button class="btn btn-gold" onclick="downloadBothXlsx()">📦 一键同时导出两张下单表</button>
+          <button class="btn btn-primary" onclick="downloadRomanShadeXlsx()" data-i18n="btnExportRs">📥 导出 Roman Shade 2026V1.xlsx</button>
+          <button class="btn btn-navy" onclick="downloadDraperyXlsx()" data-i18n="btnExportDr">📥 导出 Drapery 2026V1.xlsx</button>
+          <button class="btn btn-gold" onclick="downloadBothXlsx()" data-i18n="btnExportBoth">📦 一键同时导出两张表</button>
         </div>
       </div>
 
@@ -394,12 +423,12 @@
       <div id="panelRs">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <div>
-            <strong style="color:#153f34;font-size:15px;">📄 模版一：Roman Shade Order Form 2026V1 (工作表：RSMeasure，行 15~42)</strong>
-            <span style="font-size:12px;color:#64748b;margin-left:8px;">严格对齐模版 A~Q 列，导出时 100% 保留原模版边框、底色、合并单元格与下拉菜单</span>
+            <strong style="color:#153f34;font-size:15px;" data-i18n="rsPanelTitle">📄 模版一：Roman Shade Order Form 2026V1 (Sheet: RSMeasure, Rows 15~42)</strong>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;" data-i18n="rsPanelSub">严格对齐模版 A~Q 列，导出时 100% 保留原模版边框、底色、合并单元格与下拉菜单</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-primary" style="padding:7px 12px;font-size:12px;" onclick="addRsRow()">+ 新增一行罗马帘</button>
-            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastRsRow()">📋 复制上一行</button>
+            <button class="btn btn-primary" style="padding:7px 12px;font-size:12px;" onclick="addRsRow()" data-i18n="btnAddRsRow">+ 新增一行罗马帘</button>
+            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastRsRow()" data-i18n="btnDupRow">📋 复制上一行</button>
           </div>
         </div>
 
@@ -407,60 +436,54 @@
           <table class="order-table">
             <thead>
               <tr>
-                <th colspan="3" class="group-head">Basic Info</th>
-                <th class="group-head">Mount.</th>
-                <th colspan="3" class="group-head">Measurements. (Inches)</th>
-                <th class="group-head">Fabric.</th>
-                <th class="group-head">Sheer.</th>
-                <th colspan="3" class="group-head">Style.</th>
-                <th colspan="3" class="group-head">Decorative Upgrades</th>
-                <th colspan="2" class="group-head">Alignment &amp; Notes</th>
-                <th class="group-head">操作</th>
+                <th colspan="3" class="group-head" data-i18n="thBasic">Basic Info</th>
+                <th class="group-head" data-i18n="thMount">Mount.</th>
+                <th colspan="3" class="group-head" data-i18n="thMeas">Measurements. (Inches)</th>
+                <th class="group-head" data-i18n="thFabric">Fabric.</th>
+                <th class="group-head" data-i18n="thSheer">Sheer.</th>
+                <th colspan="3" class="group-head" data-i18n="thStyle">Style.</th>
+                <th colspan="3" class="group-head" data-i18n="thDeco">Decorative Upgrades</th>
+                <th colspan="2" class="group-head" data-i18n="thAlign">Alignment &amp; Notes</th>
+                <th class="group-head" data-i18n="thAction">Action</th>
               </tr>
               <tr>
                 <th style="width:38px;"># (A)</th>
-                <th style="width:130px;">Room (B)</th>
-                <th style="width:52px;">QTY (C)</th>
-                <th style="width:74px;">In/Out<br/>IM/OM (D)</th>
-                <th style="width:82px;">Width (E)</th>
-                <th style="width:82px;">Height (F)</th>
-                <th style="width:72px;">Depth (G)</th>
-                <th style="width:130px;">Pattern Code (H)</th>
-                <th style="width:115px;">Pattern Code (I)</th>
-                <th style="width:128px;">Shade Style (J)</th>
-                <th style="width:190px;">Lift Control (K)</th>
-                <th style="width:86px;">Cord Length (L)</th>
-                <th style="width:105px;">Lining (M)</th>
-                <th style="width:95px;">Trim Code (N)</th>
-                <th style="width:135px;">Trim Option (O)</th>
-                <th style="width:115px;">Side By Side (P)</th>
-                <th style="min-width:170px;">Special Instructions (Q:R)</th>
-                <th style="width:80px;">行操作</th>
+                <th style="width:130px;" data-i18n="colRoom">Room (B)</th>
+                <th style="width:52px;" data-i18n="colQty">QTY (C)</th>
+                <th style="width:74px;" data-i18n="colImOm">In/Out<br/>IM/OM (D)</th>
+                <th style="width:82px;" data-i18n="colW">Width (E)</th>
+                <th style="width:82px;" data-i18n="colH">Height (F)</th>
+                <th style="width:72px;" data-i18n="colD">Depth (G)</th>
+                <th style="width:130px;" data-i18n="colFabCode">Pattern Code (H)</th>
+                <th style="width:115px;" data-i18n="colSheerCode">Pattern Code (I)</th>
+                <th style="width:145px;" data-i18n="colShadeStyle">Shade Style (J)</th>
+                <th style="width:205px;" data-i18n="colLiftCtrl">Lift Control (K)</th>
+                <th style="width:86px;" data-i18n="colCordLen">Cord Length (L)</th>
+                <th style="width:120px;" data-i18n="colLining">Lining (M)</th>
+                <th style="width:95px;" data-i18n="colTrimCode">Trim Code (N)</th>
+                <th style="width:145px;" data-i18n="colTrimOpt">Trim Option (O)</th>
+                <th style="width:125px;" data-i18n="colSbs">Side By Side (P)</th>
+                <th style="min-width:170px;" data-i18n="colSpecInst">Special Instructions (Q:R)</th>
+                <th style="width:80px;" data-i18n="colOps">Ops</th>
               </tr>
             </thead>
             <tbody id="rsTableBody"></tbody>
           </table>
         </div>
 
-        <div class="notes-panel">
-          <b>📌 Roman Shade Order Form 2026V1 官方模版填表规范提示：</b><br/>
-          • <b>Shade Style (J列)</b>：<code>Plain_Fold</code> (经典折) ｜ <code>Ribbed</code> (明骨平折) ｜ <code>Flat_A</code> (With hidden ribs 带暗骨平折) ｜ <code>Flat_B</code> (Without hidden ribs 无暗骨平折) ｜ <code>Hobbled</code> (水波折/刀折，仅支持 Standard Lift) ｜ <code>Balloon Roman</code><br/>
-          • <b>Lift Control (K列)</b>：<code>[Standard] Cordless</code> ｜ <code>[Standard] Cordless TDBU</code> ｜ <code>[Standard] Motorized</code> ｜ <code>[Standard] Continous Loop-L / R</code> ｜ <code>[Waterfall] Cordless / TWIN / Continous Loop-L / R / Motorized</code>（仅 Loop 循环拉珠需填 L列 Cord Length）<br/>
-          • <b>Lining (M列)</b>：<code>Unlined</code> (无衬) ｜ <code>LF Lining</code> (透光衬) ｜ <code>BO Lining</code> (全遮光衬) —— <i>注：SH &amp; SB 面料不可加 LF 或 BO 衬布</i><br/>
-          • <b>Decorative Trim (N/O列)</b>：<code>A (Edge)</code> 侧边包边 ｜ <code>B (Insert L&amp;R Side)</code> 左右内嵌 1 1/2" 或 2" ｜ <code>C (Insert L&amp;R&amp;B Side)</code> 左右下三边内嵌
-        </div>
+        <div class="notes-panel" id="rsNotesPanel"></div>
       </div>
 
       <!-- 模版 2：Drapery Order Form 2026V1 (DRMeasure) -->
       <div id="panelDr" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
           <div>
-            <strong style="color:#102b42;font-size:15px;">📄 模版二：Drapery Order Form 2026V1 (工作表：DRMeasure，行 15~25)</strong>
-            <span style="font-size:12px;color:#64748b;margin-left:8px;">严格对齐模版 A~T 列，包含褶皱款式、开合扇数、回折 Return、绑带 Tieband、花边与拼色 Color Blocking</span>
+            <strong style="color:#102b42;font-size:15px;" data-i18n="drPanelTitle">📄 模版二：Drapery Order Form 2026V1 (Sheet: DRMeasure, Rows 15~25)</strong>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;" data-i18n="drPanelSub">严格对齐模版 A~T 列，包含褶皱款式、开合扇数、回折 Return、绑带 Tieband、花边与拼色 Color Blocking</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-navy" style="padding:7px 12px;font-size:12px;" onclick="addDrRow()">+ 新增一行布帘/纱帘</button>
-            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastDrRow()">📋 复制上一行</button>
+            <button class="btn btn-navy" style="padding:7px 12px;font-size:12px;" onclick="addDrRow()" data-i18n="btnAddDrRow">+ 新增一行布帘/纱帘</button>
+            <button class="btn btn-secondary" style="padding:7px 12px;font-size:12px;" onclick="duplicateLastDrRow()" data-i18n="btnDupRow">📋 复制上一行</button>
           </div>
         </div>
 
@@ -468,50 +491,43 @@
           <table class="order-table">
             <thead>
               <tr>
-                <th colspan="3" class="group-head">Basic Info</th>
-                <th colspan="2" class="group-head">Measurements.</th>
-                <th colspan="3" class="group-head">Fabric.</th>
-                <th colspan="6" class="group-head">Style.</th>
-                <th colspan="5" class="group-head">Decorative Upgrades (Trim &amp; Color Blocking)</th>
-                <th class="group-head">Instructions</th>
-                <th class="group-head">操作</th>
+                <th colspan="3" class="group-head" data-i18n="thBasic">Basic Info</th>
+                <th colspan="2" class="group-head" data-i18n="thMeas">Measurements.</th>
+                <th colspan="3" class="group-head" data-i18n="thFabric">Fabric.</th>
+                <th colspan="6" class="group-head" data-i18n="thStyle">Style.</th>
+                <th colspan="5" class="group-head" data-i18n="thDeco">Decorative Upgrades (Trim &amp; Color Blocking)</th>
+                <th class="group-head" data-i18n="thAlign">Instructions</th>
+                <th class="group-head" data-i18n="thAction">Action</th>
               </tr>
               <tr>
                 <th style="width:36px;"># (A)</th>
-                <th style="width:125px;">ROOM (B)</th>
-                <th style="width:50px;">QTY (C)</th>
-                <th style="width:78px;">Width (D)</th>
-                <th style="width:78px;">Height (E)</th>
-                <th style="width:130px;">Fabric Pattern Code (F)</th>
-                <th style="width:102px;">Lining (G)</th>
-                <th style="width:120px;">Sheer Pattern Code (H)</th>
-                <th style="width:155px;">Hanging Header Style (I)</th>
-                <th style="width:120px;">Style Options (J)</th>
-                <th style="width:105px;">Panels (K)</th>
-                <th style="width:155px;">Returns (L)</th>
-                <th style="width:118px;">Tieband (M)</th>
-                <th style="width:120px;">Notes. (N)</th>
-                <th style="width:82px;">Trim Code (O)</th>
-                <th style="width:120px;">Trim Location (P)</th>
-                <th style="width:78px;">Block Code1 (Q)</th>
-                <th style="width:78px;">Block Code2 (R)</th>
-                <th style="width:70px;">Block Loc (S)</th>
-                <th style="min-width:160px;">Special Instructions (T:U)</th>
-                <th style="width:80px;">行操作</th>
+                <th style="width:125px;" data-i18n="colRoom">ROOM (B)</th>
+                <th style="width:50px;" data-i18n="colQty">QTY (C)</th>
+                <th style="width:78px;" data-i18n="colW">Width (D)</th>
+                <th style="width:78px;" data-i18n="colH">Height (E)</th>
+                <th style="width:130px;" data-i18n="colDrFab">Fabric Pattern Code (F)</th>
+                <th style="width:118px;" data-i18n="colDrLining">Lining (G)</th>
+                <th style="width:120px;" data-i18n="colDrSheer">Sheer Pattern Code (H)</th>
+                <th style="width:170px;" data-i18n="colDrHeader">Hanging Header Style (I)</th>
+                <th style="width:130px;" data-i18n="colDrStyleOpt">Style Options (J)</th>
+                <th style="width:120px;" data-i18n="colDrPanels">Panels (K)</th>
+                <th style="width:160px;" data-i18n="colDrReturns">Returns (L)</th>
+                <th style="width:128px;" data-i18n="colDrTieband">Tieband (M)</th>
+                <th style="width:120px;" data-i18n="colDrNotes">Notes. (N)</th>
+                <th style="width:82px;" data-i18n="colDrTrimCode">Trim Code (O)</th>
+                <th style="width:130px;" data-i18n="colDrTrimLoc">Trim Location (P)</th>
+                <th style="width:78px;" data-i18n="colDrBlk1">Block Code1 (Q)</th>
+                <th style="width:78px;" data-i18n="colDrBlk2">Block Code2 (R)</th>
+                <th style="width:70px;" data-i18n="colDrBlkLoc">Block Loc (S)</th>
+                <th style="min-width:160px;" data-i18n="colDrSpec">Special Instructions (T:U)</th>
+                <th style="width:80px;" data-i18n="colOps">Ops</th>
               </tr>
             </thead>
             <tbody id="drTableBody"></tbody>
           </table>
         </div>
 
-        <div class="notes-panel">
-          <b>📌 Drapery Order Form 2026V1 官方模版填表规范与尺寸限制提示：</b><br/>
-          • <b>尺寸限制 (Size Limitations)</b>：最小宽 <code>20"</code> ｜ 单开最大宽 (One Way) <code>150"</code> ｜ 对开最大宽 (Split/Pair) <code>300"</code> ｜ 最小高 <code>24"</code> ｜ 最大高 <code>270"</code><br/>
-          • <b>Hanging Header Style (I列)</b>：<code>Double_Pinch_PLeat</code> (双韩褶) ｜ <code>Triple_Pinch_Pleat</code> (三韩褶) ｜ <code>Euro_Double_Pleat</code> (欧式双褶) ｜ <code>Euro_Triple_Pleat</code> (欧式三褶) ｜ <code>X_Pleat</code> ｜ <code>Inverted_Pleat</code> (暗褶) ｜ <code>Goblet_Pleat</code> (酒杯褶) ｜ <code>Ripple_Fold</code> (S波浪帘) ｜ <code>Rod_Pocket</code> (穿杆袋: J列选 <code>A_Standard</code> 无帘头 或 <code>B_With_Header</code> 含1.5"帘头) ｜ <code>Pencil_Pleat</code><br/>
-          • <b>Panels (K列)</b>：<code>Pair</code> (对开双开) ｜ <code>Single_L</code> (单开往左收) ｜ <code>Single_R</code> (单开往右收) ｜ <code>Single Panel</code> (单幅)<br/>
-          • <b>纱帘限制</b>：纯纱帘 (Sheer draperies) 不可选 Privacy/Blackout Lining、Color Blocking 或 Trimmings。<br/>
-          • <b>Color Blocking (Q/R/S列)</b>：<code>A</code>=底部 1/3 拼色 ｜ <code>B</code>=底部 1/3 拼色含花边 ｜ <code>C</code>=三等分拼色 (上:主布, 中:Code1, 下:Code2)
-        </div>
+        <div class="notes-panel" id="drNotesPanel"></div>
       </div>
     </section>
   </div>
@@ -521,8 +537,303 @@
   <script>
     const PHOTO_MEASURE_STORAGE_KEY = "braun-photo-voice-measures-v1";
     const CONVERTER_STATE_KEY = "braun-order-converter-2026v1";
+    const LANG_STORAGE_KEY = "braun_app_lang";
 
-    // 官方模版标准下拉枚举
+    let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || "zh";
+
+    // ====================================================
+    // 完整中英文双语字典 (UI + 下拉菜单显示名 + 备注翻译)
+    // ====================================================
+    const I18N = {
+      zh: {
+        hdrTag: "BRAUN INTERNATIONAL · 2026V1 智能订单转换系统",
+        hdrTitle: "🔄 客户订单智能转换工厂下单模版工作台",
+        hdrDesc: "一键将【拍照测量单 / 客户 Excel / 微信短信订单】转换为 100% 原版样式 Roman Shade 2026V1.xlsx 与 Drapery 2026V1.xlsx",
+        btnDlRsTop: "📥 下载 Roman Shade 2026V1.xlsx",
+        btnDlDrTop: "📥 下载 Drapery 2026V1.xlsx",
+        navPhotoApp: "📱 拍照测量 App",
+        navCorniceApp: "🏛️ 窗帘盒报价",
+        sec1Title: "① 选择订单来源 · 一键智能识别并转换到标准模版",
+        btnTranslateData: "🌐 将表内房间/备注一键转英文 (EN)",
+        btnLoadDemo: "✨ 载入示例客户订单演示",
+        btnClearAll: "🗑️ 清空当前表格",
+        boxATitle: "📱 方式 A：从【拍照画线测量 App】一键同步",
+        boxADesc: "自动读取本机拍照测量保存的客户窗位（含多段宽 W1/W2/W3、高度、安装方式、衬布、操控及备注），自动分流至罗马帘表与布帘表。",
+        chkSplitSeg: "遇到多段分窗 (W1 / W2 / W3) 时，自动拆分为多行独立窗位下单",
+        btnImportAuto: "⚡ 智能分流导入 (按品类入表)",
+        btnImportRs: "全转罗马帘",
+        btnImportDr: "全转布帘",
+        boxBTitle: "📂 方式 B：上传客户订单 Excel / CSV 自动转换",
+        boxBDesc: "支持上传拍照测量导出的 .xlsx/.csv、客户尺寸清单或旧报价表。自动识别中英文表头并将中文款式/褶皱/衬布转换成模版标准英文代码。",
+        lblUploadTarget: "导入目标模版：",
+        optTargetAuto: "智能自动判断 (Roman Shade / Drapery)",
+        optTargetRs: "全部导入 Roman Shade Order Form 2026V1",
+        optTargetDr: "全部导入 Drapery Order Form 2026V1",
+        btnUploadFile: "📤 点击选择客户 Excel / CSV 文件 (.xlsx / .xls / .csv)",
+        boxCTitle: "💬 方式 C：粘贴微信 / 短信 / 邮件文字智能转表",
+        phRawOrderText: "直接粘贴客户发来的微信/短信/英文尺寸（支持多行）：\n例如：客户 Ignacio 909-552-0455 地址 680 W Byron Ct\n1. 客厅主窗 宽 120 高 96 双层布帘 Aspen Allure + 白纱 Soft Breeze 遮光衬 双韩褶 对开\n2. 主卧 宽 35 1/2 高 72 深 3 1/2 罗马帘 Liberty Linen 口内 平折带骨 无拉绳 透光衬",
+        btnParseAuto: "✦ 智能识别文字并填入模版",
+        sec2Title: "② 订单表头信息 (自动写入 Excel 顶部 DEALER & SHIP TO 区域 C5:R10)",
+        sec2Hint: "修改此处会同时同步到 Roman Shade 与 Drapery 两张下单表表头",
+        subHdrDealer: "DEALER & ORDER INFO (左侧表头 C5:C10)",
+        lblDealerName: "DEALER NAME / 经销商名称 (C5)",
+        lblCompanyId: "COMPANY ID / 公司编号 (C6)",
+        lblPoNumber: "PO NUMBER / 采购单号 (C7)",
+        lblOrderDate: "ORDER DATE / 下单日期 (C8)",
+        lblSidemark: "SIDEMARK / 客户项目标识 (C9)",
+        phSidemark: "如 Ignacio / Living Room",
+        lblInvoiceNo: "INVOICE # / 发票编号 (C10)",
+        phInvoiceNo: "选填 Invoice 编号",
+        subHdrShip: "SHIP TO & SPECIAL REQUIREMENT (右侧收货信息 L6:T10)",
+        lblShipName: "SHIP TO NAME / 收货人姓名 (L6)",
+        phShipName: "客户或收货人姓名",
+        lblShipPhone: "PHONE / 联系电话 (P6 / S6)",
+        lblShipAddr: "ADDRESS / 收货地址 (L7)",
+        lblShipZip: "ZIP / 邮编 (P7 / S7)",
+        lblSpecialReq: "SPECIAL REQUIREMENT / 整单特殊要求 (L8:R10 / L8:T10)",
+        phSpecialReq: "如：无明线，无纤维棒，后面多竖线，配遥控器与充电线",
+        tabRsTitle: "🪟 Roman Shade Order Form 2026V1 (罗马帘模版 · RSMeasure)",
+        tabDrTitle: "🪡 Drapery Order Form 2026V1 (布帘/纱帘模版 · DRMeasure)",
+        btnExportRs: "📥 导出 Roman Shade 2026V1.xlsx",
+        btnExportDr: "📥 导出 Drapery 2026V1.xlsx",
+        btnExportBoth: "📦 一键同时导出两张表",
+        rsPanelTitle: "📄 模版一：Roman Shade Order Form 2026V1 (工作表：RSMeasure，行 15~42)",
+        rsPanelSub: "严格对齐模版 A~Q 列，导出时 100% 保留原模版边框、底色、合并单元格与下拉菜单",
+        btnAddRsRow: "+ 新增一行罗马帘",
+        btnAddDrRow: "+ 新增一行布帘/纱帘",
+        btnDupRow: "📋 复制上一行",
+        drPanelTitle: "📄 模版二：Drapery Order Form 2026V1 (工作表：DRMeasure，行 15~25)",
+        drPanelSub: "严格对齐模版 A~T 列，包含褶皱款式、开合扇数、回折 Return、绑带 Tieband、花边与拼色",
+        thBasic: "基础信息 Basic Info",
+        thMount: "安装 Mount.",
+        thMeas: "尺寸 Measurements. (Inches)",
+        thFabric: "面料 Fabric.",
+        thSheer: "纱帘 Sheer.",
+        thStyle: "款式与操控 Style.",
+        thDeco: "装饰升级 Decorative Upgrades",
+        thAlign: "并排与特殊要求 Notes",
+        thAction: "操作",
+        colRoom: "房间 Room (B)",
+        colQty: "数量 QTY (C)",
+        colImOm: "内/外装 IM/OM (D)",
+        colW: "宽 Width (E)",
+        colH: "高 Height (F)",
+        colD: "深 Depth (G)",
+        colFabCode: "主布号 Pattern Code (H)",
+        colSheerCode: "纱帘号 Pattern Code (I)",
+        colShadeStyle: "罗马帘款式 Shade Style (J)",
+        colLiftCtrl: "升降操控 Lift Control (K)",
+        colCordLen: "拉绳长 Cord Length (L)",
+        colLining: "衬布 Lining (M)",
+        colTrimCode: "花边号 Trim Code (N)",
+        colTrimOpt: "花边位置 Trim Option (O)",
+        colSbs: "并排对齐 Side By Side (P)",
+        colSpecInst: "单窗特殊要求 Special Instructions (Q:R)",
+        colOps: "行操作",
+        colDrFab: "主布号 Fabric Code (F)",
+        colDrLining: "衬布 Lining (G)",
+        colDrSheer: "纱帘号 Sheer Code (H)",
+        colDrHeader: "褶皱帘头 Header Style (I)",
+        colDrStyleOpt: "款式选项 Style Options (J)",
+        colDrPanels: "开合方式 Panels (K)",
+        colDrReturns: "两侧回折 Returns (L)",
+        colDrTieband: "绑带 Tieband (M)",
+        colDrNotes: "轨道/备注 Notes. (N)",
+        colDrTrimCode: "花边号 Trim (O)",
+        colDrTrimLoc: "花边位置 Location (P)",
+        colDrBlk1: "拼色1 Code1 (Q)",
+        colDrBlk2: "拼色2 Code2 (R)",
+        colDrBlkLoc: "拼色方式 Loc (S)",
+        colDrSpec: "特殊加工要求 Special Instructions (T:U)",
+        emptyRs: "当前暂无罗马帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行罗马帘】。",
+        emptyDr: "当前暂无布帘/纱帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行布帘/纱帘】。",
+        rsNotesHtml: `<b>📌 Roman Shade Order Form 2026V1 官方模版填表规范提示：</b><br/>
+          • <b>Shade Style (J列)</b>：<code>Plain_Fold</code> (经典折) ｜ <code>Ribbed</code> (明骨平折) ｜ <code>Flat_A</code> (带暗骨平折) ｜ <code>Flat_B</code> (无暗骨平折) ｜ <code>Hobbled</code> (水波折/刀折，仅支持 Standard Lift) ｜ <code>Balloon Roman</code> (欧式气球帘)<br/>
+          • <b>Lift Control (K列)</b>：<code>[Standard] Cordless</code> (标准无绳) ｜ <code>[Standard] Cordless TDBU</code> (上开下合) ｜ <code>[Standard] Motorized</code> (电动) ｜ <code>Continous Loop-L/R</code> (左/右循环拉珠，需填 L列绳长) ｜ <code>[Waterfall]</code> (前出布瀑布款)<br/>
+          • <b>Lining (M列)</b>：<code>Unlined</code> (无衬) ｜ <code>LF Lining</code> (透光衬) ｜ <code>BO Lining</code> (全遮光衬) —— <i>注：SH &amp; SB 面料不可加 LF 或 BO 衬布</i><br/>
+          • <b>Decorative Trim (N/O列)</b>：<code>A (Edge)</code> 侧边包边 ｜ <code>B (Insert L&amp;R Side)</code> 左右内嵌 1 1/2" 或 2" ｜ <code>C (Insert L&amp;R&amp;B Side)</code> 左右下三边内嵌`,
+        drNotesHtml: `<b>📌 Drapery Order Form 2026V1 官方模版填表规范与尺寸限制提示：</b><br/>
+          • <b>尺寸限制 (Size Limitations)</b>：最小宽 <code>20"</code> ｜ 单开最大宽 (One Way) <code>150"</code> ｜ 对开最大宽 (Split/Pair) <code>300"</code> ｜ 最小高 <code>24"</code> ｜ 最大高 <code>270"</code><br/>
+          • <b>Hanging Header Style (I列)</b>：<code>Double_Pinch_PLeat</code> (双韩褶) ｜ <code>Triple_Pinch_Pleat</code> (三韩褶) ｜ <code>Euro_Double_Pleat</code> (欧式双褶) ｜ <code>Euro_Triple_Pleat</code> (欧式三褶) ｜ <code>X_Pleat</code> ｜ <code>Inverted_Pleat</code> (暗褶) ｜ <code>Goblet_Pleat</code> (酒杯褶) ｜ <code>Ripple_Fold</code> (S波浪帘) ｜ <code>Rod_Pocket</code> (穿杆袋) ｜ <code>Pencil_Pleat</code><br/>
+          • <b>Panels (K列)</b>：<code>Pair</code> (对开双开) ｜ <code>Single_L</code> (单开往左收) ｜ <code>Single_R</code> (单开往右收) ｜ <code>Single Panel</code> (单幅)<br/>
+          • <b>Color Blocking (Q/R/S列)</b>：<code>A</code>=底部 1/3 拼色 ｜ <code>B</code>=底部 1/3 拼色含花边 ｜ <code>C</code>=三等分拼色 (上:主布, 中:Code1, 下:Code2)`
+      },
+      en: {
+        hdrTag: "BRAUN INTERNATIONAL · SMART ORDER FORM CONVERTER 2026V1",
+        hdrTitle: "🔄 Smart Customer Order to Factory Template Converter",
+        hdrDesc: "Convert Photo Measurements, Customer Excel/CSV, or Text Messages into 100% native Roman Shade 2026V1.xlsx & Drapery 2026V1.xlsx",
+        btnDlRsTop: "📥 Download Roman Shade 2026V1.xlsx",
+        btnDlDrTop: "📥 Download Drapery 2026V1.xlsx",
+        navPhotoApp: "📱 Photo Measure App",
+        navCorniceApp: "🏛️ Cornice Quote App",
+        sec1Title: "① Select Order Source · One-Click Smart Conversion to 2026V1 Templates",
+        btnTranslateData: "🌐 Translate Rooms/Notes to Chinese (中文)",
+        btnLoadDemo: "✨ Load Demo Customer Order",
+        btnClearAll: "🗑️ Clear All Rows",
+        boxATitle: "📱 Option A: Sync from Photo Measure App",
+        boxADesc: "Automatically reads saved customer windows from the Photo Measure App (including multi-segment W1/W2/W3, height, mount, lining, controls & remarks).",
+        chkSplitSeg: "Automatically split multi-segment windows (W1 / W2 / W3) into separate order rows",
+        btnImportAuto: "⚡ Smart Auto-Route Import",
+        btnImportRs: "All to Roman Shade",
+        btnImportDr: "All to Drapery",
+        boxBTitle: "📂 Option B: Upload Customer Excel / CSV File",
+        boxBDesc: "Upload any customer order spreadsheet (.xlsx, .xls, .csv). Automatically maps columns and converts Chinese/English terms into standard 2026V1 codes.",
+        lblUploadTarget: "Target Template:",
+        optTargetAuto: "Auto Detect (Roman Shade / Drapery)",
+        optTargetRs: "Import All to Roman Shade Order Form 2026V1",
+        optTargetDr: "Import All to Drapery Order Form 2026V1",
+        btnUploadFile: "📤 Select Customer Excel / CSV File (.xlsx / .xls / .csv)",
+        boxCTitle: "💬 Option C: Paste WeChat / SMS / Email Order Text",
+        phRawOrderText: "Paste customer order text or measurements here (multi-line supported):\nExample: Customer Ignacio 909-552-0455 Address 680 W Byron Ct\n1. Living Room W 120 H 96 Double Drapery Aspen Allure + Sheer Soft Breeze BO Lining Double Pinch Pair\n2. Master Bedroom W 35 1/2 H 72 D 3 1/2 Roman Shade Liberty Linen IM Flat_A Cordless LF Lining",
+        btnParseAuto: "✦ Smart Parse Text into Templates",
+        sec2Title: "② Order Header Information (Writes to Excel DEALER & SHIP TO C5:R10)",
+        sec2Hint: "Changes here sync to both Roman Shade and Drapery order forms automatically",
+        subHdrDealer: "DEALER & ORDER INFO (Left Header C5:C10)",
+        lblDealerName: "DEALER NAME (C5)",
+        lblCompanyId: "COMPANY ID (C6)",
+        lblPoNumber: "PO NUMBER (C7)",
+        lblOrderDate: "ORDER DATE (C8)",
+        lblSidemark: "SIDEMARK / Project Name (C9)",
+        phSidemark: "e.g. Ignacio / Living Room",
+        lblInvoiceNo: "INVOICE # (C10)",
+        phInvoiceNo: "Optional Invoice #",
+        subHdrShip: "SHIP TO & SPECIAL REQUIREMENT (Right Header L6:T10)",
+        lblShipName: "SHIP TO NAME (L6)",
+        phShipName: "Recipient / Customer Name",
+        lblShipPhone: "PHONE (P6 / S6)",
+        lblShipAddr: "ADDRESS (L7)",
+        lblShipZip: "ZIP CODE (P7 / S7)",
+        lblSpecialReq: "SPECIAL REQUIREMENT (L8:R10 / L8:T10)",
+        phSpecialReq: "e.g. No exposed stitching, no fiberglass rods, 5 motors, 3 remotes...",
+        tabRsTitle: "🪟 Roman Shade Order Form 2026V1 (Sheet: RSMeasure)",
+        tabDrTitle: "🪡 Drapery Order Form 2026V1 (Sheet: DRMeasure)",
+        btnExportRs: "📥 Export Roman Shade 2026V1.xlsx",
+        btnExportDr: "📥 Export Drapery 2026V1.xlsx",
+        btnExportBoth: "📦 Export Both Templates (.xlsx)",
+        rsPanelTitle: "📄 Template 1: Roman Shade Order Form 2026V1 (Sheet: RSMeasure, Rows 15~42)",
+        rsPanelSub: "Aligned with Columns A~Q; preserves 100% of original Excel borders, colors, merged cells & dropdowns",
+        btnAddRsRow: "+ Add Roman Shade Row",
+        btnAddDrRow: "+ Add Drapery Row",
+        btnDupRow: "📋 Duplicate Last Row",
+        drPanelTitle: "📄 Template 2: Drapery Order Form 2026V1 (Sheet: DRMeasure, Rows 15~25)",
+        drPanelSub: "Aligned with Columns A~T; includes Header Style, Panels, Returns, Tieband, Trim & Color Blocking",
+        thBasic: "Basic Info",
+        thMount: "Mount.",
+        thMeas: "Measurements. (Inches)",
+        thFabric: "Fabric.",
+        thSheer: "Sheer.",
+        thStyle: "Style.",
+        thDeco: "Decorative Upgrades",
+        thAlign: "Alignment & Notes",
+        thAction: "Action",
+        colRoom: "Room (B)",
+        colQty: "QTY (C)",
+        colImOm: "In/Out IM/OM (D)",
+        colW: "Width (E)",
+        colH: "Height (F)",
+        colD: "Depth (G)",
+        colFabCode: "Pattern Code (H)",
+        colSheerCode: "Pattern Code (I)",
+        colShadeStyle: "Shade Style (J)",
+        colLiftCtrl: "Lift Control (K)",
+        colCordLen: "Cord Length (L)",
+        colLining: "Lining (M)",
+        colTrimCode: "Trim Code (N)",
+        colTrimOpt: "Trim Option (O)",
+        colSbs: "Side By Side (P)",
+        colSpecInst: "Special Instructions (Q:R)",
+        colOps: "Action",
+        colDrFab: "Fabric Pattern Code (F)",
+        colDrLining: "Lining (G)",
+        colDrSheer: "Sheer Pattern Code (H)",
+        colDrHeader: "Hanging Header Style (I)",
+        colDrStyleOpt: "Style Options (J)",
+        colDrPanels: "Panels (K)",
+        colDrReturns: "Returns (L)",
+        colDrTieband: "Tieband (M)",
+        colDrNotes: "Notes. (N)",
+        colDrTrimCode: "Trim Code (O)",
+        colDrTrimLoc: "Trim Location (P)",
+        colDrBlk1: "Block Code1 (Q)",
+        colDrBlk2: "Block Code2 (R)",
+        colDrBlkLoc: "Block Loc (S)",
+        colDrSpec: "Special Instructions (T:U)",
+        emptyRs: "No Roman Shade rows yet. Import from Option A / B / C above, or click [+ Add Roman Shade Row].",
+        emptyDr: "No Drapery rows yet. Import from Option A / B / C above, or click [+ Add Drapery Row].",
+        rsNotesHtml: `<b>📌 Roman Shade Order Form 2026V1 Official Specification Notes:</b><br/>
+          • <b>Shade Style (Col J)</b>: <code>Plain_Fold</code> ｜ <code>Ribbed</code> ｜ <code>Flat_A</code> (With hidden ribs) ｜ <code>Flat_B</code> (Without hidden ribs) ｜ <code>Hobbled</code> (Only available in Standard lift) ｜ <code>Balloon Roman</code><br/>
+          • <b>Lift Control (Col K)</b>: <code>[Standard] Cordless</code> ｜ <code>[Standard] Cordless TDBU</code> ｜ <code>[Standard] Motorized</code> ｜ <code>Continous Loop-L/R</code> (Select cord length in Col L) ｜ <code>[Waterfall] Cordless / TWIN / Loop / Motorized</code><br/>
+          • <b>Lining (Col M)</b>: <code>Unlined</code> ｜ <code>LF Lining</code> (Light Filtering) ｜ <code>BO Lining</code> (Blackout) — <i>Note: Patterns SH &amp; SB are not suitable for LF or BO lining</i><br/>
+          • <b>Decorative Trim (Col N/O)</b>: <code>A (Edge)</code> ｜ <code>B (Insert L&amp;R Side)</code> ｜ <code>C (Insert L&amp;R&amp;B Side)</code> (Inset sewing default 1 1/2" or 2" from edge)`,
+        drNotesHtml: `<b>📌 Drapery Order Form 2026V1 Official Notes &amp; Size Limitations:</b><br/>
+          • <b>Drapery Size Limitations</b>: Min Width <code>20"</code> ｜ Max Width (One Way) <code>150"</code> ｜ Max Width (Split/Pair) <code>300"</code> ｜ Min Height <code>24"</code> ｜ Max Height <code>270"</code><br/>
+          • <b>Hanging Header Style (Col I)</b>: <code>Double_Pinch_PLeat</code> ｜ <code>Triple_Pinch_Pleat</code> ｜ <code>Euro_Double_Pleat</code> ｜ <code>Euro_Triple_Pleat</code> ｜ <code>X_Pleat</code> ｜ <code>Inverted_Pleat</code> ｜ <code>Goblet_Pleat</code> ｜ <code>Ripple_Fold</code> ｜ <code>Rod_Pocket</code> (<code>A_Standard</code>=Without Header, <code>B_With_Header</code>=1 1/2" Header) ｜ <code>Pencil_Pleat</code><br/>
+          • <b>Panels (Col K)</b>: <code>Pair</code> (Center Split) ｜ <code>Single_L</code> (Stack Left) ｜ <code>Single_R</code> (Stack Right) ｜ <code>Single Panel</code><br/>
+          • <b>Color Blocking (Col Q/R/S)</b>: <code>A</code>=Bottom 1/3 Block ｜ <code>B</code>=Bottom 1/3 Block with trim ｜ <code>C</code>=Equal blocks (Top: Main, Middle: Code 1, Bottom: Code 2)`
+      }
+    };
+
+    // 下拉选项的中英文双语友好显示名称（写入 Excel 时仍保持原模版精确英文代码 value）
+    const OPTION_LABELS_ZH = {
+      "IM": "IM (口内安装)",
+      "OM": "OM (口外安装)",
+      "Flat_A": "Flat_A (带暗骨平折)",
+      "Flat_B": "Flat_B (无暗骨平折)",
+      "Plain_Fold": "Plain_Fold (经典平折)",
+      "Ribbed": "Ribbed (明骨平折)",
+      "Hobbled": "Hobbled (水波折/刀折)",
+      "Balloon Roman": "Balloon Roman (气球帘)",
+      "[Standard] Cordless": "[Standard] Cordless (标准无拉绳)",
+      "[Standard] Cordless TDBU": "[Standard] Cordless TDBU (标准上开下合)",
+      "[Standard] Motorized": "[Standard] Motorized (标准电动)",
+      "[Standard] Continous Loop-L": "[Standard] Continous Loop-L (标准左拉珠)",
+      "[Standard] Continous Loop-R": "[Standard] Continous Loop-R (标准右拉珠)",
+      "[Waterfall] Cordless": "[Waterfall] Cordless (瀑布前出无绳)",
+      "[Waterfall] Cordless TWIN": "[Waterfall] Cordless TWIN (瀑布日夜双帘)",
+      "[Waterfall] Continous Loop-L": "[Waterfall] Continous Loop-L (瀑布左拉珠)",
+      "[Waterfall] Continous Loop-R": "[Waterfall] Continous Loop-R (瀑布右拉珠)",
+      "[Waterfall] Motorized": "[Waterfall] Motorized (瀑布前出电动)",
+      "Unlined": "Unlined (无衬布)",
+      "LF Lining": "LF Lining (透光衬)",
+      "BO Lining": "BO Lining (全遮光衬)",
+      "A (Edge)": "A (Edge 侧边包边)",
+      "B (Insert L&R Side)": "B (Insert L&R 左右内嵌)",
+      "C (Insert L&R&B Side)": "C (Insert L&R&B 三边内嵌)",
+      "NO": "NO (不并排)",
+      "Top Aligned": "Top Aligned (并排顶部对齐)",
+      "Bottom Aligned": "Bottom Aligned (并排底部对齐)",
+      "Double_Pinch_PLeat": "Double_Pinch_PLeat (双韩褶)",
+      "Triple_Pinch_Pleat": "Triple_Pinch_Pleat (三韩褶)",
+      "Euro_Double_Pleat": "Euro_Double_Pleat (欧式双褶)",
+      "Euro_Triple_Pleat": "Euro_Triple_Pleat (欧式三褶)",
+      "X_Pleat": "X_Pleat (X褶)",
+      "Inverted_Pleat": "Inverted_Pleat (暗褶/工字褶)",
+      "Goblet_Pleat": "Goblet_Pleat (酒杯褶)",
+      "Ripple_Fold": "Ripple_Fold (S波浪帘)",
+      "Rod_Pocket": "Rod_Pocket (穿杆袋款)",
+      "Pencil_Pleat": "Pencil_Pleat (铅笔褶)",
+      "2.0x Fullness": "2.0x Fullness (2.0倍褶)",
+      "2.2x Fullness": "2.2x Fullness (2.2倍褶)",
+      "2.5x Fullness": "2.5x Fullness (2.5倍褶)",
+      "A_Standard": "A_Standard (无帘头穿杆)",
+      "B_With_Header": "B_With_Header (带1.5\"帘头)",
+      "Pair": "Pair (对开双幅)",
+      "Single_L": "Single_L (单开往左收)",
+      "Single_R": "Single_R (单开往右收)",
+      "Single Panel": "Single Panel (单幅)",
+      'Standard 3 1/2" Return': 'Standard 3 1/2" Return (标准3.5"回折)',
+      "No Returns": "No Returns (无回折)",
+      "Custom (Enter Return Width)": "Custom (自定义回折宽)",
+      "None": "None (无绑带)",
+      "A_Without_Welt": "A_Without_Welt (无滚边绑带)",
+      "B_With_Welt": "B_With_Welt (带滚边绑带)",
+      "A (Leading Edge)": "A (Leading Edge 前缘花边)",
+      "B (Insert Side)": "B (Insert Side 内嵌花边)",
+      "A": "A (底部1/3拼色)",
+      "B": "B (底部1/3拼色含花边)",
+      "C": "C (上中下三等分拼色)"
+    };
+
     const RS_SHADE_STYLES = ["Flat_A", "Flat_B", "Plain_Fold", "Ribbed", "Hobbled", "Balloon Roman"];
     const RS_LIFT_CONTROLS = [
       "[Standard] Cordless",
@@ -563,6 +874,123 @@
     let rsRows = [];
     let drRows = [];
 
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || key;
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang === "en" ? "en" : "zh";
+      localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+      document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+      document.getElementById("langBtnZh").className = currentLang === "zh" ? "lang-btn active" : "lang-btn";
+      document.getElementById("langBtnEn").className = currentLang === "en" ? "lang-btn active" : "lang-btn";
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key) el.textContent = t(key);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (key) el.placeholder = t(key);
+      });
+
+      document.getElementById("rsNotesPanel").innerHTML = t("rsNotesHtml");
+      document.getElementById("drNotesPanel").innerHTML = t("drNotesHtml");
+
+      refreshSavedMeasureList();
+      renderTables();
+    }
+
+    // 中英文房间与常用备注双向互译器
+    const ZH_EN_PHRASES = [
+      ["客厅主窗", "Living Room Main"],
+      ["挑高大窗", "High Ceiling Window"],
+      ["客厅飘窗/转角窗", "Living Room Bay Window"],
+      ["客厅", "Living Room"],
+      ["推拉门", "Sliding Door"],
+      ["主卧", "Master Bedroom"],
+      ["次卧 1", "Guest Room 1"],
+      ["次卧 2", "Guest Room 2"],
+      ["次卧", "Guest Bedroom"],
+      ["餐厅", "Dining Room"],
+      ["厨房", "Kitchen"],
+      ["书房", "Study / Office"],
+      ["左段", "Left"],
+      ["中段", "Center"],
+      ["右段", "Right"],
+      ["无明线，无纤维棒，后面多竖线，配遥控器及充电线", "No exposed stitching, no fiberglass rods, extra back vertical cords, with remotes & charging cables"],
+      ["窗框内装请按最小宽扣减", "Inside mount: please deduct strictly from minimum width"],
+      ["并排水平对齐，电机左上出线", "Side-by-side horizontally aligned, motor wire top-left"],
+      ["并排水平对齐，电机右上出线", "Side-by-side horizontally aligned, motor wire top-right"],
+      ["NOVO 电动双轨 (左置电源)", "NOVO Motorized Double Track (Power Left)"],
+      ["黑色静音手拉导轨 (配左拉棒)", "Black Silent Manual Track (Left Baton)"],
+      ["扣 80mm 轨道及离地 1\"，双层布+纱同宽对开", "Deduct 80mm track & 1\" floor clearance, double layer center split"],
+      ["单开往左收拢，已含推拉门框外加宽 +10\"", "Single stack left, includes +10\" outside mount extension"],
+      ["窗户有摇把/把手，需加厚支架或反卷避开", "Window has crank/handle, use extended brackets or reverse roll"],
+      ["电机插座在左上角", "Motor outlet at top-left"],
+      ["电机插座在右上角", "Motor outlet at top-right"],
+      ["现场需拆旧窗帘", "Take down old blinds on site"]
+    ];
+
+    function translateString(str, toLang) {
+      if (!str) return "";
+      let out = String(str);
+      ZH_EN_PHRASES.forEach(([zh, en]) => {
+        if (toLang === "en") {
+          out = out.split(zh).join(en);
+        } else {
+          out = out.split(en).join(zh);
+        }
+      });
+      return out;
+    }
+
+    function translateTableContentToCurrentLang() {
+      const targetLang = currentLang === "zh" ? "en" : "zh";
+      // Toggle language and translate all room names, notes & special instructions
+      const newLang = currentLang;
+      rsRows.forEach(r => {
+        r.room = translateString(r.room, newLang);
+        r.specialInstructions = translateString(r.specialInstructions, newLang);
+      });
+      drRows.forEach(r => {
+        r.room = translateString(r.room, newLang);
+        r.notes = translateString(r.notes, newLang);
+        r.specialInstructions = translateString(r.specialInstructions, newLang);
+      });
+      const specEl = document.getElementById("hdrSpecialReq");
+      if (specEl) specEl.value = translateString(specEl.value, newLang);
+
+      // If user clicked the button in zh mode, translate content to English; if in en mode, translate to Chinese or English
+      if (currentLang === "zh") {
+        rsRows.forEach(r => {
+          r.room = translateString(r.room, "en");
+          r.specialInstructions = translateString(r.specialInstructions, "en");
+        });
+        drRows.forEach(r => {
+          r.room = translateString(r.room, "en");
+          r.notes = translateString(r.notes, "en");
+          r.specialInstructions = translateString(r.specialInstructions, "en");
+        });
+        if (specEl) specEl.value = translateString(specEl.value, "en");
+        setLanguage("en");
+        showToast("🌐 Translated all rooms, notes & UI to English!");
+      } else {
+        rsRows.forEach(r => {
+          r.room = translateString(r.room, "zh");
+          r.specialInstructions = translateString(r.specialInstructions, "zh");
+        });
+        drRows.forEach(r => {
+          r.room = translateString(r.room, "zh");
+          r.notes = translateString(r.notes, "zh");
+          r.specialInstructions = translateString(r.specialInstructions, "zh");
+        });
+        if (specEl) specEl.value = translateString(specEl.value, "zh");
+        setLanguage("zh");
+        showToast("🌐 已将表内房间、备注及界面全部切换为中文！");
+      }
+    }
+
     function showToast(msg) {
       const el = document.getElementById("toast");
       el.textContent = msg;
@@ -586,9 +1014,6 @@
       return isNaN(n) ? 0 : n;
     }
 
-    // ====================================================
-    // 智能中英文业务词汇 -> 2026V1 模版标准英文代码映射器
-    // ====================================================
     function mapMountToImOm(raw) {
       const s = String(raw || "").toUpperCase();
       if (s.includes("IM") || s.includes("口内") || s.includes("内装") || s.includes("INSIDE")) return "IM";
@@ -648,7 +1073,6 @@
       return "Pair";
     }
 
-    // 拆分“布帘 + 白纱”组合型号字符串为 mainFabric 与 sheerFabric
     function splitFabricAndSheer(category, modelStr) {
       const m = String(modelStr || "").trim();
       const cat = String(category || "");
@@ -728,7 +1152,10 @@
       const hasCur = options.includes(normCur);
       const allOpts = hasCur ? options : [normCur, ...options];
       return `<select onchange="${onChangeExpr}">` +
-        allOpts.map(o => `<option value="${escapeHtml(o)}" ${o === normCur ? "selected" : ""}>${escapeHtml(o || "—")}</option>`).join("") +
+        allOpts.map(o => {
+          const label = currentLang === "zh" && OPTION_LABELS_ZH[o] ? OPTION_LABELS_ZH[o] : (o || "—");
+          return `<option value="${escapeHtml(o)}" ${o === normCur ? "selected" : ""}>${escapeHtml(label)}</option>`;
+        }).join("") +
         `</select>`;
     }
 
@@ -736,10 +1163,12 @@
       document.getElementById("badgeRsCount").textContent = rsRows.length;
       document.getElementById("badgeDrCount").textContent = drRows.length;
 
-      // Render Roman Shade Table
+      const moveToDrLabel = currentLang === "en" ? "⇄DR" : "⇄布";
+      const moveToRsLabel = currentLang === "en" ? "⇄RS" : "⇄罗";
+
       const rsBody = document.getElementById("rsTableBody");
       if (!rsRows.length) {
-        rsBody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:22px;color:#64748b;">当前暂无罗马帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行罗马帘】。</td></tr>`;
+        rsBody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:22px;color:#64748b;">${escapeHtml(t("emptyRs"))}</td></tr>`;
       } else {
         rsBody.innerHTML = rsRows.map((r, i) => `
           <tr>
@@ -747,31 +1176,30 @@
             <td><input value="${escapeHtml(r.room)}" oninput="updateRsField(${i},'room',this.value)" placeholder="Room" /></td>
             <td><input type="number" min="1" value="${escapeHtml(r.qty)}" oninput="updateRsField(${i},'qty',this.value)" style="width:54px;text-align:center;" /></td>
             <td>${renderSelectHtml(["IM", "OM"], r.mount, `updateRsField(${i},'mount',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.width)}" oninput="updateRsField(${i},'width',this.value)" placeholder="如 35 1/2" style="font-weight:800;" /></td>
-            <td><input value="${escapeHtml(r.height)}" oninput="updateRsField(${i},'height',this.value)" placeholder="如 72" style="font-weight:800;" /></td>
-            <td><input value="${escapeHtml(r.depth)}" oninput="updateRsField(${i},'depth',this.value)" placeholder="如 3 1/2" /></td>
-            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateRsField(${i},'fabricCode',this.value)" placeholder="面料型号/色号" /></td>
-            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateRsField(${i},'sheerCode',this.value)" placeholder="日夜帘纱号(选填)" /></td>
+            <td><input value="${escapeHtml(r.width)}" oninput="updateRsField(${i},'width',this.value)" placeholder="35 1/2" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.height)}" oninput="updateRsField(${i},'height',this.value)" placeholder="72" style="font-weight:800;" /></td>
+            <td><input value="${escapeHtml(r.depth)}" oninput="updateRsField(${i},'depth',this.value)" placeholder="3 1/2" /></td>
+            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateRsField(${i},'fabricCode',this.value)" placeholder="Pattern Code" /></td>
+            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateRsField(${i},'sheerCode',this.value)" placeholder="Sheer Code" /></td>
             <td>${renderSelectHtml(RS_SHADE_STYLES, r.shadeStyle, `updateRsField(${i},'shadeStyle',this.value)`)}</td>
             <td>${renderSelectHtml(RS_LIFT_CONTROLS, r.liftControl, `updateRsField(${i},'liftControl',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.cordLength)}" oninput="updateRsField(${i},'cordLength',this.value)" placeholder="Loop绳长" /></td>
+            <td><input value="${escapeHtml(r.cordLength)}" oninput="updateRsField(${i},'cordLength',this.value)" placeholder="Cord Len" /></td>
             <td>${renderSelectHtml(LINING_OPTIONS, r.lining, `updateRsField(${i},'lining',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateRsField(${i},'trimCode',this.value)" placeholder="如 T789_1" /></td>
+            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateRsField(${i},'trimCode',this.value)" placeholder="Trim Code" /></td>
             <td>${renderSelectHtml(RS_TRIM_OPTIONS, r.trimOption, `updateRsField(${i},'trimOption',this.value)`)}</td>
             <td>${renderSelectHtml(RS_SBS_OPTIONS, r.sideBySide, `updateRsField(${i},'sideBySide',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateRsField(${i},'specialInstructions',this.value)" placeholder="单窗特殊要求/备注" /></td>
+            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateRsField(${i},'specialInstructions',this.value)" placeholder="Special Instructions" /></td>
             <td style="text-align:center;white-space:nowrap;">
-              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" title="转入布帘模版" onclick="moveRsToDr(${i})">⇄布</button>
+              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" onclick="moveRsToDr(${i})">${moveToDrLabel}</button>
               <button class="btn btn-danger" style="padding:4px 7px;font-size:11px;" onclick="removeRsRow(${i})">×</button>
             </td>
           </tr>
         `).join("");
       }
 
-      // Render Drapery Table
       const drBody = document.getElementById("drTableBody");
       if (!drRows.length) {
-        drBody.innerHTML = `<tr><td colspan="21" style="text-align:center;padding:22px;color:#64748b;">当前暂无布帘/纱帘行项目。可从上方【方式 A / B / C】一键导入，或点击右上角【+ 新增一行布帘/纱帘】。</td></tr>`;
+        drBody.innerHTML = `<tr><td colspan="21" style="text-align:center;padding:22px;color:#64748b;">${escapeHtml(t("emptyDr"))}</td></tr>`;
       } else {
         drBody.innerHTML = drRows.map((r, i) => `
           <tr>
@@ -780,23 +1208,23 @@
             <td><input type="number" min="1" value="${escapeHtml(r.qty)}" oninput="updateDrField(${i},'qty',this.value)" style="width:52px;text-align:center;" /></td>
             <td><input value="${escapeHtml(r.width)}" oninput="updateDrField(${i},'width',this.value)" placeholder="Width" style="font-weight:800;" /></td>
             <td><input value="${escapeHtml(r.height)}" oninput="updateDrField(${i},'height',this.value)" placeholder="Height" style="font-weight:800;" /></td>
-            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateDrField(${i},'fabricCode',this.value)" placeholder="主布型号" /></td>
+            <td><input value="${escapeHtml(r.fabricCode)}" oninput="updateDrField(${i},'fabricCode',this.value)" placeholder="Fabric Code" /></td>
             <td>${renderSelectHtml(LINING_OPTIONS, r.lining, `updateDrField(${i},'lining',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateDrField(${i},'sheerCode',this.value)" placeholder="纱帘型号" /></td>
+            <td><input value="${escapeHtml(r.sheerCode)}" oninput="updateDrField(${i},'sheerCode',this.value)" placeholder="Sheer Code" /></td>
             <td>${renderSelectHtml(DR_HEADER_STYLES, r.headerStyle, `updateDrField(${i},'headerStyle',this.value)`)}</td>
             <td>${renderSelectHtml(DR_STYLE_OPTIONS, r.styleOptions, `updateDrField(${i},'styleOptions',this.value)`)}</td>
             <td>${renderSelectHtml(DR_PANELS, r.panels, `updateDrField(${i},'panels',this.value)`)}</td>
             <td>${renderSelectHtml(DR_RETURNS, r.returns, `updateDrField(${i},'returns',this.value)`)}</td>
             <td>${renderSelectHtml(DR_TIEBANDS, r.tieband, `updateDrField(${i},'tieband',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.notes)}" oninput="updateDrField(${i},'notes',this.value)" placeholder="轨道/电机说明" /></td>
-            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateDrField(${i},'trimCode',this.value)" placeholder="花边号" /></td>
+            <td><input value="${escapeHtml(r.notes)}" oninput="updateDrField(${i},'notes',this.value)" placeholder="Notes" /></td>
+            <td><input value="${escapeHtml(r.trimCode)}" oninput="updateDrField(${i},'trimCode',this.value)" placeholder="Trim Code" /></td>
             <td>${renderSelectHtml(DR_TRIM_LOCS, r.trimLocation, `updateDrField(${i},'trimLocation',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.blockCode1)}" oninput="updateDrField(${i},'blockCode1',this.value)" placeholder="拼色1" /></td>
-            <td><input value="${escapeHtml(r.blockCode2)}" oninput="updateDrField(${i},'blockCode2',this.value)" placeholder="拼色2" /></td>
+            <td><input value="${escapeHtml(r.blockCode1)}" oninput="updateDrField(${i},'blockCode1',this.value)" placeholder="Code 1" /></td>
+            <td><input value="${escapeHtml(r.blockCode2)}" oninput="updateDrField(${i},'blockCode2',this.value)" placeholder="Code 2" /></td>
             <td>${renderSelectHtml(DR_BLOCK_LOCS, r.blockLocation, `updateDrField(${i},'blockLocation',this.value)`)}</td>
-            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateDrField(${i},'specialInstructions',this.value)" placeholder="现场与加工特殊要求" /></td>
+            <td><input value="${escapeHtml(r.specialInstructions)}" oninput="updateDrField(${i},'specialInstructions',this.value)" placeholder="Special Instructions" /></td>
             <td style="text-align:center;white-space:nowrap;">
-              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" title="转入罗马帘模版" onclick="moveDrToRs(${i})">⇄罗</button>
+              <button class="btn btn-secondary" style="padding:4px 7px;font-size:11px;" onclick="moveDrToRs(${i})">${moveToRsLabel}</button>
               <button class="btn btn-danger" style="padding:4px 7px;font-size:11px;" onclick="removeDrRow(${i})">×</button>
             </td>
           </tr>
@@ -853,7 +1281,7 @@
       }));
       rsRows.splice(idx, 1);
       renderTables();
-      showToast("已将该窗位转入 Drapery 布帘下单表");
+      showToast(currentLang === "en" ? "Moved row to Drapery Order Form" : "已将该窗位转入 Drapery 布帘下单表");
     }
 
     function addDrRow() {
@@ -888,52 +1316,56 @@
       }));
       drRows.splice(idx, 1);
       renderTables();
-      showToast("已将该窗位转入 Roman Shade 罗马帘下单表");
+      showToast(currentLang === "en" ? "Moved row to Roman Shade Order Form" : "已将该窗位转入 Roman Shade 罗马帘下单表");
     }
 
     function clearAllRows() {
       rsRows = [];
       drRows = [];
       renderTables();
-      showToast("已清空当前转换表格");
+      showToast(currentLang === "en" ? "Cleared all rows" : "已清空当前转换表格");
     }
 
-    // 模版官方工艺与尺寸限制自动校验
     function validateCurrentRows() {
       const warns = [];
+      const isEn = currentLang === "en";
       rsRows.forEach((r, i) => {
         if (r.shadeStyle === "Hobbled" && !r.liftControl.startsWith("[Standard]")) {
-          warns.push(`Roman Shade 第 ${i + 1} 行 (${r.room})：Hobbled 水波折款仅支持 [Standard] 标准升降方式`);
+          warns.push(isEn
+            ? `Roman Shade Row ${i + 1} (${r.room}): Hobbled roman shades are only available in [Standard] lift style.`
+            : `Roman Shade 第 ${i + 1} 行 (${r.room})：Hobbled 水波折款仅支持 [Standard] 标准升降方式`);
         }
         if (/^(SH|SB)\b/i.test(r.fabricCode) && (r.lining === "LF Lining" || r.lining === "BO Lining")) {
-          warns.push(`Roman Shade 第 ${i + 1} 行 (${r.room})：模版规范提示 SH & SB 面料不适合加 LF 或 BO 衬布`);
+          warns.push(isEn
+            ? `Roman Shade Row ${i + 1} (${r.room}): Patterns SH & SB are not suitable for LF or BO lining.`
+            : `Roman Shade 第 ${i + 1} 行 (${r.room})：模版规范提示 SH & SB 面料不适合加 LF 或 BO 衬布`);
         }
       });
 
       drRows.forEach((r, i) => {
         const w = parseInch(r.width);
         const h = parseInch(r.height);
-        if (w > 0 && w < 20) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：宽度 ${r.width}" 小于模版最小限制 20"`);
-        if (w > 150 && r.panels !== "Pair") warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：单开 (One Way) 宽度 ${r.width}" 超过模版最大限制 150"`);
-        if (w > 300) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：对开 (Split) 宽度 ${r.width}" 超过模版最大限制 300"`);
-        if (h > 0 && (h < 24 || h > 270)) warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：高度 ${r.height}" 超出模版范围 (24" ~ 270")`);
+        if (w > 0 && w < 20) warns.push(isEn ? `Drapery Row ${i + 1} (${r.room}): Width ${r.width}" is below minimum 20".` : `Drapery 第 ${i + 1} 行 (${r.room})：宽度 ${r.width}" 小于模版最小限制 20"`);
+        if (w > 150 && r.panels !== "Pair") warns.push(isEn ? `Drapery Row ${i + 1} (${r.room}): One-Way Width ${r.width}" exceeds maximum 150".` : `Drapery 第 ${i + 1} 行 (${r.room})：单开 (One Way) 宽度 ${r.width}" 超过模版最大限制 150"`);
+        if (w > 300) warns.push(isEn ? `Drapery Row ${i + 1} (${r.room}): Split Width ${r.width}" exceeds maximum 300".` : `Drapery 第 ${i + 1} 行 (${r.room})：对开 (Split) 宽度 ${r.width}" 超过模版最大限制 300"`);
+        if (h > 0 && (h < 24 || h > 270)) warns.push(isEn ? `Drapery Row ${i + 1} (${r.room}): Height ${r.height}" is outside range (24" ~ 270").` : `Drapery 第 ${i + 1} 行 (${r.room})：高度 ${r.height}" 超出模版范围 (24" ~ 270")`);
         if (!r.fabricCode && r.sheerCode && r.lining !== "Unlined") {
-          warns.push(`Drapery 第 ${i + 1} 行 (${r.room})：纯纱帘 (Sheer) 模版规定不可加 LF/BO 衬布，建议将 Lining 设为 Unlined`);
+          warns.push(isEn
+            ? `Drapery Row ${i + 1} (${r.room}): LF/BO Lining is not available on sheer draperies; set Lining to Unlined.`
+            : `Drapery 第 ${i + 1} 行 (${r.room})：纯纱帘 (Sheer) 模版规定不可加 LF/BO 衬布，建议将 Lining 设为 Unlined`);
         }
       });
 
       const bar = document.getElementById("validationWarnBar");
       if (warns.length) {
         bar.style.display = "block";
-        bar.innerHTML = "⚠️ <b>模版规范智能校验提醒：</b><br/>" + warns.map(w => "• " + escapeHtml(w)).join("<br/>");
+        const title = isEn ? "⚠️ <b>Template Specification Warnings:</b><br/>" : "⚠️ <b>模版规范智能校验提醒：</b><br/>";
+        bar.innerHTML = title + warns.map(w => "• " + escapeHtml(w)).join("<br/>");
       } else {
         bar.style.display = "none";
       }
     }
 
-    // ====================================================
-    // 方式 A：从【拍照画线测量 App】一键读取转换
-    // ====================================================
     function getSavedPhotoMeasures() {
       try {
         return JSON.parse(localStorage.getItem(PHOTO_MEASURE_STORAGE_KEY) || "[]");
@@ -945,11 +1377,16 @@
     function refreshSavedMeasureList() {
       const list = getSavedPhotoMeasures();
       const sel = document.getElementById("savedCustomerSelect");
+      if (!sel) return;
       const customers = Array.from(new Set(list.map(r => r.customer).filter(Boolean)));
-      sel.innerHTML = `<option value="__ALL__">全部已保存测量客户 (共 ${list.length} 扇窗)</option>` +
+      const allLabel = currentLang === "en"
+        ? `All Saved Customers (${list.length} windows)`
+        : `全部已保存测量客户 (共 ${list.length} 扇窗)`;
+      const winUnit = currentLang === "en" ? "windows" : "扇窗";
+      sel.innerHTML = `<option value="__ALL__">${allLabel}</option>` +
         customers.map(c => {
           const cnt = list.filter(r => r.customer === c).length;
-          return `<option value="${escapeHtml(c)}">${escapeHtml(c)} (${cnt} 扇窗)</option>`;
+          return `<option value="${escapeHtml(c)}">${escapeHtml(c)} (${cnt} ${winUnit})</option>`;
         }).join("");
     }
 
@@ -959,9 +1396,8 @@
 
       const wSegs = Array.isArray(rec.widthSegments) ? rec.widthSegments.filter(s => s.val && String(s.val).trim()) : [];
       const hSegs = Array.isArray(rec.heightSegments) ? rec.heightSegments.filter(s => s.val && String(s.val).trim()) : [];
-      const is3PtW = wSegs.some(s => /上|中宽|下/.test(s.tag));
+      const is3PtW = wSegs.some(s => /上|中宽|下|top|mid|bot/i.test(s.tag));
 
-      // 构建宽高对列表
       let dimPairs = [];
       if (splitSegments && wSegs.length > 1 && !is3PtW) {
         const count = Math.max(wSegs.length, hSegs.length);
@@ -976,7 +1412,6 @@
           });
         }
       } else {
-        // 单窗或三点测宽汇总
         let wVal = "";
         if (wSegs.length === 1) {
           wVal = String(wSegs[0].val).trim();
@@ -1001,7 +1436,7 @@
 
       const { fabric, sheer } = splitFabricAndSheer(cat, rec.productModel);
       const roomBase = [rec.windowCode, (rec.windowLocation || "").replace(/\s*\([^)]*\)/, "")].filter(Boolean).join(" ");
-      const specialNote = [rec.remark, rec.voiceTranscript].filter(Boolean).join("；");
+      const specialNote = [rec.remark, rec.voiceTranscript].filter(Boolean).join("; ");
 
       dimPairs.forEach(dp => {
         if (isDraperyCat) {
@@ -1046,17 +1481,15 @@
     function importFromPhotoMeasureApp(targetMode) {
       const all = getSavedPhotoMeasures();
       if (!all.length) {
-        showToast("未检测到本机拍照测量记录，您可以点击右上角【✨ 载入示例客户订单演示】或使用方式 B/C 导入！");
+        showToast(currentLang === "en"
+          ? "No local Photo Measure records found. Click [Load Demo Customer Order] or use Option B/C!"
+          : "未检测到本机拍照测量记录，您可以点击右上角【✨ 载入示例客户订单演示】或使用方式 B/C 导入！");
         return;
       }
       const selCust = document.getElementById("savedCustomerSelect").value;
       const filtered = (selCust === "__ALL__" ? all : all.filter(r => r.customer === selCust)).slice().reverse();
-      if (!filtered.length) {
-        showToast("该客户下暂无窗位记录");
-        return;
-      }
+      if (!filtered.length) return;
 
-      // 自动填充订单表头客户与收货信息
       const first = filtered[0];
       if (first.customer) {
         document.getElementById("hdrSidemark").value = first.customer;
@@ -1071,12 +1504,11 @@
       renderTables();
       if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
       else switchTab("rs");
-      showToast(`⚡ 已成功转换并导入 ${filtered.length} 扇窗位到下单模版！`);
+      showToast(currentLang === "en"
+        ? `⚡ Imported & converted ${filtered.length} windows into 2026V1 templates!`
+        : `⚡ 已成功转换并导入 ${filtered.length} 扇窗位到下单模版！`);
     }
 
-    // ====================================================
-    // 方式 B：上传任意客户订单 Excel / CSV 智能映射
-    // ====================================================
     function handleExcelUpload(e) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
@@ -1092,7 +1524,6 @@
             const ws = wb.Sheets[sname];
             const jsonRows = XLSX.utils.sheet_to_json(ws, { defval: "" });
             jsonRows.forEach(row => {
-              // 智能匹配列名
               const getCol = (regex) => {
                 const key = Object.keys(row).find(k => regex.test(k));
                 return key ? String(row[key]).trim() : "";
@@ -1170,26 +1601,24 @@
           renderTables();
           if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
           else switchTab("rs");
-          showToast(`📂 已从 ${file.name} 智能转换并导入 ${importedCount} 行订单数据！`);
+          showToast(currentLang === "en"
+            ? `📂 Imported ${importedCount} rows from ${file.name}!`
+            : `📂 已从 ${file.name} 智能转换并导入 ${importedCount} 行订单数据！`);
         } catch (err) {
-          showToast("解析文件失败，请确认上传的是有效的 Excel 或 CSV 文件");
+          showToast(currentLang === "en" ? "Failed to parse Excel/CSV file" : "解析文件失败，请确认上传的是有效的 Excel 或 CSV 文件");
         }
       };
       reader.readAsArrayBuffer(file);
       e.target.value = "";
     }
 
-    // ====================================================
-    // 方式 C：粘贴微信 / 短信 / 手写文字智能解析拆单
-    // ====================================================
     function parseTextOrder(targetMode) {
       const raw = document.getElementById("rawOrderText").value.trim();
       if (!raw) {
-        showToast("请先在文本框中粘贴客户订单文字，或点击【✨ 载入示例客户订单演示】");
+        showToast(currentLang === "en" ? "Please paste order text first" : "请先在文本框中粘贴客户订单文字");
         return;
       }
 
-      // 提取表头客户、电话、地址
       const custMatch = raw.match(/(?:客户|姓名|Customer|Sidemark)\s*[:：]?\s*([^\n,，；;电话手机地址]+)/i);
       if (custMatch) {
         const c = custMatch[1].trim();
@@ -1205,7 +1634,6 @@
       let added = 0;
 
       lines.forEach(line => {
-        // 判断该行是否包含宽高尺寸
         const wMatch = line.match(/(?:宽|width|\bw\b)\s*[:：=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
         const hMatch = line.match(/(?:高|height|\bh\b)\s*[:：=]?\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
         const byMatch = line.match(/(\d+(?:\s+\d+\/\d+|\.\d+)?)\s*(?:×|x|by|\*)\s*(\d+(?:\s+\d+\/\d+|\.\d+)?)/i);
@@ -1215,12 +1643,10 @@
         const h = hMatch ? hMatch[1].trim() : byMatch ? byMatch[2].trim() : "";
         if (!w && !h) return;
 
-        // 提取房间名
         let room = "Living Room";
-        const roomMatch = line.match(/(客厅|主卧|次卧\s*\d*|餐厅|厨房|书房|挑高窗|推拉门|飘窗|Living\s*Room|Master\s*Bedroom|Bedroom\s*\d*|Dining\s*Room|Kitchen|Office|Study|Family\s*Room|W\d+)/i);
+        const roomMatch = line.match(/(客厅|主卧|次卧\s*\d*|餐厅|厨房|书房|挑高窗|推拉门|飘窗|Living\s*Room|Master\s*Bedroom|Master\s*Room|Bedroom\s*\d*|Dining\s*Room|Kitchen|Office|Study|Family\s*Room|W\d+)/i);
         if (roomMatch) room = roomMatch[1].trim();
 
-        // 提取面料/型号
         let fabricCode = "Group B";
         let sheerCode = "";
         const knownFabrics = line.match(/(Aspen[\s_]*Allure|Chic[\s_]*Charm|Coastal[\s_]*Breeze|Coastal[\s_]*Charm|Cosy[\s_]*Comfort|Fusion|Golden[\s_]*Glamour|Horizon|Liberty[\s_]*Linen|Organic[\s_]*Oasis|Prairie[\s_]*Pride|Provence[\s_]*Pure|Sierra[\s_]*Sunrise|Sunset[\s_]*Serenity|Timeless[\s_]*Tranquillity|Urban[\s_]*Chic|Urban[\s_]*Elegance|Urban[\s_]*Oasis|Modern[\s_]*Serenity|Meadow[\s_]*Linen|Ocean[\s_]*Mist|Canyon[\s_]*Ridge|Soft[\s_]*Haze|Soft[\s_]*Breeze|Group\s*[A-C]|JL\d+|ML-\d+|Yuma\s*\d*%?)/gi);
@@ -1270,11 +1696,13 @@
       renderTables();
       if (targetMode === "dr" || (!rsRows.length && drRows.length)) switchTab("dr");
       else switchTab("rs");
-      showToast(`✦ 已从文字中智能提取 ${added} 个窗位并填入 2026V1 下单模版！`);
+      showToast(currentLang === "en"
+        ? `✦ Extracted ${added} windows from text into 2026V1 templates!`
+        : `✦ 已从文字中智能提取 ${added} 个窗位并填入 2026V1 下单模版！`);
     }
 
-    // 载入完整演示订单（同时包含 Roman Shade 与 Drapery）
     function loadDemoOrder() {
+      const isEn = currentLang === "en";
       document.getElementById("hdrDealerName").value = "BRAUN INTERNATIONAL, LLC";
       document.getElementById("hdrCompanyId").value = "NJ-CWF001";
       document.getElementById("hdrPoNumber").value = "PO-20261125-88";
@@ -1285,7 +1713,9 @@
       document.getElementById("hdrShipPhone").value = "909-552-0455";
       document.getElementById("hdrShipAddress").value = "680 W Byron Ct";
       document.getElementById("hdrShipZip").value = "91762";
-      document.getElementById("hdrSpecialReq").value = "无明线，无纤维棒，后面多竖线，配遥控器及充电线";
+      document.getElementById("hdrSpecialReq").value = isEn
+        ? "No exposed stitching, no fiberglass rods, extra back vertical cords, with remotes & charging cables"
+        : "无明线，无纤维棒，后面多竖线，配遥控器及充电线";
 
       rsRows = [
         createDefaultRsRow({
@@ -1304,7 +1734,7 @@
           trimCode: "T789_1",
           trimOption: "A (Edge)",
           sideBySide: "NO",
-          specialInstructions: "窗框内装请按最小宽扣减"
+          specialInstructions: isEn ? "Inside mount: please deduct strictly from minimum width" : "窗框内装请按最小宽扣减"
         }),
         createDefaultRsRow({
           room: "W2 Study (Left)",
@@ -1322,7 +1752,7 @@
           trimCode: "",
           trimOption: "",
           sideBySide: "Top Aligned",
-          specialInstructions: "与 W2-Right 并排水平对齐，电机左上出线"
+          specialInstructions: isEn ? "Side-by-side horizontally aligned, motor wire top-left" : "与 W2-Right 并排水平对齐，电机左上出线"
         }),
         createDefaultRsRow({
           room: "W2 Study (Right)",
@@ -1340,7 +1770,7 @@
           trimCode: "",
           trimOption: "",
           sideBySide: "Top Aligned",
-          specialInstructions: "与 W2-Left 并排水平对齐，电机右上出线"
+          specialInstructions: isEn ? "Side-by-side horizontally aligned, motor wire top-right" : "与 W2-Left 并排水平对齐，电机右上出线"
         })
       ];
 
@@ -1358,13 +1788,13 @@
           panels: "Pair",
           returns: 'Standard 3 1/2" Return',
           tieband: "B_With_Welt",
-          notes: "NOVO 电动双轨 (左置电源)",
+          notes: isEn ? "NOVO Motorized Double Track (Power Left)" : "NOVO 电动双轨 (左置电源)",
           trimCode: "T331_1",
           trimLocation: "A (Leading Edge)",
           blockCode1: "",
           blockCode2: "",
           blockLocation: "",
-          specialInstructions: "扣 80mm 轨道及离地 1\"，双层布+纱同宽对开"
+          specialInstructions: isEn ? "Deduct 80mm track & 1\" floor clearance, double layer center split" : "扣 80mm 轨道及离地 1\"，双层布+纱同宽对开"
         }),
         createDefaultDrRow({
           room: "W4 Sliding Door",
@@ -1379,23 +1809,22 @@
           panels: "Single_L",
           returns: 'Standard 3 1/2" Return',
           tieband: "None",
-          notes: "黑色静音手拉导轨 (配左拉棒)",
+          notes: isEn ? "Black Silent Manual Track (Left Baton)" : "黑色静音手拉导轨 (配左拉棒)",
           trimCode: "",
           trimLocation: "",
           blockCode1: "",
           blockCode2: "",
           blockLocation: "",
-          specialInstructions: "单开往左收拢，已含推拉门框外加宽 +10\""
+          specialInstructions: isEn ? "Single stack left, includes +10\" outside mount extension" : "单开往左收拢，已含推拉门框外加宽 +10\""
         })
       ];
 
       renderTables();
-      showToast("✨ 已载入完整演示订单（3 扇罗马帘 + 2 扇布帘），可直接点击导出 Excel 查看原版模版效果！");
+      showToast(isEn
+        ? "✨ Loaded Demo Order (3 Roman Shades + 2 Draperies). Click Export to download native 2026V1 Excel!"
+        : "✨ 已载入完整演示订单（3 扇罗马帘 + 2 扇布帘），可直接点击导出 Excel 查看原版模版效果！");
     }
 
-    // ====================================================
-    // 导出 100% 原版格式 Excel (.xlsx) 核心逻辑
-    // ====================================================
     function getHeaderValues() {
       return {
         dealerName: document.getElementById("hdrDealerName").value.trim(),
@@ -1423,10 +1852,9 @@
       setTimeout(() => URL.revokeObjectURL(url), 3000);
     }
 
-    // 生成并下载 Roman Shade Order Form 2026V1.xlsx
     function downloadRomanShadeXlsx() {
       if (!rsRows.length) {
-        showToast("⚠️ 当前罗马帘表为空，请先导入或新增罗马帘行项目（或点击【✨ 载入示例客户订单演示】）");
+        showToast(currentLang === "en" ? "⚠️ Roman Shade table is empty" : "⚠️ 当前罗马帘表为空，请先导入或新增罗马帘行项目");
         switchTab("rs");
         return;
       }
@@ -1445,7 +1873,6 @@
         L8: h.specialReq
       };
 
-      // 清空并写入 15~42 行 (最多 28 行)
       for (let idx = 0; idx < 28; idx++) {
         const rNum = 15 + idx;
         const r = rsRows[idx];
@@ -1473,13 +1900,12 @@
       const dateSafe = h.orderDate || new Date().toISOString().slice(0, 10);
       const fn = `Roman_Shade_Order_Form_2026V1_${custSafe}_${dateSafe}.xlsx`;
       triggerBlobDownload(blob, fn);
-      showToast(`📥 已生成原版格式罗马帘下单表：${fn}`);
+      showToast(currentLang === "en" ? `📥 Downloaded ${fn}` : `📥 已生成原版格式罗马帘下单表：${fn}`);
     }
 
-    // 生成并下载 Drapery Order Form 2026V1.xlsx
     function downloadDraperyXlsx() {
       if (!drRows.length) {
-        showToast("⚠️ 当前布帘/纱帘表为空，请先导入或新增布帘行项目（或点击【✨ 载入示例客户订单演示】）");
+        showToast(currentLang === "en" ? "⚠️ Drapery table is empty" : "⚠️ 当前布帘/纱帘表为空，请先导入或新增布帘行项目");
         switchTab("dr");
         return;
       }
@@ -1498,7 +1924,6 @@
         L8: h.specialReq
       };
 
-      // 清空并写入 15~25 行 (共 11 行)
       for (let idx = 0; idx < 11; idx++) {
         const rNum = 15 + idx;
         const r = drRows[idx];
@@ -1529,7 +1954,7 @@
       const dateSafe = h.orderDate || new Date().toISOString().slice(0, 10);
       const fn = `Drapery_Order_Form_2026V1_${custSafe}_${dateSafe}.xlsx`;
       triggerBlobDownload(blob, fn);
-      showToast(`📥 已生成原版格式布帘下单表：${fn}`);
+      showToast(currentLang === "en" ? `📥 Downloaded ${fn}` : `📥 已生成原版格式布帘下单表：${fn}`);
     }
 
     function downloadBothXlsx() {
@@ -1578,9 +2003,6 @@
         }
       } catch (e) {}
 
-      refreshSavedMeasureList();
-
-      // 如果当前没有任何行，优先检查是否有拍照测量记录可自动导入，否则载入演示数据方便立即体验
       if (!rsRows.length && !drRows.length) {
         const savedMeasures = getSavedPhotoMeasures();
         if (savedMeasures.length > 0) {
@@ -1588,9 +2010,8 @@
         } else {
           loadDemoOrder();
         }
-      } else {
-        renderTables();
       }
+      setLanguage(currentLang);
     }
 
     [
