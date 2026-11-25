@@ -37,3 +37,28 @@ test('customer and supplier cannot review intake', () => {
   assert.equal(mayReviewIntake('supplier'), false);
   assert.equal(mayReviewIntake('owner'), true);
 });
+
+
+test('duplicate IDs case-insensitive block review',()=>{
+ const d=draft();d.lines.push({...line(),sourceWindowId:'w01'});
+ assert.ok(reviewIntakeDraft(d).blocking.includes('lines[1].sourceWindowId.duplicate'));
+});
+test('missing original window ID blocks review',()=>{
+ const d=draft();d.lines[0].sourceWindowId=null;
+ assert.ok(reviewIntakeDraft(d).blocking.includes('lines[0].sourceWindowId'));
+});
+test('raw fractions and source evidence remain unchanged during review',()=>{
+ const d=draft();d.lines[0].widthInches.rawValue='39 5/8';
+ d.lines[0].widthInches.evidence=[{sourceId:'synthetic',row:2,column:3,excerpt:'39 5/8'}];
+ d.lines[0].originalCustomerText='W01 39 5/8 x 40 5/8';
+ assert.equal(reviewIntakeDraft(d).ready,true);
+ assert.equal(d.lines[0].widthInches.rawValue,'39 5/8');
+ assert.equal(d.lines[0].widthInches.evidence[0].column,3);
+});
+test('revision history preserved and invalid editor blocks review',()=>{
+ const d=draft();d.lines[0].revisions=[{field:'widthInches',previous:'39 5/8',next:'39 1/2',recordedAt:'2026-11-24',editedByUserId:1}];
+ assert.equal(reviewIntakeDraft(d).ready,true);
+ assert.equal(d.lines[0].revisions[0].previous,'39 5/8');
+ d.lines[0].revisions[0].editedByUserId=0;
+ assert.ok(reviewIntakeDraft(d).blocking.includes('lines[0].revisions.invalid'));
+});
