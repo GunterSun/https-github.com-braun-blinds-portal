@@ -28,7 +28,29 @@
     }
     header b { font-size: 22px; letter-spacing: 0.5px; }
     header p { margin: 5px 0 0; color: #d7e3eb; font-size: 13px; }
-    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .lang-switch {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid #b68b50;
+      border-radius: 999px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .lang-btn.active {
+      background: #b68b50;
+      color: #fff;
+    }
     main { max-width: 1120px; margin: 20px auto; padding: 0 14px 48px; }
     .card {
       background: #fff;
@@ -218,41 +240,45 @@
   <header>
     <div>
       <b>BRAUN INTERNATIONAL, LLC</b>
-      <p>软包窗帘盒 · 客户选款、尺寸标注与加工图纸报价系统 / Cornice Measurement, Drawing &amp; Quote</p>
+      <p id="hdrSubtitle">软包窗帘盒 · 客户选款、尺寸标注与加工图纸报价系统</p>
     </div>
     <div class="header-actions no-print">
-      <button class="action gold" id="topShareBtn">🔗 分享链接给客户 / 微信发送</button>
-      <button class="action light" id="topSaveImgBtn">🖼️ 保存图纸图片 (存相册)</button>
-      <a class="action light" href="./order-converter.html">🔄 2026V1 订单转换器</a>
-      <a class="action light" href="./photo-measure-app.html">📱 拍照画线测量 App</a>
+      <div class="lang-switch" title="切换中英文 / Switch Language">
+        <button type="button" class="lang-btn active" id="langBtnZh" onclick="setCorniceLang('zh')">中文</button>
+        <button type="button" class="lang-btn" id="langBtnEn" onclick="setCorniceLang('en')">English</button>
+      </div>
+      <button class="action gold" id="topShareBtn">🔗 分享链接给客户</button>
+      <button class="action light" id="topSaveImgBtn">🖼️ 保存图纸图片</button>
+      <a class="action light" id="navConverterLink" href="./order-converter.html">🔄 2026V1 订单转换器</a>
+      <a class="action light" id="navPhotoLink" href="./photo-measure-app.html">📱 拍照测量 App</a>
     </div>
   </header>
 
   <main>
     <section class="card">
       <h2>
-        <span>1. 选择款式 / Select Style (点击切换 7 种造型)</span>
+        <span id="sec1Title">1. 选择款式 (点击切换 7 种造型)</span>
         <span style="font-size:13px;color:#b68b50;font-weight:700;" id="currentStyleBadge">当前款式：Linear (直线长方形)</span>
       </h2>
       <div class="styles" id="styles"></div>
-      <p class="hint">款式图片取自指定的七款参考图；下方图纸会根据您选择的款式与输入的尺寸实时生成正视图与侧视图。支持电脑、手机、iPad 触控点选。</p>
+      <p class="hint" id="sec1Hint">款式图片取自指定的七款参考图；下方图纸会根据您选择的款式与输入的尺寸实时生成正视图与侧视图。支持电脑、手机、iPad 触控点选。</p>
     </section>
 
     <section class="card">
-      <h2>2. 订单与尺寸 / Order &amp; Dimensions (单位：英寸 Inches)</h2>
+      <h2 id="sec2Title">2. 订单与尺寸 (单位：英寸 Inches)</h2>
       <div class="grid">
-        <div class="field"><label>客户 / Customer</label><input id="customer" placeholder="客户名称 / Name"></div>
-        <div class="field"><label>订单编号 / Order ID</label><input id="order" placeholder="例如 COR-001"></div>
-        <div class="field"><label>宽度 W (in)</label><input id="w" type="number" min="0.1" step="0.125" value="60" data-dim="1"></div>
-        <div class="field"><label>最高高度 H (in)</label><input id="h" type="number" min="4" max="20" step="0.125" value="12" data-dim="1"></div>
-        <div class="field"><label>顶部至墙面深度 D (in)</label><input id="d" type="number" min="0.1" step="0.125" value="3.5" data-dim="1"></div>
-        <div class="field"><label>数量 / Qty</label><input id="qty" type="number" min="1" step="1" value="1"></div>
-        <div class="field"><label>面料 / Fabric</label><input id="fabric" placeholder="面料编号 / 颜色"></div>
-        <div class="field"><label>房间 / Room</label><input id="room" placeholder="Living Room / 客厅"></div>
+        <div class="field"><label id="lblCustomer">客户名称</label><input id="customer" placeholder="客户名称"></div>
+        <div class="field"><label id="lblOrder">订单编号</label><input id="order" placeholder="例如 COR-001"></div>
+        <div class="field"><label id="lblW">宽度 W (in)</label><input id="w" type="number" min="0.1" step="0.125" value="60" data-dim="1"></div>
+        <div class="field"><label id="lblH">最高高度 H (in)</label><input id="h" type="number" min="4" max="20" step="0.125" value="12" data-dim="1"></div>
+        <div class="field"><label id="lblD">顶部至墙面深度 D (in)</label><input id="d" type="number" min="0.1" step="0.125" value="3.5" data-dim="1"></div>
+        <div class="field"><label id="lblQty">数量</label><input id="qty" type="number" min="1" step="1" value="1"></div>
+        <div class="field"><label id="lblFabric">面料编号 / 颜色</label><input id="fabric" placeholder="面料编号 / 颜色"></div>
+        <div class="field"><label id="lblRoom">房间位置</label><input id="room" placeholder="如：客厅"></div>
       </div>
 
       <div class="frac-bar no-print">
-        <span style="font-size:12px;color:#475569;font-weight:700;">手机/平板快捷分数点选 (加入当前尺寸框 <b id="activeDimLabel" style="color:#123e5d;">W</b>)：</span>
+        <span style="font-size:12px;color:#475569;font-weight:700;"><span id="lblFracHint">快捷分数点选 (加入当前尺寸框</span> <b id="activeDimLabel" style="color:#123e5d;">W</b>)：</span>
         <button type="button" class="frac-btn" data-frac="0.125">+1/8" (.125)</button>
         <button type="button" class="frac-btn" data-frac="0.25">+1/4" (.25)</button>
         <button type="button" class="frac-btn" data-frac="0.375">+3/8" (.375)</button>
@@ -260,23 +286,23 @@
         <button type="button" class="frac-btn" data-frac="0.625">+5/8" (.625)</button>
         <button type="button" class="frac-btn" data-frac="0.75">+3/4" (.75)</button>
         <button type="button" class="frac-btn" data-frac="0.875">+7/8" (.875)</button>
-        <button type="button" class="frac-btn" data-frac="0">清零小数 (.0)</button>
+        <button type="button" class="frac-btn" data-frac="0" id="btnFracZero">清零小数 (.0)</button>
       </div>
 
-      <p class="hint">W 为外部成品总宽，H 为最高点总高，D 为从墙面向外的成品深度；所有尺寸单位均为英寸。曲线款请补充下方关键造型尺寸。</p>
+      <p class="hint" id="sec2Hint">W 为外部成品总宽，H 为最高点总高，D 为从墙面向外的成品深度；所有尺寸单位均为英寸。曲线款请补充下方关键造型尺寸。</p>
 
-      <h2 style="margin-top:20px">3. 异形尺寸 / Shape-Specific Measurements</h2>
+      <h2 style="margin-top:20px" id="sec3Title">3. 异形造型尺寸</h2>
       <div id="shapeFields" class="grid"></div>
       <p class="warn" id="validation"></p>
     </section>
 
     <section class="card">
-      <h2>4. 自动标注图纸 / Annotated Drawings (实时动态更新)</h2>
+      <h2 id="sec4Title">4. 自动标注图纸 (实时动态更新)</h2>
       <div class="drawgrid">
         <div class="draw"><svg id="front" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 370"></svg></div>
         <div class="draw"><svg id="side" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 370"></svg></div>
       </div>
-      <p class="hint">正视图标注 W、H 和异形关键参数；侧视图标注 D、H。轮廓为参数化示意，不可直接作为1:1切割模板；生产前需核对曲线与实际样板。</p>
+      <p class="hint" id="sec4Hint">正视图标注 W、H 和异形关键参数；侧视图标注 D、H。轮廓为参数化示意，不可直接作为1:1切割模板；生产前需核对曲线与实际样板。</p>
       <div class="buttons">
         <button class="action green" id="saveImg">🖼️ 保存高清图纸图片 (PNG / 存手机相册)</button>
         <button class="action gold" id="shareLink">🔗 复制当前配置专属链接 (发给客户/博朗)</button>
@@ -289,7 +315,7 @@
     </section>
 
     <section class="card">
-      <h2>5. 报价与生产审核 / Quote &amp; Review</h2>
+      <h2 id="sec5Title">5. 报价与生产审核</h2>
       <div class="price-box">
         <div>
           <p class="price" id="price"></p>
@@ -302,19 +328,19 @@
       </div>
 
       <div class="field">
-        <label>特别说明 / Notes</label>
+        <label id="lblNotes">特别说明</label>
         <textarea id="notes" placeholder="左右不对称、特殊曲线、安装方式、墙体情况等"></textarea>
       </div>
-      <p class="warn">本工具生成客户测量/生产审核草图，不是经工程验证的施工图。异形参数未填写完整时不得直接投产；长件连接、木材规格、固定方式及承重由工厂确认。税费、运输及安装另计。</p>
+      <p class="warn" id="sec5Warn">本工具生成客户测量/生产审核草图，不是经工程验证的施工图。异形参数未填写完整时不得直接投产；长件连接、木材规格、固定方式及承重由工厂确认。税费、运输及安装另计。</p>
     </section>
 
     <!-- 多窗位汇总清单区（支持客户一次录入多扇窗帘盒并导出 Excel） -->
     <section class="card no-print" id="multiListSection">
       <h2>
-        <span>6. 多窗位窗帘盒清单汇总 / Multi-Window Cornice Schedule (<span id="listCount">0</span> 项)</span>
+        <span><span id="sec6Title">6. 多窗位窗帘盒清单汇总</span> (<span id="listCount">0</span>)</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="action gold" style="padding:8px 14px;font-size:13px;" onclick="exportCorniceExcel()">📊 导出 Excel 下单表 (.xlsx)</button>
-          <button class="action light" style="padding:8px 12px;font-size:13px;" onclick="clearCorniceList()">清空清单</button>
+          <button class="action gold" style="padding:8px 14px;font-size:13px;" id="btnExportListExcel" onclick="exportCorniceExcel()">📊 导出 Excel 下单表 (.xlsx)</button>
+          <button class="action light" style="padding:8px 12px;font-size:13px;" id="btnClearList" onclick="clearCorniceList()">清空清单</button>
         </div>
       </h2>
       <div style="overflow-x:auto;">
@@ -322,20 +348,18 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>房间 / Room</th>
-              <th>款式 / Style</th>
-              <th>宽 W × 高 H × 深 D (in)</th>
-              <th>异形尺寸参数</th>
-              <th>面料 / Fabric</th>
-              <th>数量</th>
-              <th>参考价 (USD)</th>
-              <th>备注</th>
-              <th>操作</th>
+              <th id="thRoom">房间</th>
+              <th id="thStyle">款式</th>
+              <th id="thDim">宽 W × 高 H × 深 D (in)</th>
+              <th id="thShape">异形尺寸参数</th>
+              <th id="thFab">面料</th>
+              <th id="thQty">数量</th>
+              <th id="thPrice">参考价 (USD)</th>
+              <th id="thNote">备注</th>
+              <th id="thAct">操作</th>
             </tr>
           </thead>
-          <tbody id="corniceListBody">
-            <tr><td colspan="10" style="text-align:center;color:#637687;padding:18px;">点击上方【➕ 加入多窗位报价清单】可在此汇总多扇窗帘盒，或直接点【📊 生成 Excel 报价单】导出当前窗位。</td></tr>
-          </tbody>
+          <tbody id="corniceListBody"></tbody>
         </table>
       </div>
     </section>
@@ -344,14 +368,14 @@
   <!-- 手机/平板长按保存图纸预览弹窗 -->
   <div id="imgModal" class="img-modal" onclick="if(event.target===this)this.style.display='none'">
     <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;text-align:center;">
-      <span>软包窗帘盒生产图纸与报价单图片</span>
-      <span style="display:block;font-size:12px;color:#fde047;margin-top:4px;">💡 手机 / iPad 用户可直接【长按下方图纸 ➔ 存储到“照片”相册】或点击底部按钮分享</span>
+      <span id="modalTitle">软包窗帘盒生产图纸与报价单图片</span>
+      <span style="display:block;font-size:12px;color:#fde047;margin-top:4px;" id="modalSub">💡 手机 / iPad 用户可直接【长按下方图纸 ➔ 存储到“照片”相册】或点击底部按钮分享</span>
     </div>
     <img id="modalImgEl" src="" alt="窗帘盒图纸">
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center;">
       <button class="action gold" id="modalDownloadBtn">⬇ 下载高清 PNG</button>
       <button class="action green" id="modalShareBtn">📱 存手机相册 / 微信发送</button>
-      <button class="action light" onclick="document.getElementById('imgModal').style.display='none'">✕ 关闭</button>
+      <button class="action light" id="modalCloseBtn" onclick="document.getElementById('imgModal').style.display='none'">✕ 关闭</button>
     </div>
   </div>
 
@@ -368,17 +392,165 @@ let shapeValues = {};
 let activeDimInput = null;
 let corniceList = [];
 const LIST_STORAGE_KEY = 'braun_cornice_multi_list_v1';
+const LANG_STORAGE_KEY = 'braun_app_lang';
+let currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'zh';
 
 const $ = id => document.getElementById(id);
 const specs = {
   Linear: [],
-  Arch: [['rise', '中间拱高 A / Arch rise', '3'], ['start', '拱形起点距左边 X / Start offset', '5']],
-  Casual: [['left', '左侧下垂宽 L / Left leg width', '7'], ['right', '右侧下垂宽 R / Right leg width', '7'], ['cut', '中央凹口深度 A / Recess depth', '3']],
-  Deco: [['outer', '外侧台阶宽 L / Outer step', '5'], ['inner', '内侧台阶宽 M / Inner step', '5'], ['step1', '第一台阶深度 A / Step depth 1', '1.5'], ['step2', '第二台阶深度 B / Step depth 2', '3']],
-  'Wide Scallop': [['peak1', '左波峰位置 X1 / Left peak from left', '18'], ['peak2', '右波峰位置 X2 / Right peak from left', '42'], ['dip', '波谷深度 A / Valley depth', '3']],
-  Scallop: [['peak1', '第一波峰位置 X1 / Peak 1 from left', '20'], ['peak2', '第二波峰位置 X2 / Peak 2 from left', '40'], ['dip', '波谷深度 A / Valley depth', '3']],
-  'Partial Arch': [['start', '拱形起点 X1 / Arch start from left', '10'], ['end', '拱形终点 X2 / Arch end from left', '50'], ['rise', '中央拱高 A / Rise', '2.5']]
+  Arch: [['rise', '中间拱高 A', 'Arch rise A', '3'], ['start', '拱形起点距左边 X', 'Start offset X', '5']],
+  Casual: [['left', '左侧下垂宽 L', 'Left leg width L', '7'], ['right', '右侧下垂宽 R', 'Right leg width R', '7'], ['cut', '中央凹口深度 A', 'Recess depth A', '3']],
+  Deco: [['outer', '外侧台阶宽 L', 'Outer step L', '5'], ['inner', '内侧台阶宽 M', 'Inner step M', '5'], ['step1', '第一台阶深度 A', 'Step depth 1 (A)', '1.5'], ['step2', '第二台阶深度 B', 'Step depth 2 (B)', '3']],
+  'Wide Scallop': [['peak1', '左波峰位置 X1', 'Left peak from left X1', '18'], ['peak2', '右波峰位置 X2', 'Right peak from left X2', '42'], ['dip', '波谷深度 A', 'Valley depth A', '3']],
+  Scallop: [['peak1', '第一波峰位置 X1', 'Peak 1 from left X1', '20'], ['peak2', '第二波峰位置 X2', 'Peak 2 from left X2', '40'], ['dip', '波谷深度 A', 'Valley depth A', '3']],
+  'Partial Arch': [['start', '拱形起点 X1', 'Arch start from left X1', '10'], ['end', '拱形终点 X2', 'Arch end from left X2', '50'], ['rise', '中央拱高 A', 'Center rise A', '2.5']]
 };
+
+const CORNICE_I18N = {
+  zh: {
+    hdrSubtitle: '软包窗帘盒 · 客户选款、尺寸标注与加工图纸报价系统',
+    topShareBtn: '🔗 分享链接给客户',
+    topSaveImgBtn: '🖼️ 保存图纸图片',
+    navConverterLink: '🔄 2026V1 订单转换器',
+    navPhotoLink: '📱 拍照测量 App',
+    sec1Title: '1. 选择款式 (点击切换 7 种造型)',
+    sec1Hint: '款式图片取自指定的七款参考图；下方图纸会根据您选择的款式与输入的尺寸实时生成正视图与侧视图。支持电脑、手机、iPad 触控点选。',
+    sec2Title: '2. 订单与尺寸 (单位：英寸 Inches)',
+    lblCustomer: '客户名称',
+    phCustomer: '输入客户名称',
+    lblOrder: '订单编号',
+    phOrder: '例如 COR-001',
+    lblW: '宽度 W (in)',
+    lblH: '最高高度 H (in)',
+    lblD: '顶部至墙面深度 D (in)',
+    lblQty: '数量',
+    lblFabric: '面料编号 / 颜色',
+    phFabric: '面料编号 / 颜色',
+    lblRoom: '房间位置',
+    phRoom: '如：客厅主窗',
+    lblFracHint: '手机/平板快捷分数点选 (加入当前尺寸框',
+    btnFracZero: '清零小数 (.0)',
+    sec2Hint: 'W 为外部成品总宽，H 为最高点总高，D 为从墙面向外的成品深度；所有尺寸单位均为英寸。曲线款请补充下方关键造型尺寸。',
+    sec3Title: '3. 异形造型附加尺寸',
+    noShapeHint: '直线款无需异形附加尺寸。',
+    sec4Title: '4. 自动标注图纸 (实时动态更新)',
+    sec4Hint: '正视图标注 W、H 和异形关键参数；侧视图标注 D、H。轮廓为参数化示意，不可直接作为1:1切割模板；生产前需核对曲线与实际样板。',
+    saveImg: '🖼️ 保存高清图纸图片 (PNG / 存手机相册)',
+    shareLink: '🔗 复制当前配置专属链接 (发给客户/博朗)',
+    print: '🖨️ 打印 / 保存 PDF 图纸',
+    svg: '⬇ 下载正视图 SVG',
+    copy: '📋 复制尺寸与报价明细',
+    save: '💾 保存本机草稿',
+    load: '📂 读取本机草稿',
+    sec5Title: '5. 报价与生产审核',
+    addToListBtn: '➕ 加入多窗位报价清单',
+    exportExcelBtn: '📊 生成 Excel 报价单 (.xlsx)',
+    lblNotes: '特别说明',
+    phNotes: '左右不对称、特殊曲线、安装方式、墙体情况等',
+    sec5Warn: '本工具生成客户测量/生产审核草图，不是经工程验证的施工图。异形参数未填写完整时不得直接投产；长件连接、木材规格、固定方式及承重由工厂确认。税费、运输及安装另计。',
+    sec6Title: '6. 多窗位窗帘盒清单汇总',
+    btnExportListExcel: '📊 导出 Excel 下单表 (.xlsx)',
+    btnClearList: '清空清单',
+    thRoom: '房间',
+    thStyle: '款式',
+    thDim: '宽 W × 高 H × 深 D (in)',
+    thShape: '异形尺寸参数',
+    thFab: '面料',
+    thQty: '数量',
+    thPrice: '参考价 (USD)',
+    thNote: '备注',
+    thAct: '操作',
+    emptyList: '点击上方【➕ 加入多窗位报价清单】可在此汇总多扇窗帘盒，或直接点【📊 生成 Excel 报价单】导出当前窗位。',
+    modalTitle: '软包窗帘盒生产图纸与报价单图片',
+    modalSub: '💡 手机 / iPad 用户可直接【长按下方图纸 ➔ 存储到“照片”相册】或点击底部按钮分享',
+    modalDownloadBtn: '⬇ 下载高清 PNG',
+    modalShareBtn: '📱 存手机相册 / 微信发送',
+    modalCloseBtn: '✕ 关闭'
+  },
+  en: {
+    hdrSubtitle: 'Upholstered Cornice · Style Selection, Parametric Drawing & Instant Quote',
+    topShareBtn: '🔗 Share Link',
+    topSaveImgBtn: '🖼️ Save Drawing PNG',
+    navConverterLink: '🔄 2026V1 Order Converter',
+    navPhotoLink: '📱 Photo Measure App',
+    sec1Title: '1. Select Style (Tap to switch among 7 styles)',
+    sec1Hint: 'Style thumbnails are from the 7 official reference styles; front and side drawings update live as you enter dimensions on desktop, mobile, or iPad.',
+    sec2Title: '2. Order & Dimensions (Unit: Inches)',
+    lblCustomer: 'Customer Name',
+    phCustomer: 'Enter Customer Name',
+    lblOrder: 'Order ID',
+    phOrder: 'e.g. COR-001',
+    lblW: 'Width W (in)',
+    lblH: 'Max Height H (in)',
+    lblD: 'Return Depth D (in)',
+    lblQty: 'Quantity',
+    lblFabric: 'Fabric / Color Code',
+    phFabric: 'Fabric Pattern / Color',
+    lblRoom: 'Room / Window',
+    phRoom: 'e.g. Living Room',
+    lblFracHint: 'Quick Fraction Tap (applies to active field',
+    btnFracZero: 'Clear Fraction (.0)',
+    sec2Hint: 'W is total outside finished width, H is maximum overall height, D is finished return depth from wall; all dimensions in inches.',
+    sec3Title: '3. Shape-Specific Measurements',
+    noShapeHint: 'Linear style requires no additional shape measurements.',
+    sec4Title: '4. Annotated Parametric Drawings (Live Update)',
+    sec4Hint: 'Front view shows W, H and shape parameters; Side view shows D and H. Schematic representation only, not a 1:1 cutting template.',
+    saveImg: '🖼️ Save High-Res Drawing Image (PNG)',
+    shareLink: '🔗 Copy Configured Share Link',
+    print: '🖨️ Print / Save as PDF',
+    svg: '⬇ Download Front SVG',
+    copy: '📋 Copy Specs & Quote',
+    save: '💾 Save Local Draft',
+    load: '📂 Load Local Draft',
+    sec5Title: '5. Quote & Production Review',
+    addToListBtn: '➕ Add to Multi-Window Schedule',
+    exportExcelBtn: '📊 Export Excel Quote (.xlsx)',
+    lblNotes: 'Special Notes',
+    phNotes: 'Asymmetry, custom curves, mounting surface, wall condition, etc.',
+    sec5Warn: 'This tool generates preliminary customer measurement & review drawings. Do not release to production with incomplete shape parameters. Tax, shipping & installation not included.',
+    sec6Title: '6. Multi-Window Cornice Schedule',
+    btnExportListExcel: '📊 Export Excel Schedule (.xlsx)',
+    btnClearList: 'Clear Schedule',
+    thRoom: 'Room',
+    thStyle: 'Style',
+    thDim: 'W × H × D (in)',
+    thShape: 'Shape Parameters',
+    thFab: 'Fabric',
+    thQty: 'Qty',
+    thPrice: 'Est. Price (USD)',
+    thNote: 'Notes',
+    thAct: 'Action',
+    emptyList: 'Click [➕ Add to Multi-Window Schedule] above to combine multiple cornices, or click [📊 Export Excel Quote] directly.',
+    modalTitle: 'Cornice Production Drawing & Quote Image',
+    modalSub: '💡 On iPhone / iPad, long-press the image below to Save to Photos, or tap the buttons below',
+    modalDownloadBtn: '⬇ Download High-Res PNG',
+    modalShareBtn: '📱 Save to Photos / Share',
+    modalCloseBtn: '✕ Close'
+  }
+};
+
+function setCorniceLang(lang) {
+  currentLang = lang === 'en' ? 'en' : 'zh';
+  localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+  document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
+  $('langBtnZh').className = currentLang === 'zh' ? 'lang-btn active' : 'lang-btn';
+  $('langBtnEn').className = currentLang === 'en' ? 'lang-btn active' : 'lang-btn';
+
+  const dict = CORNICE_I18N[currentLang];
+  Object.entries(dict).forEach(([k, v]) => {
+    if ($(k) && !['phCustomer', 'phOrder', 'phFabric', 'phRoom', 'phNotes'].includes(k)) {
+      $(k).textContent = v;
+    }
+  });
+  $('customer').placeholder = dict.phCustomer;
+  $('order').placeholder = dict.phOrder;
+  $('fabric').placeholder = dict.phFabric;
+  $('room').placeholder = dict.phRoom;
+  $('notes').placeholder = dict.phNotes;
+
+  select(chosen);
+  renderCorniceList();
+}
 
 const num = id => Number($(id).value);
 const F = n => Number(n).toFixed(2).replace(/\.00$/, '');
@@ -397,7 +569,9 @@ function select(s) {
   chosen = styles.includes(s) ? s : 'Linear';
   const idx = styles.indexOf(chosen);
   if ($('currentStyleBadge')) {
-    $('currentStyleBadge').textContent = `当前款式：${chosen} (${cn[idx] || ''})`;
+    $('currentStyleBadge').textContent = currentLang === 'en'
+      ? `Selected Style: ${chosen}`
+      : `当前款式：${chosen} (${cn[idx] || ''})`;
   }
   drawStyles();
   drawShape();
@@ -409,7 +583,7 @@ function drawStyles() {
     <button type="button" class="${chosen === s ? 'on' : ''}" data-style="${s}">
       <img src="${images[s]}" alt="${s}">
       <b>${s}</b>
-      <span>${cn[i]}</span>
+      <span>${currentLang === 'en' ? '' : cn[i]}</span>
     </button>
   `).join('');
   $('styles').querySelectorAll('button').forEach(b => b.onclick = () => select(b.dataset.style));
@@ -424,12 +598,12 @@ function bindDimFocus(el, labelText) {
 
 function drawShape() {
   let vals = shapeValues[chosen] || {};
-  $('shapeFields').innerHTML = (specs[chosen] || []).map(([key, label, def]) => `
+  $('shapeFields').innerHTML = (specs[chosen] || []).map(([key, zhLabel, enLabel, def]) => `
     <div class="field">
-      <label>${label} (in)</label>
+      <label>${currentLang === 'en' ? enLabel : zhLabel} (in)</label>
       <input type="number" min="0" step="0.125" data-key="${key}" value="${vals[key] ?? def}">
     </div>
-  `).join('') || '<p class="hint">直线款无需异形附加尺寸。</p>';
+  `).join('') || `<p class="hint">${CORNICE_I18N[currentLang].noShapeHint}</p>`;
   $('shapeFields').querySelectorAll('input').forEach(el => {
     bindDimFocus(el, el.dataset.key.toUpperCase());
     el.oninput = () => {
@@ -457,21 +631,22 @@ function dimV(x, y1, y2, label) {
 }
 
 function getQuoteState() {
+  const isEn = currentLang === 'en';
   let w = num('w'), h = num('h'), d = num('d'), q = num('qty'), p = data(), errors = [];
-  if (!w || w <= 0) errors.push('宽度必须大于0');
-  if (!h || h < 4 || h > 20) errors.push('高度需为4–20英寸');
-  if (!d || d <= 0) errors.push('深度必须大于0');
-  if (!Number.isInteger(q) || q < 1) errors.push('数量须为正整数');
+  if (!w || w <= 0) errors.push(isEn ? 'Width must be > 0' : '宽度必须大于0');
+  if (!h || h < 4 || h > 20) errors.push(isEn ? 'Height must be 4–20 in' : '高度需为4–20英寸');
+  if (!d || d <= 0) errors.push(isEn ? 'Depth must be > 0' : '深度必须大于0');
+  if (!Number.isInteger(q) || q < 1) errors.push(isEn ? 'Qty must be a positive integer' : '数量须为正整数');
   for (let [key] of specs[chosen]) {
     let input = $('shapeFields').querySelector(`[data-key="${key}"]`);
-    if (!input?.value || p[key] <= 0) errors.push(`${key} 需要正数尺寸`);
+    if (!input?.value || p[key] <= 0) errors.push(isEn ? `${key} requires a positive value` : `${key} 需要正数尺寸`);
   }
-  if (['Arch', 'Partial Arch'].includes(chosen) && p.rise >= h) errors.push('拱高必须小于总高度');
-  if (chosen === 'Arch' && p.start * 2 >= w) errors.push('拱起点偏移过大');
-  if (chosen === 'Casual' && (p.left + p.right >= w || p.cut >= h)) errors.push('凹口尺寸超过总尺寸');
-  if (chosen === 'Deco' && (2 * (p.outer + p.inner) >= w || p.step2 >= h || p.step1 >= p.step2)) errors.push('台阶尺寸不合理');
-  if (['Wide Scallop', 'Scallop'].includes(chosen) && !(p.peak1 > 0 && p.peak2 > p.peak1 && p.peak2 < w && p.dip < h)) errors.push('波峰位置或深度不合理');
-  if (chosen === 'Partial Arch' && !(p.start > 0 && p.end > p.start && p.end < w)) errors.push('拱形起止位置不合理');
+  if (['Arch', 'Partial Arch'].includes(chosen) && p.rise >= h) errors.push(isEn ? 'Arch rise must be less than total height H' : '拱高必须小于总高度');
+  if (chosen === 'Arch' && p.start * 2 >= w) errors.push(isEn ? 'Start offset X is too large' : '拱起点偏移过大');
+  if (chosen === 'Casual' && (p.left + p.right >= w || p.cut >= h)) errors.push(isEn ? 'Recess dimensions exceed overall size' : '凹口尺寸超过总尺寸');
+  if (chosen === 'Deco' && (2 * (p.outer + p.inner) >= w || p.step2 >= h || p.step1 >= p.step2)) errors.push(isEn ? 'Invalid step dimensions' : '台阶尺寸不合理');
+  if (['Wide Scallop', 'Scallop'].includes(chosen) && !(p.peak1 > 0 && p.peak2 > p.peak1 && p.peak2 < w && p.dip < h)) errors.push(isEn ? 'Invalid peak positions or valley depth' : '波峰位置或深度不合理');
+  if (chosen === 'Partial Arch' && !(p.start > 0 && p.end > p.start && p.end < w)) errors.push(isEn ? 'Invalid arch start/end positions' : '拱形起止位置不合理');
 
   let base = 90 + Math.max(0, w - 30) * 3;
   let hr = h <= 9 ? 1 : h <= 15 ? 1.1 : 1.2;
@@ -481,8 +656,9 @@ function getQuoteState() {
 }
 
 function render() {
+  const isEn = currentLang === 'en';
   const { w, h, d, q, p, errors, base, hr, sr, price } = getQuoteState();
-  $('validation').textContent = errors.join('；');
+  $('validation').textContent = errors.join(isEn ? '; ' : '；');
 
   let x = 80, y = 65, sw = 550, sh = 210;
   const xx = v => x + sw * v / Math.max(w, 1), yy = v => y + sh * v / Math.max(h, 1);
@@ -522,11 +698,21 @@ function render() {
   }
 
   const cnName = cn[styles.indexOf(chosen)] || '';
-  $('front').innerHTML = `<rect width="740" height="370" fill="white"/>${svgText(370, 25, `${chosen} (${cnName}) · 正视图 / FRONT`, 18)}<path d="${path}" fill="#e5d9c5" stroke="#7c6548" stroke-width="3"/>${dimH(x, x + sw, 44, `W = ${F(w)}″`)}${dimV(38, y, bottom, `H=${F(h)}″`)}${annotations}${svgText(370, 363, 'SCHEMATIC ONLY · NOT TO SCALE', 11)}`;
-  $('side').innerHTML = `<rect width="340" height="370" fill="white"/>${svgText(170, 25, '侧视图 / SIDE', 18)}<rect x="100" y="65" width="145" height="210" fill="#e5d9c5" stroke="#7c6548" stroke-width="3"/>${dimH(100, 245, 45, `D = ${F(d)}″`)}${dimV(65, 65, 275, `H=${F(h)}″`)}<path d="M100 95 H245 M100 95 V275" stroke="#b28a58" stroke-width="5"/>${svgText(170, 325, '实木顶板 + 木方框架', 14)}${svgText(170, 345, 'Solid top + timber frame', 12)}`;
+  const frontTitle = isEn ? `${chosen} · FRONT VIEW` : `${chosen} (${cnName}) · 正视图`;
+  const sideTitle = isEn ? 'SIDE VIEW' : '侧视图';
+  const frameLine1 = isEn ? 'Solid Top + Timber Frame' : '实木顶板 + 木方框架';
+  const frameLine2 = isEn ? 'Upholstered Cornice Box' : '软包窗帘盒结构';
 
-  $('price').textContent = errors.length ? '待补充有效尺寸 / Incomplete dimensions' : `参考总价 / Estimated Total: $${price.toFixed(2)}`;
-  $('pricingNote').textContent = `基础价 $${base.toFixed(2)} × 高度系数 ${hr.toFixed(2)} × 款式系数 ${sr.toFixed(2)} × 数量 ${q}；不含税、运费、安装。`;
+  $('front').innerHTML = `<rect width="740" height="370" fill="white"/>${svgText(370, 25, frontTitle, 18)}<path d="${path}" fill="#e5d9c5" stroke="#7c6548" stroke-width="3"/>${dimH(x, x + sw, 44, `W = ${F(w)}″`)}${dimV(38, y, bottom, `H=${F(h)}″`)}${annotations}${svgText(370, 363, 'SCHEMATIC ONLY · NOT TO SCALE', 11)}`;
+  $('side').innerHTML = `<rect width="340" height="370" fill="white"/>${svgText(170, 25, sideTitle, 18)}<rect x="100" y="65" width="145" height="210" fill="#e5d9c5" stroke="#7c6548" stroke-width="3"/>${dimH(100, 245, 45, `D = ${F(d)}″`)}${dimV(65, 65, 275, `H=${F(h)}″`)}<path d="M100 95 H245 M100 95 V275" stroke="#b28a58" stroke-width="5"/>${svgText(170, 325, frameLine1, 14)}${svgText(170, 345, frameLine2, 12)}`;
+
+  if (isEn) {
+    $('price').textContent = errors.length ? 'Incomplete dimensions' : `Estimated Total: $${price.toFixed(2)}`;
+    $('pricingNote').textContent = `Base $${base.toFixed(2)} × Height Factor ${hr.toFixed(2)} × Style Factor ${sr.toFixed(2)} × Qty ${q}; excludes tax, shipping & installation.`;
+  } else {
+    $('price').textContent = errors.length ? '待补充有效尺寸' : `参考总价: $${price.toFixed(2)}`;
+    $('pricingNote').textContent = `基础价 $${base.toFixed(2)} × 高度系数 ${hr.toFixed(2)} × 款式系数 ${sr.toFixed(2)} × 数量 ${q}；不含税、运费、安装。`;
+  }
 }
 
 function details() {
@@ -740,11 +926,14 @@ function buildCurrentCorniceItem() {
 function renderCorniceList() {
   $('listCount').textContent = corniceList.length;
   const tbody = $('corniceListBody');
+  const isEn = currentLang === 'en';
   if (!corniceList.length) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#637687;padding:18px;">点击上方【➕ 加入多窗位报价清单】可在此汇总多扇窗帘盒，或直接点【📊 生成 Excel 报价单】导出当前窗位。</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#637687;padding:18px;">${CORNICE_I18N[currentLang].emptyList}</td></tr>`;
     return;
   }
   const totalUsd = corniceList.reduce((acc, r) => acc + (r.price || 0), 0);
+  const delText = isEn ? 'Delete' : '删除';
+  const totalLabel = isEn ? 'Total Estimated:' : '合计参考总价:';
   tbody.innerHTML = corniceList.map((r, i) => `
     <tr>
       <td>${i + 1}</td>
@@ -756,11 +945,11 @@ function renderCorniceList() {
       <td>${r.qty}</td>
       <td style="font-weight:700;color:#102b42;">$${r.price.toFixed(2)}</td>
       <td>${safe(r.notes)}</td>
-      <td><button type="button" class="frac-btn" style="color:#a13d24;" onclick="removeCorniceItem('${r.id}')">删除</button></td>
+      <td><button type="button" class="frac-btn" style="color:#a13d24;" onclick="removeCorniceItem('${r.id}')">${delText}</button></td>
     </tr>
   `).join('') + `
     <tr style="background:#fff9ee;font-weight:800;">
-      <td colspan="7" style="text-align:right;">合计参考总价 / Total Estimated:</td>
+      <td colspan="7" style="text-align:right;">${totalLabel}</td>
       <td colspan="3" style="color:#102b42;font-size:15px;">$${totalUsd.toFixed(2)}</td>
     </tr>
   `;
@@ -894,8 +1083,7 @@ document.querySelectorAll('.frac-btn[data-frac]').forEach(btn => {
 
 try { corniceList = JSON.parse(localStorage.getItem(LIST_STORAGE_KEY) || '[]'); } catch (e) { corniceList = []; }
 loadFromUrlParams();
-select(chosen);
-renderCorniceList();
+setCorniceLang(currentLang);
   </script>
 </body>
 </html>
