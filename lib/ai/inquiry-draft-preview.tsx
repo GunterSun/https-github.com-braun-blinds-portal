@@ -3,7 +3,7 @@ import {useRef,useState} from "react";
 import {type InquiryLine} from "./extract-lines";
 import {parseInches} from "./extract-inquiry";
 import {inspectIntakeFile,signatureMatches} from "./intake-file";
-import {parseDelimitedInquiry} from "./intake-delimited";
+import {parseDelimitedInquiry,type TableIntake} from "./intake-delimited";
 import {isDrapery,reviewDrapery} from "./drapery-review";
 import {quoteDraftGate} from "./quote-adapter";
 
@@ -42,8 +42,10 @@ export default function AiInquiryDraftPreview(){
  const [source,setSource]=useState("");
  const [fileNotice,setFileNotice]=useState("");
  const [selectedFile,setSelectedFile]=useState<string|null>(null);
+ const [importedTable,setImportedTable]=useState<TableIntake|null>(null);
  const inspectFile=async(file:File)=>{
   setSelectedFile(null);
+  setImportedTable(null);
   const preflight=inspectIntakeFile(file.name,file.size,file.type);
   if(!preflight.ok||!preflight.kind){setFileNotice(preflight.reason);return;}
   const bytes=new Uint8Array(await file.slice(0,16).arrayBuffer());
@@ -55,6 +57,7 @@ export default function AiInquiryDraftPreview(){
     try {
      const table=parseDelimitedInquiry(text,/\\.tsv$/i.test(file.name)?"\\t":",");
      text=table.text;
+     setImportedTable(table);
      if(table.warnings.length){setFileNotice(table.warnings.join("; "));}
     }catch(error){setFileNotice(error instanceof Error?error.message:"Invalid table");return;}
    }
@@ -120,7 +123,7 @@ export default function AiInquiryDraftPreview(){
   (draperySelection[index]??isDrapery(line.source)) ? reviewDrapery(line.source) : null
  );
  const exportRecord=()=>{
-  const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,measurements:measurementReview,reviewNotes,currentLines:lines,draperyReviews},null,2)],{type:"application/json"});
+  const file=new Blob([JSON.stringify({schemaVersion:1,sources,history,importedTable,measurements:measurementReview,reviewNotes,currentLines:lines,draperyReviews},null,2)],{type:"application/json"});
   const url=URL.createObjectURL(file);
   const link=document.createElement("a");
   link.href=url;
@@ -143,11 +146,12 @@ export default function AiInquiryDraftPreview(){
    <p style={{fontSize:12}}>{en?"TXT/CSV/TSV can be read locally. No files are uploaded or saved.":"本版本可本地读取 TXT/CSV/TSV；照片、Excel、PDF 暂只检查格式，文件不会上传或保存。"}</p>
   </section>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
-  <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
+  <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setImportedTable(null);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
    placeholder={"1. JL3601 White LF 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized"}
    style={{width:"100%",boxSizing:"border-box",padding:12,border:"1px solid #94a3b8",borderRadius:8}}/>
   <button type="button" onClick={extract} style={{marginTop:12,padding:"10px 18px",background:"#123d5a",color:"white",borderRadius:8}}>{en?"Extract drafts":"识别询价"}</button>
   {notice&&<p role="status">{notice}</p>}
+  {importedTable&&<p role="status">{en?"Original table and row/column evidence are preserved in JSON export.":"原始表格及行列证据将保留在 JSON 导出中。"}</p>}
   {warnings.map((warning,i)=><p key={i} role="alert" style={{color:"#92400e"}}>⚠ {en?warning:(warningZh[warning]??warning)}</p>)}
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:16,marginTop:22}}>
    {lines.map((line,i)=><section key={i} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:18,minWidth:0}}>
