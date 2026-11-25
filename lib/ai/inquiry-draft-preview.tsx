@@ -3,6 +3,7 @@ import {useRef,useState} from "react";
 import {type InquiryLine} from "./extract-lines";
 import {parseInches} from "./extract-inquiry";
 import {inspectIntakeFile,signatureMatches} from "./intake-file";
+import {parseDelimitedInquiry} from "./intake-delimited";
 import {isDrapery,reviewDrapery} from "./drapery-review";
 import {quoteDraftGate} from "./quote-adapter";
 
@@ -49,10 +50,17 @@ export default function AiInquiryDraftPreview(){
   if(!signatureMatches(preflight.kind,bytes)){setFileNotice(en?"File signature mismatch; rejected.":"文件内容与格式不匹配，已拒绝。");return;}
   setSelectedFile(file.name);
   if(preflight.kind==="text"){
-   const text=await file.text();
+   let text=await file.text();
+   if(/\\.(csv|tsv)$/i.test(file.name)){
+    try {
+     const table=parseDelimitedInquiry(text,/\\.tsv$/i.test(file.name)?"\\t":",");
+     text=table.text;
+     if(table.warnings.length){setFileNotice(table.warnings.join("; "));}
+    }catch(error){setFileNotice(error instanceof Error?error.message:"Invalid table");return;}
+   }
    if(text.length>12000){setFileNotice(en?"Text exceeds 12,000 characters. Paste a shorter section for review.":"文本超过 12,000 字符，请分段处理。");return;}
    setSource(text);setLines([]);setWarnings([]);
-   setFileNotice(en?"Text loaded locally. Click Extract drafts. Nothing uploaded.":"文本已在本机载入，请点击识别询价；文件没有上传。");
+   setFileNotice(en?"Text/table loaded locally. Click Extract drafts. Nothing uploaded.":"文本/表格已在本机载入，请点击识别询价；文件没有上传。");
   }else setFileNotice(en?"File checked locally. Image/Excel/PDF extraction is not connected yet; no upload occurred.":"文件已通过本地初步检查。照片/Excel/PDF 解析尚未接入，未上传文件。");
  };
  const [lines,setLines]=useState<InquiryLine[]>([]);
@@ -129,10 +137,10 @@ export default function AiInquiryDraftPreview(){
   <p>{en?"Owner only. Entries stay in this session until exported.":"仅限 Owner。记录暂存在本页，刷新前请导出。"}</p>
   <section style={{border:"1px solid #cbd5e1",borderRadius:8,padding:14,marginTop:16}}>
    <label htmlFor="intake-file" style={{display:"block",fontWeight:600}}>{en?"Select inquiry file (local preflight)":"选择客户询价文件（本地预检查）"}</label>
-   <input id="intake-file" type="file" accept=".jpg,.jpeg,.png,.heic,.pdf,.xlsx,.xls,.txt" onChange={event=>{const file=event.target.files?.[0];if(file)void inspectFile(file);event.target.value="";}}/>
+   <input id="intake-file" type="file" accept=".jpg,.jpeg,.png,.heic,.pdf,.xlsx,.xls,.txt,.csv,.tsv" onChange={event=>{const file=event.target.files?.[0];if(file)void inspectFile(file);event.target.value="";}}/>
    {selectedFile&&<p>{selectedFile}</p>}
    {fileNotice&&<p role="status">{fileNotice}</p>}
-   <p style={{fontSize:12}}>{en?"Only TXT can be read in this version. No files are uploaded or saved.":"本版本仅可读取 TXT；照片、Excel、PDF 暂只检查格式，文件不会上传或保存。"}</p>
+   <p style={{fontSize:12}}>{en?"TXT/CSV/TSV can be read locally. No files are uploaded or saved.":"本版本可本地读取 TXT/CSV/TSV；照片、Excel、PDF 暂只检查格式，文件不会上传或保存。"}</p>
   </section>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
   <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
