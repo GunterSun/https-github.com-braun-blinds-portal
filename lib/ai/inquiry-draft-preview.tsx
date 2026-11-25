@@ -2,6 +2,7 @@
 import {useRef,useState} from "react";
 import {type InquiryLine} from "./extract-lines";
 import {parseInches} from "./extract-inquiry";
+import {inspectIntakeFile,signatureMatches} from "./intake-file";
 import {isDrapery,reviewDrapery} from "./drapery-review";
 import {quoteDraftGate} from "./quote-adapter";
 
@@ -38,6 +39,22 @@ export default function AiInquiryDraftPreview(){
  const [reviewNotes,setReviewNotes]=useState<{text:string;recordedAt:string}[]>([]);
  const previousValue=useRef("");
  const [source,setSource]=useState("");
+ const [fileNotice,setFileNotice]=useState("");
+ const [selectedFile,setSelectedFile]=useState<string|null>(null);
+ const inspectFile=async(file:File)=>{
+  setSelectedFile(null);
+  const preflight=inspectIntakeFile(file.name,file.size,file.type);
+  if(!preflight.ok||!preflight.kind){setFileNotice(preflight.reason);return;}
+  const bytes=new Uint8Array(await file.slice(0,16).arrayBuffer());
+  if(!signatureMatches(preflight.kind,bytes)){setFileNotice(en?"File signature mismatch; rejected.":"文件内容与格式不匹配，已拒绝。");return;}
+  setSelectedFile(file.name);
+  if(preflight.kind==="text"){
+   const text=await file.text();
+   if(text.length>12000){setFileNotice(en?"Text exceeds 12,000 characters. Paste a shorter section for review.":"文本超过 12,000 字符，请分段处理。");return;}
+   setSource(text);setLines([]);setWarnings([]);
+   setFileNotice(en?"Text loaded locally. Click Extract drafts. Nothing uploaded.":"文本已在本机载入，请点击识别询价；文件没有上传。");
+  }else setFileNotice(en?"File checked locally. Image/Excel/PDF extraction is not connected yet; no upload occurred.":"文件已通过本地初步检查。照片/Excel/PDF 解析尚未接入，未上传文件。");
+ };
  const [lines,setLines]=useState<InquiryLine[]>([]);
  const [fieldEdits,setFieldEdits]=useState<Record<string,string>>({});
  const [warnings,setWarnings]=useState<string[]>([]);
@@ -110,6 +127,13 @@ export default function AiInquiryDraftPreview(){
    <button type="button" onClick={()=>setLocale(en?"zh":"en")}>{en?"中文":"English"}</button>
   </div>
   <p>{en?"Owner only. Entries stay in this session until exported.":"仅限 Owner。记录暂存在本页，刷新前请导出。"}</p>
+  <section style={{border:"1px solid #cbd5e1",borderRadius:8,padding:14,marginTop:16}}>
+   <label htmlFor="intake-file" style={{display:"block",fontWeight:600}}>{en?"Select inquiry file (local preflight)":"选择客户询价文件（本地预检查）"}</label>
+   <input id="intake-file" type="file" accept=".jpg,.jpeg,.png,.heic,.pdf,.xlsx,.xls,.txt" onChange={event=>{const file=event.target.files?.[0];if(file)void inspectFile(file);event.target.value="";}}/>
+   {selectedFile&&<p>{selectedFile}</p>}
+   {fileNotice&&<p role="status">{fileNotice}</p>}
+   <p style={{fontSize:12}}>{en?"Only TXT can be read in this version. No files are uploaded or saved.":"本版本仅可读取 TXT；照片、Excel、PDF 暂只检查格式，文件不会上传或保存。"}</p>
+  </section>
   <label htmlFor="inquiry" style={{display:"block",fontWeight:600,marginTop:18}}>{en?"Customer inquiry":"客户邮件 / 短信 / 微信询价"}</label>
   <textarea id="inquiry" value={source} onChange={e=>{setSource(e.target.value);setLines([]);setFieldEdits({});setWarnings([]);setNotice("");}} rows={7}
    placeholder={"1. JL3601 White LF 39 5/8 x 40 5/8 qty 1\n2. ML-1801 36 x 60 qty 2 motorized"}
